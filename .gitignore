@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# AppSettings.Development.json - local development settings file, not to be checked in
+API-PI-Clubes/AppSettings.json

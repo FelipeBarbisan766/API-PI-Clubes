@@ -10,5 +10,15 @@ namespace API_PI_Clubes.Data
         }
 
         public DbSet<Clube> Clubes { get; set; }
+        public DbSet<Quadra> Quadras { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        }
+
     }
 }

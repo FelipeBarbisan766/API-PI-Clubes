@@ -13,7 +13,8 @@ namespace API_PI_Clubes.Model
         public double PricePerHour { get; set; }
         public string Description { get; set; }
 
-        //public Clube Clube { get; set; }
+        public int ClubeId { get; set; }
+        public Clube Clube { get; set; }
 
     }
 }

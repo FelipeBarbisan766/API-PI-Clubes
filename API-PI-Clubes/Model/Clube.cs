@@ -9,5 +9,7 @@ namespace API_PI_Clubes.Model
         //public AddressVO Address { get; set; }
         public int PhoneNumber { get; set; }
         public string Description { get; set; }
+
+        public ICollection<Quadra> Quadras { get; set; }
     }
 }

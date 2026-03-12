@@ -13,5 +13,7 @@
         public Guid QuadraId { get; set; }
         public Quadra Quadra { get; set; }
 
+        public ICollection<Reserva> Reservas { get; set; }
+
     }
 }

@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Controllers
 {
-    [Route("api/clubes")]
+    [Route("api/[controller]")] 
     [ApiController]
-    public class ClubesController : ControllerBase
+    public class ClubeController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public ClubesController(AppDbContext context)
+        public ClubeController(AppDbContext context)
         {
             _context = context;
         }

@@ -17,7 +17,6 @@ namespace API_PI_Clubes.Model
         public Clube Clube { get; set; }
 
         public ICollection<Horario> Horarios { get; set; }
-        public ICollection<Reserva> Reservas { get; set; }
 
     }
 }

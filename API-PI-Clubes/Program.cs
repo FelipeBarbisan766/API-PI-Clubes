@@ -35,7 +35,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

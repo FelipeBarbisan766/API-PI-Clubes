@@ -23,7 +23,7 @@ namespace API_PI_Clubes.Model.DTOs
         public string Description { get; set; }
     }
 
-    public class QuadraResponseDTO
+    public class ResponseQuadraDTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

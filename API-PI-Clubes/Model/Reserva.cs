@@ -10,9 +10,6 @@ namespace API_PI_Clubes.Model
         public DateTime Date { get; set; }
         public StatusEnum Status { get; set; }
 
-        public Guid QuadraId { get; set; }
-        public Quadra Quadra { get; set; }
-
         public Guid HorarioId { get; set; }
         public Horario Horario { get; set; }
     }

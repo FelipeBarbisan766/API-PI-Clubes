@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_PI_Clubes.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260312001028_EfHorarioAndQuadra")]
-    partial class EfHorarioAndQuadra
+    [Migration("20260312114056_UpdateEF")]
+    partial class UpdateEF
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -145,6 +145,49 @@ namespace API_PI_Clubes.Migrations
                     b.ToTable("Quadras");
                 });
 
+            modelBuilder.Entity("API_PI_Clubes.Model.Reserva", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HorarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HorarioId");
+
+                    b.ToTable("Reservas");
+                });
+
             modelBuilder.Entity("API_PI_Clubes.Model.Horario", b =>
                 {
                     b.HasOne("API_PI_Clubes.Model.Quadra", "Quadra")
@@ -167,9 +210,25 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("Clube");
                 });
 
+            modelBuilder.Entity("API_PI_Clubes.Model.Reserva", b =>
+                {
+                    b.HasOne("API_PI_Clubes.Model.Horario", "Horario")
+                        .WithMany("Reservas")
+                        .HasForeignKey("HorarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Horario");
+                });
+
             modelBuilder.Entity("API_PI_Clubes.Model.Clube", b =>
                 {
                     b.Navigation("Quadras");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.Horario", b =>
+                {
+                    b.Navigation("Reservas");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Quadra", b =>

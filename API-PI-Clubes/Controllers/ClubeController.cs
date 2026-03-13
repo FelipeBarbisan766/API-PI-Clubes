@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Controllers
 {
-    [Route("api/clubes")]
+    [Route("api/[controller]")] 
     [ApiController]
-    public class ClubesController : ControllerBase
+    public class ClubeController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public ClubesController(AppDbContext context)
+        public ClubeController(AppDbContext context)
         {
             _context = context;
         }
@@ -37,6 +37,39 @@ namespace API_PI_Clubes.Controllers
 
             return Ok(clube);
         }
+        //-------------------------
+        [HttpGet("/test/{id}")]
+        public async Task<IActionResult> GetByIdAndInclude(Guid id)
+        {
+            // 1. Busca no banco incluindo as quadras
+            var clube = await _context.Clubes
+                .Include(c => c.Quadras)
+                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+
+            if (clube == null)
+                return NotFound();
+
+            // 2. Mapeia da Entidade para o DTO
+            var response = new ClubeResponseDTO
+            {
+                Id = clube.Id,
+                Name = clube.Name,
+                PhoneNumber = clube.PhoneNumber,
+                Description = clube.Description,
+                Quadras = clube.Quadras.Select(q => new QuadraResponseDTO
+                {
+                    Id = q.Id,
+                    Name = q.Name,
+                    Type = q.Type,
+                    Surface = q.Surface,
+                    IsCovered = q.IsCovered,
+                    PricePerHour = q.PricePerHour
+                }).ToList()
+            };
+
+            return Ok(response);
+        }
+        //-------------------------
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateClubeDTO dto)

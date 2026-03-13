@@ -6,18 +6,27 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API_PI_Clubes.Migrations
 {
     /// <inheritdoc />
-    public partial class EfHorarioAndQuadra : Migration
+    public partial class UpdateEF : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "PhoneNumber",
-                table: "Clubes",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int");
+            migrationBuilder.CreateTable(
+                name: "Clubes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Clubes", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Quadras",
@@ -73,6 +82,32 @@ namespace API_PI_Clubes.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Reservas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    HorarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reservas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reservas_Horarios_HorarioId",
+                        column: x => x.HorarioId,
+                        principalTable: "Horarios",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Horarios_QuadraId",
                 table: "Horarios",
@@ -82,24 +117,27 @@ namespace API_PI_Clubes.Migrations
                 name: "IX_Quadras_ClubeId",
                 table: "Quadras",
                 column: "ClubeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reservas_HorarioId",
+                table: "Reservas",
+                column: "HorarioId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Reservas");
+
+            migrationBuilder.DropTable(
                 name: "Horarios");
 
             migrationBuilder.DropTable(
                 name: "Quadras");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "PhoneNumber",
-                table: "Clubes",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+            migrationBuilder.DropTable(
+                name: "Clubes");
         }
     }
 }

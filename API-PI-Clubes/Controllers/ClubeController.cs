@@ -50,13 +50,13 @@ namespace API_PI_Clubes.Controllers
                 return NotFound();
 
             // 2. Mapeia da Entidade para o DTO
-            var response = new ClubeResponseDTO
+            var response = new ResponseClubeDTO
             {
                 Id = clube.Id,
                 Name = clube.Name,
                 PhoneNumber = clube.PhoneNumber,
                 Description = clube.Description,
-                Quadras = clube.Quadras.Select(q => new QuadraResponseDTO
+                Quadras = clube.Quadras.Select(q => new ResponseQuadraDTO
                 {
                     Id = q.Id,
                     Name = q.Name,

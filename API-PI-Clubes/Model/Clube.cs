@@ -11,5 +11,6 @@ namespace API_PI_Clubes.Model
         public string Description { get; set; }
 
         public ICollection<Quadra> Quadras { get; set; }
+        public ICollection<Admin> Admins { get; set; }
     }
 }

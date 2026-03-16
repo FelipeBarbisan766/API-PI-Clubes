@@ -13,6 +13,10 @@ namespace API_PI_Clubes.Data
         public DbSet<Quadra> Quadras { get; set; }
         public DbSet<Horario> Horarios { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Player> Players { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

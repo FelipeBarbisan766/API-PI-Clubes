@@ -13,6 +13,10 @@ namespace API_PI_Clubes.Data.Configuration
             builder.HasOne(j => j.Horario)
                    .WithMany(c => c.Reservas)
                    .HasForeignKey(j => j.HorarioId);
+
+            builder.HasOne(j => j.Player)
+                   .WithMany(c => c.Reservas)
+                   .HasForeignKey(j => j.PlayerId);
         }
     }
 }

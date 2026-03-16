@@ -2,7 +2,7 @@
 
 namespace API_PI_Clubes.Model.DTOs
 {
-    public class CreatQuadraDTO
+    public class CreatCourtDTO
     {
         public string Name { get; set; }
         public TypeEnum Type { get; set; }
@@ -10,10 +10,10 @@ namespace API_PI_Clubes.Model.DTOs
         public bool IsCovered { get; set; }
         public double PricePerHour { get; set; }
         public string Description { get; set; }
-        public Guid ClubeId { get; set; }
+        public Guid ClubId { get; set; }
     }
 
-    public class UpdateQuadraDTO
+    public class UpdateCourtDTO
     {
         public string Name { get; set; }
         public TypeEnum Type { get; set; }
@@ -23,7 +23,7 @@ namespace API_PI_Clubes.Model.DTOs
         public string Description { get; set; }
     }
 
-    public class ResponseQuadraDTO
+    public class ResponseCourtDTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

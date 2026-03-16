@@ -8,10 +8,10 @@ namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")] 
     [ApiController]
-    public class ClubeController : ControllerBase
+    public class ClubController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public ClubeController(AppDbContext context)
+        public ClubController(AppDbContext context)
         {
             _context = context;
         }
@@ -19,44 +19,44 @@ namespace API_PI_Clubes.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var clubes = await _context.Clubes
+            var datas = await _context.Clubs
                 .Where(c => c.IsActive)
                 .ToListAsync();
 
-            return Ok(clubes);
+            return Ok(datas);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var clube = await _context.Clubes
+            var data = await _context.Clubs
                 .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
-            if (clube == null)
+            if (data == null)
                 return NotFound();
 
-            return Ok(clube);
+            return Ok(data);
         }
         //-------------------------
         [HttpGet("/test/{id}")]
         public async Task<IActionResult> GetByIdAndInclude(Guid id)
         {
             // 1. Busca no banco incluindo as quadras
-            var clube = await _context.Clubes
-                .Include(c => c.Quadras)
+            var data = await _context.Clubs
+                .Include(c => c.Courts)
                 .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
-            if (clube == null)
+            if (data == null)
                 return NotFound();
 
             // 2. Mapeia da Entidade para o DTO
-            var response = new ResponseClubeDTO
+            var response = new ResponseClubDTO
             {
-                Id = clube.Id,
-                Name = clube.Name,
-                PhoneNumber = clube.PhoneNumber,
-                Description = clube.Description,
-                Quadras = clube.Quadras.Select(q => new ResponseQuadraDTO
+                Id = data.Id,
+                Name = data.Name,
+                PhoneNumber = data.PhoneNumber,
+                Description = data.Description,
+                Courts = data.Courts.Select(q => new ResponseCourtDTO
                 {
                     Id = q.Id,
                     Name = q.Name,
@@ -72,49 +72,49 @@ namespace API_PI_Clubes.Controllers
         //-------------------------
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateClubeDTO dto)
+        public async Task<IActionResult> Create(CreateClubDTO dto)
         {
-            var clube = new Clube
+            var response = new Club
             {
                 Name = dto.Name,
                 PhoneNumber = dto.PhoneNumber,
                 Description = dto.Description
             };
 
-            _context.Clubes.Add(clube);
+            _context.Clubs.Add(response);
             await _context.SaveChangesAsync();
 
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateClubeDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto)
         {
-            var clube = await _context.Clubes.FindAsync(id);
+            var data = await _context.Clubs.FindAsync(id);
 
-            if (clube == null)
+            if (data == null)
                 return NotFound();
 
-            clube.Name = dto.Name;
-            clube.PhoneNumber = dto.PhoneNumber;
-            clube.Description = dto.Description;
-            clube.UpdatedAt = DateTime.UtcNow;
+            data.Name = dto.Name;
+            data.PhoneNumber = dto.PhoneNumber;
+            data.Description = dto.Description;
+            data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            return Ok(clube);
+            return Ok(data);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var clube = await _context.Clubes.FindAsync(id);
+            var data = await _context.Clubs.FindAsync(id);
 
-            if (clube == null)
+            if (data == null)
                 return NotFound();
 
-            clube.IsActive = false;
-            clube.UpdatedAt = DateTime.UtcNow;
+            data.IsActive = false;
+            data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

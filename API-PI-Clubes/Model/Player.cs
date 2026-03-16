@@ -12,6 +12,6 @@ namespace API_PI_Clubes.Model
         public Guid UserId { get; set; }
         public User User { get; set; }
 
-        public ICollection<Reserva> Reservas { get; set; }
+        public ICollection<Reserve> Reserves { get; set; }
     }
 }

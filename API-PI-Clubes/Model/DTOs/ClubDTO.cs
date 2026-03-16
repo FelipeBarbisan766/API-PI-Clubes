@@ -1,26 +1,26 @@
 ﻿namespace API_PI_Clubes.Model.DTOs
 {
    
-    public class CreateClubeDTO
+    public class CreateClubDTO
     {
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
     }
 
-    public class UpdateClubeDTO
+    public class UpdateClubDTO
     {
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
     }
-    public class ResponseClubeDTO
+    public class ResponseClubDTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
-        public List<ResponseQuadraDTO> Quadras { get; set; } = new();
+        public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
 
 

@@ -8,10 +8,10 @@ namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class QuadraController : ControllerBase
+    public class CourtController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public QuadraController(AppDbContext context)
+        public CourtController(AppDbContext context)
         {
             _context = context;
         }
@@ -19,27 +19,27 @@ namespace API_PI_Clubes.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var quadras = await _context.Quadras.Where(c => c.IsActive).ToListAsync();
+            var datas = await _context.Courts.Where(c => c.IsActive).ToListAsync();
 
-            return Ok(quadras);
+            return Ok(datas);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var quadras = await _context.Quadras.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+            var data = await _context.Courts.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
-            if (quadras == null)
+            if (data == null)
                 return NotFound();
 
-            return Ok(quadras);
+            return Ok(data);
         }
         
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreatQuadraDTO dto)
+        public async Task<IActionResult> Create(CreatCourtDTO dto)
         {
-            var quadras = new Quadra
+            var response = new Court
             {
                 Name = dto.Name,
                 Type = dto.Type,
@@ -47,46 +47,46 @@ namespace API_PI_Clubes.Controllers
                 IsCovered = dto.IsCovered,
                 PricePerHour = dto.PricePerHour,
                 Description = dto.Description,
-                ClubeId = dto.ClubeId
+                ClubId = dto.ClubId
             };
 
-            _context.Quadras.Add(quadras);
+            _context.Courts.Add(response);
             await _context.SaveChangesAsync();
 
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateQuadraDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
         {
-            var quadras = await _context.Quadras.FindAsync(id);
+            var data = await _context.Courts.FindAsync(id);
 
-            if (quadras == null)
+            if (data == null)
                 return NotFound();
 
-            quadras.Name = dto.Name;
-            quadras.Type = dto.Type;
-            quadras.Surface = dto.Surface;
-            quadras.IsCovered = dto.IsCovered;
-            quadras.PricePerHour = dto.PricePerHour;
-            quadras.Description = dto.Description;
-            quadras.UpdatedAt = DateTime.UtcNow;
+            data.Name = dto.Name;
+            data.Type = dto.Type;
+            data.Surface = dto.Surface;
+            data.IsCovered = dto.IsCovered;
+            data.PricePerHour = dto.PricePerHour;
+            data.Description = dto.Description;
+            data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            return Ok(quadras);
+            return Ok(data);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var quadras = await _context.Quadras.FindAsync(id);
+            var data = await _context.Courts.FindAsync(id);
 
-            if (quadras == null)
+            if (data == null)
                 return NotFound();
 
-            quadras.IsActive = false;
-            quadras.UpdatedAt = DateTime.UtcNow;
+            data.IsActive = false;
+            data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

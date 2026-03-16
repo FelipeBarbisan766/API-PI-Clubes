@@ -7,17 +7,18 @@ namespace API_PI_Clubes.Data.Configuration
     public class AdminConfiguration : IEntityTypeConfiguration<Admin>
     {
         public void Configure(EntityTypeBuilder<Admin> builder)
-    {
-        builder.HasKey(h => h.Id);
+        {
+            builder.HasKey(h => h.Id);
 
-        builder.HasOne(h => h.Clube)
-            .WithMany(q => q.Admins)
-            .HasForeignKey(h => h.ClubeId);
+            builder.HasOne(h => h.Club)
+                .WithMany(q => q.Admins)
+                .HasForeignKey(h => h.ClubId);
 
-        builder.HasOne(h => h.User)
-            .WithMany(q => q.Admins)
-            .HasForeignKey(h => h.UserId);
+            builder.HasOne(h => h.User)
+                .WithMany(q => q.Admins)
+                .HasForeignKey(h => h.UserId);
 
 
         }
+    }
 }

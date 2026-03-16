@@ -2,7 +2,7 @@
 
 namespace API_PI_Clubes.Model
 {
-    public class Reserva : BaseEntity
+    public class Reserve : BaseEntity
     {
         //public string Name { get; set; }
         //public string PhoneNumber { get; set; }
@@ -10,8 +10,8 @@ namespace API_PI_Clubes.Model
         public DateTime Date { get; set; }
         public StatusEnum Status { get; set; }
 
-        public Guid HorarioId { get; set; }
-        public Horario Horario { get; set; }
+        public Guid ScheduleId { get; set; }
+        public Schedule Schedule { get; set; }
 
         public Guid PlayerId { get; set; }
         public Player Player { get; set; }

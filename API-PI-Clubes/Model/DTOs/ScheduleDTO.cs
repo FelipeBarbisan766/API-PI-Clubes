@@ -2,7 +2,7 @@
 
 namespace API_PI_Clubes.Model.DTOs
 {
-    public class CreatHorarioDTO
+    public class CreatScheduleDTO
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
@@ -12,10 +12,10 @@ namespace API_PI_Clubes.Model.DTOs
         public bool IsFixed { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
-        public Guid QuadraId { get; set; }
+        public Guid CourtId { get; set; }
     }
 
-    public class UpdateHorarioDTO
+    public class UpdateScheduleDTO
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
@@ -27,7 +27,7 @@ namespace API_PI_Clubes.Model.DTOs
 
     }
 
-    public class ResponseHorarioDTO
+    public class ResponseScheduleDTO
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
@@ -37,6 +37,6 @@ namespace API_PI_Clubes.Model.DTOs
         public bool IsFixed { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
-        public Guid QuadraId { get; set; }
+        public Guid CourtId { get; set; }
     }
 }

@@ -7,13 +7,12 @@ namespace API_PI_Clubes.Data.Configuration
     public class PlayerConfiguration : IEntityTypeConfiguration<Player>
     {
         public void Configure(EntityTypeBuilder<Player> builder)
-    {
-        builder.HasKey(h => h.Id);
+        {
+            builder.HasKey(h => h.Id);
 
-        builder.HasOne(h => h.User)
-            .WithMany(q => q.Players)
-            .HasForeignKey(h => h.UserId);
-    }
-    {
+            builder.HasOne(h => h.User)
+                .WithMany(q => q.Players)
+                .HasForeignKey(h => h.UserId);
+        }
     }
 }

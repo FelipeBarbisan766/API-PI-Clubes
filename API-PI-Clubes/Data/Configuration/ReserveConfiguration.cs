@@ -4,18 +4,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace API_PI_Clubes.Data.Configuration
 {
-    public class ReservaConfiguration : IEntityTypeConfiguration<Reserva>
+    public class ReserveConfiguration : IEntityTypeConfiguration<Reserve>
     {
-        public void Configure(EntityTypeBuilder<Reserva> builder)
+        public void Configure(EntityTypeBuilder<Reserve> builder)
         {
             builder.HasKey(j => j.Id);
 
-            builder.HasOne(j => j.Horario)
-                   .WithMany(c => c.Reservas)
-                   .HasForeignKey(j => j.HorarioId);
+            builder.HasOne(j => j.Schedule)
+                   .WithMany(c => c.Reserves)
+                   .HasForeignKey(j => j.ScheduleId);
 
             builder.HasOne(j => j.Player)
-                   .WithMany(c => c.Reservas)
+                   .WithMany(c => c.Reserves)
                    .HasForeignKey(j => j.PlayerId);
         }
     }

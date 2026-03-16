@@ -9,10 +9,10 @@ namespace API_PI_Clubes.Data
         { 
         }
 
-        public DbSet<Clube> Clubes { get; set; }
-        public DbSet<Quadra> Quadras { get; set; }
-        public DbSet<Horario> Horarios { get; set; }
-        public DbSet<Reserva> Reservas { get; set; }
+        public DbSet<Club> Clubs { get; set; }
+        public DbSet<Court> Courts { get; set; }
+        public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<Reserve> Reserves { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Player> Players { get; set; }

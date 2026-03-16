@@ -2,7 +2,7 @@
 
 namespace API_PI_Clubes.Model
 {
-    public class Quadra : BaseEntity
+    public class Court : BaseEntity
     {
         //public Quadra() { }
 
@@ -13,10 +13,10 @@ namespace API_PI_Clubes.Model
         public double PricePerHour { get; set; }
         public string Description { get; set; }
 
-        public Guid ClubeId { get; set; }
-        public Clube Clube { get; set; }
+        public Guid ClubId { get; set; }
+        public Club Club { get; set; }
 
-        public ICollection<Horario> Horarios { get; set; }
+        public ICollection<Schedule> Schedules { get; set; }
 
     }
 }

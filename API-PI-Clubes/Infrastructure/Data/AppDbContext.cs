@@ -1,7 +1,7 @@
 ﻿using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace API_PI_Clubes.Data
+namespace API_PI_Clubes.Infrastructure.Data
 {
     public class AppDbContext : DbContext
     {

@@ -1,6 +1,6 @@
-﻿using API_PI_Clubes.Data;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
-using API_PI_Clubes.Model.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

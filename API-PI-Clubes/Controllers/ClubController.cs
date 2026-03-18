@@ -86,6 +86,28 @@ namespace API_PI_Clubes.Controllers
 
             return Ok();
         }
+        //-------------------------
+        [HttpPost("{clubId}/admins/{adminId}")]
+        public async Task<IActionResult> AddAdminToClub(Guid clubId, Guid adminId)
+        {
+            var exists = await _context.ClubAdmins
+                .AnyAsync(ca => ca.ClubId == clubId && ca.AdminId == adminId);
+
+            if (exists)
+                return BadRequest("Admin already linked to this club");
+
+            var clubAdmin = new ClubAdmin
+            {
+                ClubId = clubId,
+                AdminId = adminId
+            };
+
+            _context.ClubAdmins.Add(clubAdmin);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+        //-------------------------
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto)
@@ -120,6 +142,22 @@ namespace API_PI_Clubes.Controllers
 
             return NoContent();
         }
+        //-------------------------
+        [HttpDelete("{clubId}/admins/{adminId}")]
+        public async Task<IActionResult> RemoveAdmin(Guid clubId, Guid adminId)
+        {
+            var clubAdmin = await _context.ClubAdmins
+                .FirstOrDefaultAsync(ca => ca.ClubId == clubId && ca.AdminId == adminId);
+
+            if (clubAdmin == null)
+                return NotFound();
+
+            _context.ClubAdmins.Remove(clubAdmin);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        //-------------------------
     }
-    
+
 }

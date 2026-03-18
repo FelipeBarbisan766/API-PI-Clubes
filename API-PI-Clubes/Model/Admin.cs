@@ -9,11 +9,10 @@ namespace API_PI_Clubes.Model
         public string Description { get; set; }
         public TypeAccessEnum TypeAccess { get; set; }
 
-        public Guid ClubId { get; set; }
-        public Club Club { get; set; } 
-
         public Guid UserId { get; set; }
         public User User { get; set; }
+
+        public ICollection <ClubAdmin> ClubAdmin { get; set; }
 
     }
 }

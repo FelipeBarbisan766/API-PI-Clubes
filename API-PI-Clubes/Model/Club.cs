@@ -11,6 +11,6 @@ namespace API_PI_Clubes.Model
         public string Description { get; set; }
 
         public ICollection<Court> Courts { get; set; }
-        public ICollection<Admin> Admins { get; set; }
+        public ICollection<ClubAdmin> ClubAdmin { get; set; }
     }
 }

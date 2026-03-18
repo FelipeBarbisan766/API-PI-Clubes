@@ -8,11 +8,11 @@ namespace API_PI_Clubes.Data.Configuration
     {
         public void Configure(EntityTypeBuilder<Player> builder)
         {
-            builder.HasKey(h => h.Id);
+            builder.HasKey(a => a.Id);
 
-            builder.HasOne(h => h.User)
-                .WithMany(q => q.Players)
-                .HasForeignKey(h => h.UserId);
+            builder.HasOne(a => a.User)
+                .WithMany(b => b.Players)
+                .HasForeignKey(a => a.UserId);
         }
     }
 }

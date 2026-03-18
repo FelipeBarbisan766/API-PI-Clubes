@@ -1,12 +1,18 @@
+using API_PI_Clubes.Application;
+using API_PI_Clubes.Application.DependencyInjection;
 using API_PI_Clubes.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using API_PI_Clubes.Application.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Dependency Injection - Application
+builder.Services.AddApplication();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -19,6 +25,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
+
 
 var app = builder.Build();
 

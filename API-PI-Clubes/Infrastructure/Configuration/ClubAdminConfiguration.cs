@@ -1,7 +1,7 @@
 ﻿using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace API_PI_Clubes.Data.Configuration
+namespace API_PI_Clubes.Infrastructure.Configuration
 {
     public class ClubAdminConfiguration
     {

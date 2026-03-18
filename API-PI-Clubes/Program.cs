@@ -1,4 +1,4 @@
-using API_PI_Clubes.Data;
+using API_PI_Clubes.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 

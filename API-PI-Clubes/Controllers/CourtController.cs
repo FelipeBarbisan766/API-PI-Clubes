@@ -1,6 +1,7 @@
-﻿using API_PI_Clubes.Data;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces;
+using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
-using API_PI_Clubes.Model.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,87 +11,87 @@ namespace API_PI_Clubes.Controllers
     [ApiController]
     public class CourtController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public CourtController(AppDbContext context)
+        private readonly ICourtService _service;
+        public CourtController(ICourtService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var datas = await _context.Courts.Where(c => c.IsActive).ToListAsync();
+            var result = await _service.GetAll();
 
-            return Ok(datas);
+            return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var data = await _context.Courts.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetById(Guid id)
+        //{
+        //    var data = await _context.Courts.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
-            if (data == null)
-                return NotFound();
+        //    if (data == null)
+        //        return NotFound();
 
-            return Ok(data);
-        }
+        //    return Ok(data);
+        //}
         
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreatCourtDTO dto)
-        {
-            var response = new Court
-            {
-                Name = dto.Name,
-                Type = dto.Type,
-                Surface = dto.Surface,
-                IsCovered = dto.IsCovered,
-                PricePerHour = dto.PricePerHour,
-                Description = dto.Description,
-                ClubId = dto.ClubId
-            };
+        //[HttpPost]
+        //public async Task<IActionResult> Create(CreatCourtDTO dto)
+        //{
+        //    var response = new Court
+        //    {
+        //        Name = dto.Name,
+        //        Type = dto.Type,
+        //        Surface = dto.Surface,
+        //        IsCovered = dto.IsCovered,
+        //        PricePerHour = dto.PricePerHour,
+        //        Description = dto.Description,
+        //        ClubId = dto.ClubId
+        //    };
 
-            _context.Courts.Add(response);
-            await _context.SaveChangesAsync();
+        //    _context.Courts.Add(response);
+        //    await _context.SaveChangesAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
-        {
-            var data = await _context.Courts.FindAsync(id);
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
+        //{
+        //    var data = await _context.Courts.FindAsync(id);
 
-            if (data == null)
-                return NotFound();
+        //    if (data == null)
+        //        return NotFound();
 
-            data.Name = dto.Name;
-            data.Type = dto.Type;
-            data.Surface = dto.Surface;
-            data.IsCovered = dto.IsCovered;
-            data.PricePerHour = dto.PricePerHour;
-            data.Description = dto.Description;
-            data.UpdatedAt = DateTime.UtcNow;
+        //    data.Name = dto.Name;
+        //    data.Type = dto.Type;
+        //    data.Surface = dto.Surface;
+        //    data.IsCovered = dto.IsCovered;
+        //    data.PricePerHour = dto.PricePerHour;
+        //    data.Description = dto.Description;
+        //    data.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+        //    await _context.SaveChangesAsync();
 
-            return Ok(data);
-        }
+        //    return Ok(data);
+        //}
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var data = await _context.Courts.FindAsync(id);
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(Guid id)
+        //{
+        //    var data = await _context.Courts.FindAsync(id);
 
-            if (data == null)
-                return NotFound();
+        //    if (data == null)
+        //        return NotFound();
 
-            data.IsActive = false;
-            data.UpdatedAt = DateTime.UtcNow;
+        //    data.IsActive = false;
+        //    data.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+        //    await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
     }
 }

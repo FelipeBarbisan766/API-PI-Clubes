@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace API_PI_Clubes.Data.Configuration
+namespace API_PI_Clubes.Infrastructure.Configuration
 {
     public class AdminConfiguration : IEntityTypeConfiguration<Admin>
     {

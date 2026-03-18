@@ -1,4 +1,4 @@
-﻿namespace API_PI_Clubes.Model.DTOs
+﻿namespace API_PI_Clubes.Application.DTOs
 {
    
     public class CreateClubDTO

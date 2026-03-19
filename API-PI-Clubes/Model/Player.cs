@@ -6,7 +6,7 @@ namespace API_PI_Clubes.Model
     {
         public string UserName { get; set; }
         public string ContactNumber { get; set; }
-        public string description { get; set; }
+        public string Description { get; set; }
         public RankCategoryEnum RankCategory { get; set; }
 
         public Guid UserId { get; set; }

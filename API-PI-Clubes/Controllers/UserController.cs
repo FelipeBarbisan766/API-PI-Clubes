@@ -2,15 +2,14 @@
 using API_PI_Clubes.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReserveController: ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly IReserveService _service;
-        public ReserveController(IReserveService service)
+        private readonly IUserService _service;
+        public UserController(IUserService service)
         {
             _service = service;
         }
@@ -31,14 +30,14 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreatReserveDTO dto)
+        public async Task<IActionResult> Create(CreatUserDTO dto)
         {
             var result = await _service.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateReserveDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateUserDTO dto)
         {
             var result = await _service.Update(id, dto);
             return Ok(result);

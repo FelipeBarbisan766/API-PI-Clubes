@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -10,86 +11,45 @@ namespace API_PI_Clubes.Controllers
     [ApiController]
     public class ScheduleController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public ScheduleController(AppDbContext context)
+        private readonly IScheduleService _service;
+        public ScheduleController(IScheduleService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var datas = await _context.Schedules.Where(c => c.IsActive).ToListAsync();
+            var result = await _service.GetAll();
 
-            return Ok(datas);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var data = await _context.Schedules.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
-
-            if (data == null)
-                return NotFound();
-
-            return Ok(data);
+            var result = await _service.GetById(id);
+            return Ok(result);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Create(CreatScheduleDTO dto)
         {
-            var response = new Schedule
-            {
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
-                IsBlocked = dto.IsBlocked,
-                IsReserved = dto.IsReserved,
-                IsFixed = dto.IsFixed,
-                DayOfWeek = dto.DayOfWeek,
-                CourtId = dto.CourtId
-            };
-
-            _context.Schedules.Add(response);
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            var result = await _service.Create(dto);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateScheduleDTO dto)
         {
-            var data = await _context.Schedules.FindAsync(id);
-
-            if (data == null)
-                return NotFound();
-
-            data.StartTime = dto.StartTime;
-            data.EndTime = dto.EndTime;
-            data.IsBlocked = dto.IsBlocked;
-            data.IsReserved = dto.IsReserved;
-            data.IsFixed = dto.IsFixed;
-            data.DayOfWeek = dto.DayOfWeek;
-            data.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(data);
+            var result = await _service.Update(id, dto);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var data = await _context.Schedules.FindAsync(id);
-
-            if (data == null)
-                return NotFound();
-
-            data.IsActive = false;
-            data.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
+            await _service.Delete(id);
             return NoContent();
         }
     }

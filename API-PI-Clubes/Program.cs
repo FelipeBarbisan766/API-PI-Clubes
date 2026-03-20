@@ -4,6 +4,7 @@ using API_PI_Clubes.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.DependencyInjection;
+using API_PI_Clubes.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
 
+builder.Services.AddTransient<TokenService>();
 
 var app = builder.Build();
 

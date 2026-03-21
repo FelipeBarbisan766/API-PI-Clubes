@@ -1,10 +1,11 @@
 using API_PI_Clubes.Application;
 using API_PI_Clubes.Application.DependencyInjection;
+using API_PI_Clubes.Application.DependencyInjection;
 using API_PI_Clubes.Infrastructure.Data;
+using API_PI_Clubes.Infrastructure.Security;
+using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
-using API_PI_Clubes.Application.DependencyInjection;
-using API_PI_Clubes.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 builder.Services.AddTransient<TokenService>();
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt"));
 
 var app = builder.Build();
 

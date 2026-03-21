@@ -5,7 +5,7 @@
 namespace API_PI_Clubes.Migrations
 {
     /// <inheritdoc />
-    public partial class updateBb : Migration
+    public partial class Baseline : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

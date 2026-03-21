@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Data;
+using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -10,9 +11,11 @@ namespace API_PI_Clubes.Application.Services
     public class UserService : IUserService
     {
         private readonly AppDbContext _context;
-        public UserService(AppDbContext context)
+        private readonly IPasswordHasher _passwordHasher;
+        public UserService(AppDbContext context, IPasswordHasher passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<IEnumerable<ResponseUserDTO>> GetAll()
@@ -24,7 +27,6 @@ namespace API_PI_Clubes.Application.Services
                     Id = c.Id,
                     Name = c.Name,
                     Email = c.Email,
-                    Password = c.Password,
                     PhoneNumber = c.PhoneNumber,
                     Role = c.Role
                 })
@@ -39,7 +41,6 @@ namespace API_PI_Clubes.Application.Services
                     Id = c.Id,
                     Name = c.Name,
                     Email = c.Email,
-                    Password = c.Password,
                     PhoneNumber = c.PhoneNumber,
                     Role = c.Role
                 })
@@ -53,12 +54,17 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task<ResponseUserDTO> Create(CreatUserDTO dto)
         {
+            var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+
+            if (userExists)
+                throw new Exception("User already exists");
+
             var entity = new User
             {
                 Name = dto.Name,
                 Email = dto.Email,
-                Password = dto.Password,
-                PhoneNumber= dto.PhoneNumber,
+                PasswordHash = _passwordHasher.Hash(dto.Password),
+                PhoneNumber = dto.PhoneNumber,
                 Role = dto.Role
             };
 
@@ -70,7 +76,6 @@ namespace API_PI_Clubes.Application.Services
                 Id          = entity.Id,
                 Name        = entity.Name,
                 Email       = entity.Email,
-                Password    = entity.Password,
                 PhoneNumber = entity.PhoneNumber,
                 Role        = entity.Role
             };
@@ -85,7 +90,6 @@ namespace API_PI_Clubes.Application.Services
 
             data.Name = dto.Name;
             data.Email = dto.Email;
-            data.Password = dto.Password;
             data.PhoneNumber = dto.PhoneNumber;
             data.Role = dto.Role;
             data.UpdatedAt = DateTime.UtcNow;
@@ -97,7 +101,6 @@ namespace API_PI_Clubes.Application.Services
                 Id          = data.Id,
                 Name        = data.Name,
                 Email       = data.Email,
-                Password    = data.Password,
                 PhoneNumber = data.PhoneNumber,
                 Role        = data.Role
             };

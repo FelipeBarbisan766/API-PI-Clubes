@@ -4,7 +4,7 @@ using API_PI_Clubes.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.DependencyInjection;
-using API_PI_Clubes.Application.Services;
+using API_PI_Clubes.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 

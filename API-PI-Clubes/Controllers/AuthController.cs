@@ -1,7 +1,9 @@
-﻿using API_PI_Clubes.Application.Interfaces;
-using API_PI_Clubes.Application.Services;
+﻿using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.Interfaces;
+using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,25 +12,34 @@ namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController
+    public class AuthController : ControllerBase
     {
-        private readonly TokenService _service;
-        public AuthController(TokenService service)
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
         {
-            _service = service;
+            _authService = authService;
         }
 
-        [HttpGet("/test")]
-        public async Task<IActionResult> GetToken()
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDTO dto)
         {
-            var user = new User
+            try
             {
-                Id = Guid.NewGuid(),
-                Name = "Test User",
-                Role = RoleEnum.Admin
-            };
-            var result = _service.Generate(user);
-            return new ObjectResult(result);
+                var token = await _authService.LoginAsync(dto);
+                return Ok(new { token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+
+        }
+        [Authorize]
+        [HttpGet("Test")]
+        public IActionResult GetProtectedData()
+        {
+            return Ok("Você está autenticado");
         }
     }
 }

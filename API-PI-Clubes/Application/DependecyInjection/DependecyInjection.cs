@@ -16,6 +16,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPlayerService, PlayerService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IClubService, ClubService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();

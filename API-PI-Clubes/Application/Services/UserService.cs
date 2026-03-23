@@ -3,6 +3,8 @@ using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
@@ -18,20 +20,20 @@ namespace API_PI_Clubes.Application.Services
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<IEnumerable<ResponseUserDTO>> GetAll()
-        {
-            return await _context.Users
-                .Where(c => c.IsActive)
-                .Select(c => new ResponseUserDTO
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Email = c.Email,
-                    PhoneNumber = c.PhoneNumber,
-                    Role = c.Role
-                })
-                .ToListAsync();
-        }
+        //public async Task<IEnumerable<ResponseUserDTO>> GetAll()
+        //{
+        //    return await _context.Users
+        //        .Where(c => c.IsActive)
+        //        .Select(c => new ResponseUserDTO
+        //        {
+        //            Id = c.Id,
+        //            Name = c.Name,
+        //            Email = c.Email,
+        //            PhoneNumber = c.PhoneNumber,
+        //            Role = c.Role
+        //        })
+        //        .ToListAsync();
+        //}
         public async Task<ResponseUserDTO> GetById(Guid id)
         {
             var data = await _context.Users
@@ -42,17 +44,16 @@ namespace API_PI_Clubes.Application.Services
                     Name = c.Name,
                     Email = c.Email,
                     PhoneNumber = c.PhoneNumber,
-                    Role = c.Role
                 })
                 .FirstOrDefaultAsync();
 
             if (data == null)
-                throw new Exception("User not found");
+                throw new Exception("User not found");  
 
             return data;
         }
 
-        public async Task<ResponseUserDTO> Create(CreatUserDTO dto)
+        public async Task Create(CreatUserDTO dto)
         {
             var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
 
@@ -65,20 +66,12 @@ namespace API_PI_Clubes.Application.Services
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 PhoneNumber = dto.PhoneNumber,
-                Role = dto.Role
+                Role = RoleEnum.none
             };
 
             _context.Users.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new ResponseUserDTO
-            {
-                Id          = entity.Id,
-                Name        = entity.Name,
-                Email       = entity.Email,
-                PhoneNumber = entity.PhoneNumber,
-                Role        = entity.Role
-            };
         }
 
         public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto)
@@ -91,7 +84,6 @@ namespace API_PI_Clubes.Application.Services
             data.Name = dto.Name;
             data.Email = dto.Email;
             data.PhoneNumber = dto.PhoneNumber;
-            data.Role = dto.Role;
             data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -102,8 +94,19 @@ namespace API_PI_Clubes.Application.Services
                 Name        = data.Name,
                 Email       = data.Email,
                 PhoneNumber = data.PhoneNumber,
-                Role        = data.Role
             };
+        }
+        public async Task UpdateRole(Guid id, RoleEnum role)
+        {
+            var data = await _context.Users.FirstOrDefaultAsync(c => c.Id == id);
+
+            if (data == null)
+                throw new Exception("User not found");
+
+            data.Role = role;
+            data.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(Guid id)

@@ -96,18 +96,17 @@ namespace API_PI_Clubes.Migrations
 
             modelBuilder.Entity("API_PI_Clubes.Model.ClubAdmin", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ClubId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AdminId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClubId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -115,11 +114,9 @@ namespace API_PI_Clubes.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
+                    b.HasKey("ClubId", "AdminId");
 
                     b.HasIndex("AdminId");
-
-                    b.HasIndex("ClubId");
 
                     b.ToTable("ClubAdmins");
                 });
@@ -336,6 +333,56 @@ namespace API_PI_Clubes.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.Club", b =>
+                {
+                    b.OwnsOne("API_PI_Clubes.Model.ValueObjects.AddressVO", "Address", b1 =>
+                        {
+                            b1.Property<Guid>("ClubId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Complement")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Neighborhood")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Number")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("ZipCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ClubId");
+
+                            b1.ToTable("Clubs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ClubId");
+                        });
+
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.ClubAdmin", b =>

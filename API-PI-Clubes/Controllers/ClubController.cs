@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,13 +30,30 @@ namespace API_PI_Clubes.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var data = await _context.Clubs
-                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+            var response = await _context.Clubs
+                .Where(c => c.Id == id)
+                .Select(c => new ResponseClubDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    PhoneNumber = c.PhoneNumber,
+                    Description = c.Description,
 
-            if (data == null)
+                    ZipCode = c.Address.ZipCode,
+                    Street = c.Address.Street,
+                    Number = c.Address.Number,
+                    Neighborhood = c.Address.Neighborhood,
+                    Complement = c.Address.Complement,
+                    City = c.Address.City,
+                    State = c.Address.State,
+                    Country = c.Address.Country
+                })
+                .FirstOrDefaultAsync();
+
+            if (response == null)
                 return NotFound();
 
-            return Ok(data);
+            return Ok(response);
         }
         //-------------------------
         [HttpGet("/test/{id}")]
@@ -78,7 +96,17 @@ namespace API_PI_Clubes.Controllers
             {
                 Name = dto.Name,
                 PhoneNumber = dto.PhoneNumber,
-                Description = dto.Description
+                Description = dto.Description,
+                Address = new AddressVO(
+                    dto.ZipCode,
+                    dto.Street,
+                    dto.Number,
+                    dto.Neighborhood,
+                    dto.Complement,
+                    dto.City,
+                    dto.State,
+                    dto.Country
+                )
             };
 
             _context.Clubs.Add(response);

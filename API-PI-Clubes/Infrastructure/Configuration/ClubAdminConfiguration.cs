@@ -1,9 +1,10 @@
 ﻿using API_PI_Clubes.Model;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace API_PI_Clubes.Infrastructure.Configuration
 {
-    public class ClubAdminConfiguration
+    public class ClubAdminConfiguration : IEntityTypeConfiguration<ClubAdmin>
     {
         public void Configure(EntityTypeBuilder<ClubAdmin> builder)
         {

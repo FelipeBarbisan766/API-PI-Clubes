@@ -5,6 +5,7 @@ namespace API_PI_Clubes.Application.DTOs
    
     public class CreateClubDTO
     {
+        public Guid adminId { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }

@@ -6,8 +6,26 @@ namespace API_PI_Clubes.Model.ValueObjects
 {
     public class AddressVO
     {
-        public AddressVO() { }
-        public AddressVO(string zipCode, string street, string number, string neighborhood, string complement, string city, string state, string country)
+        public string ZipCode { get; private set; }
+        public string Street { get; private set; }
+        public string Number { get; private set; }
+        public string Neighborhood { get; private set; }
+        public string? Complement { get; private set; }
+        public string City { get; private set; }
+        public string State { get; private set; }
+        public string Country { get; private set; }
+
+        private AddressVO() { }
+
+        public AddressVO(
+            string zipCode,
+            string street,
+            string number,
+            string neighborhood,
+            string? complement,
+            string city,
+            string state,
+            string country)
         {
             ZipCode = zipCode;
             Street = street;
@@ -17,15 +35,6 @@ namespace API_PI_Clubes.Model.ValueObjects
             City = city;
             State = state;
             Country = country;
-
         }
-        public string? ZipCode { get; set; }
-        public string? Street { get; set; }
-        public string? Number { get; set; }
-        public string? Neighborhood { get; set; }
-        public string? Complement { get; set; }
-        public string? City { get; set; }
-        public string? State { get; set; }
-        public string? Country { get; set; }
     }
 }

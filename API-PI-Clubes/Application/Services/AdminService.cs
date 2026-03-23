@@ -47,7 +47,7 @@ namespace API_PI_Clubes.Application.Services
                 UserName = dto.UserName,
                 ContactNumber = dto.ContactNumber,
                 Description = dto.Description,
-                TypeAccess = 0,
+                TypeAccess = TypeAccessEnum.none,
                 UserId = dto.UserId
             };
             using var transaction = await _context.Database.BeginTransactionAsync();

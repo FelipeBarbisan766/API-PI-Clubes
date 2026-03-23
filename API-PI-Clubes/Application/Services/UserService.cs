@@ -66,7 +66,7 @@ namespace API_PI_Clubes.Application.Services
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 PhoneNumber = dto.PhoneNumber,
-                Role = 0
+                Role = RoleEnum.none
             };
 
             _context.Users.Add(entity);

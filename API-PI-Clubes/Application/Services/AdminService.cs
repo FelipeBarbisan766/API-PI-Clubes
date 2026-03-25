@@ -40,7 +40,7 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task Create(CreatAdminDTO dto)
+        public async Task<Guid> Create(CreatAdminDTO dto)
         {
             var entity = new Admin
             {
@@ -56,6 +56,8 @@ namespace API_PI_Clubes.Application.Services
             _context.Admins.Add(entity);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            return entity.Id;
         }
 
         public async Task<ResponseAdminDTO> Update(Guid id, UpdateAdminDTO dto)
@@ -68,7 +70,6 @@ namespace API_PI_Clubes.Application.Services
             data.UserName = dto.UserName;
             data.ContactNumber = dto.ContactNumber;
             data.Description = dto.Description;
-            data.TypeAccess = dto.TypeAccess;
             data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

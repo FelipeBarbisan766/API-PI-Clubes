@@ -3,11 +3,12 @@ using API_PI_Clubes.Application.DependencyInjection;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Settings;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +59,7 @@ builder.Services
             ClockSkew = TimeSpan.Zero
         };
     });
-
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -78,6 +79,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 //app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();

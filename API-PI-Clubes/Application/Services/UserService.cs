@@ -66,7 +66,7 @@ namespace API_PI_Clubes.Application.Services
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 PhoneNumber = dto.PhoneNumber,
-                Role = RoleEnum.none
+                Role = RoleEnum.None
             };
 
             _context.Users.Add(entity);
@@ -103,7 +103,11 @@ namespace API_PI_Clubes.Application.Services
             if (data == null)
                 throw new Exception("User not found");
 
-            data.Role = role;
+            if (data.Role == RoleEnum.None)
+                data.Role = role;
+            else
+                data.Role = RoleEnum.Both;
+
             data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

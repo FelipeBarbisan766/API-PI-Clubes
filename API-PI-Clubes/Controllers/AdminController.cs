@@ -23,11 +23,12 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(CreatAdminDTO dto)
         {
-            await _service.Create(dto);
-            return Ok();
+            var result = await _service.Create(dto);
+            return Ok(result);
         }
 
         [Authorize]

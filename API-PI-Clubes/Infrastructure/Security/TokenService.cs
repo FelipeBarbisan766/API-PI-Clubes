@@ -20,7 +20,7 @@ namespace API_PI_Clubes.Infrastructure.Security
         {
             var handler = new JwtSecurityTokenHandler();
 
-            var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);
+            var key = Encoding.UTF8.GetBytes(_jwtSettings.Key);
 
             var credentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),

@@ -10,7 +10,7 @@ namespace API_PI_Clubes.Model
         public TypeEnum Type { get; set; }
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
-        public double PricePerHour { get; set; }
+        public decimal PricePerHour { get; set; }
         public string Description { get; set; }
 
         public Guid ClubId { get; set; }

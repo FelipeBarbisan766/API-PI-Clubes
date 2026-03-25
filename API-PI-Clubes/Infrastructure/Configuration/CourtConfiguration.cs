@@ -10,6 +10,9 @@ namespace API_PI_Clubes.Infrastructure.Configuration
         {
             builder.HasKey(a => a.Id);
 
+            builder.Property(c => c.PricePerHour)
+            .HasPrecision(10, 2);
+
             builder.HasOne(a => a.Club)
                    .WithMany(b => b.Courts)
                    .HasForeignKey(a => a.ClubId);

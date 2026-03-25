@@ -24,16 +24,20 @@ namespace API_PI_Clubes.Application.Services
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    PhoneNumber = c.PhoneNumber,
-                    ZipCode = c.Address.ZipCode,
-                    Street = c.Address.Street,
-                    Number = c.Address.Number,
-                    Neighborhood = c.Address.Neighborhood,
-                    Complement = c.Address.Complement,
-                    City = c.Address.City,
-                    State = c.Address.State,
-                    Country = c.Address.Country,
-                    Description = c.Description
+                    Description = c.Description,
+
+                    MinPrice = c.Courts
+                        .Where(co => co.IsActive)
+                        .Min(co => (decimal?)co.PricePerHour) ?? 0,
+
+                    CourtCount = c.Courts
+                        .Count(co => co.IsActive),
+
+                    Types = c.Courts
+                        .Where(co => co.IsActive)
+                        .Select(co => co.Type)
+                        .Distinct()
+                        .ToList()
                 })
                 .ToListAsync();
         }

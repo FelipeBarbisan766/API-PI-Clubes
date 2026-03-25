@@ -1,5 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API_PI_Clubes.Controllers
@@ -28,21 +30,21 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(CreatPlayerDTO dto)
         {
-            var result = await _service.Create(dto);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            await _service.Create(dto);
+            return Ok();
         }
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
         {
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
-
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

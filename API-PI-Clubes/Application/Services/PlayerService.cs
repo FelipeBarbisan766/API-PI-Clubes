@@ -2,6 +2,7 @@
 using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Application.Services
@@ -9,9 +10,11 @@ namespace API_PI_Clubes.Application.Services
     public class PlayerService : IPlayerService
     {
         private readonly AppDbContext _context;
-        public PlayerService(AppDbContext context)
+        private readonly IUserService _userService;
+        public PlayerService(AppDbContext context, IUserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
         public async Task<IEnumerable<ResponsePlayerDTO>> GetAll()
@@ -50,29 +53,23 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task<ResponsePlayerDTO> Create(CreatPlayerDTO dto)
+        public async Task Create(CreatPlayerDTO dto)
         {
             var entity = new Player
             {
                 UserName = dto.UserName,
                 ContactNumber = dto.ContactNumber,
                 Description = dto.Description,
-                RankCategory = dto.RankCategory,
-                UserId = dto.UserId
+                UserId = dto.UserId,
+                RankCategory = RankCategoryEnum.none
             };
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
 
             _context.Players.Add(entity);
             await _context.SaveChangesAsync();
-
-            return new ResponsePlayerDTO
-            {
-                Id = entity.Id,
-                UserName = entity.UserName,
-                ContactNumber = entity.ContactNumber,
-                Description = entity.Description,
-                RankCategory = entity.RankCategory,
-                UserId = entity.UserId
-            };
+            await transaction.CommitAsync();
+           
         }
 
         public async Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto)
@@ -85,7 +82,6 @@ namespace API_PI_Clubes.Application.Services
             data.UserName = dto.UserName;
             data.ContactNumber = dto.ContactNumber;
             data.Description = dto.Description;
-            data.RankCategory = dto.RankCategory;
             data.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

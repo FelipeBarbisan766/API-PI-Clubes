@@ -2,8 +2,9 @@
 {
     public enum RoleEnum
     {
-        none = 0,
+        None = 0,
         Player = 1,
-        Admin = 2
+        Admin = 2,
+        Both = 3
     }
 }

@@ -147,8 +147,9 @@ namespace API_PI_Clubes.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("PricePerHour")
-                        .HasColumnType("float");
+                    b.Property<decimal>("PricePerHour")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("Surface")
                         .HasColumnType("int");

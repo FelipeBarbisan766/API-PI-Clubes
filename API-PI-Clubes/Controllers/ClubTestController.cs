@@ -56,37 +56,37 @@ namespace API_PI_Clubes.Controllers
             return Ok(response);
         }
         //-------------------------
-        [HttpGet("/test/{id}")]
-        public async Task<IActionResult> GetByIdAndInclude(Guid id)
-        {
-            // 1. Busca no banco incluindo as quadras
-            var data = await _context.Clubs
-                .Include(c => c.Courts)
-                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+        //[HttpGet("/test/{id}")]
+        //public async Task<IActionResult> GetByIdAndInclude(Guid id)
+        //{
+        //    // 1. Busca no banco incluindo as quadras
+        //    var data = await _context.Clubs
+        //        .Include(c => c.Courts)
+        //        .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
-            if (data == null)
-                return NotFound();
+        //    if (data == null)
+        //        return NotFound();
 
-            // 2. Mapeia da Entidade para o DTO
-            var response = new ResponseClubDTO
-            {
-                Id = data.Id,
-                Name = data.Name,
-                PhoneNumber = data.PhoneNumber,
-                Description = data.Description,
-                Courts = data.Courts.Select(q => new ResponseCourtDTO
-                {
-                    Id = q.Id,
-                    Name = q.Name,
-                    Type = q.Type,
-                    Surface = q.Surface,
-                    IsCovered = q.IsCovered,
-                    PricePerHour = q.PricePerHour
-                }).ToList()
-            };
+        //    // 2. Mapeia da Entidade para o DTO
+        //    var response = new ResponseClubDTO
+        //    {
+        //        Id = data.Id,
+        //        Name = data.Name,
+        //        PhoneNumber = data.PhoneNumber,
+        //        Description = data.Description,
+        //        Courts = data.Courts.Select(q => new ResponseCourtDTO
+        //        {
+        //            Id = q.Id,
+        //            Name = q.Name,
+        //            Type = q.Type,
+        //            Surface = q.Surface,
+        //            IsCovered = q.IsCovered,
+        //            PricePerHour = q.PricePerHour
+        //        }).ToList()
+        //    };
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
         //-------------------------
 
         [HttpPost]

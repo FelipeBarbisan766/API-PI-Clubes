@@ -32,6 +32,13 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
+        [HttpGet("courts/{courtId}")]
+        public async Task<IActionResult> GetByCourtId(Guid courtId)
+        {     
+            var result = await _service.GetByCourtId(courtId);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreatScheduleDTO dto)
         {

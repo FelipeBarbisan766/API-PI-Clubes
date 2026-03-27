@@ -52,7 +52,24 @@ namespace API_PI_Clubes.Application.Services
 
             return data;
         }
-
+        public async Task<List<ResponseScheduleDTO>> GetByCourtId(Guid courtId)
+        {
+            return await _context.Schedules
+                .AsNoTracking()
+                .Where(c => c.CourtId == courtId)
+                .Select(c => new ResponseScheduleDTO
+                {
+                    Id = c.Id,
+                    StartTime = c.StartTime,
+                    EndTime = c.EndTime,
+                    IsBlocked = c.IsBlocked,
+                    IsReserved = c.IsReserved,
+                    IsFixed = c.IsFixed,
+                    DayOfWeek = c.DayOfWeek,
+                    CourtId = c.CourtId
+                })
+                .ToListAsync();
+        }
         public async Task<ResponseScheduleDTO> Create(CreatScheduleDTO dto)
         {
             var entity = new Schedule

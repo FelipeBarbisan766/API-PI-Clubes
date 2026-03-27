@@ -4,7 +4,6 @@ using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -41,13 +40,13 @@ namespace API_PI_Clubes.Application.Services
                 })
                 .ToListAsync();
         }
-        public async Task<ResponseClubDTO> GetById(Guid id)
+        public async Task<ResponseClubByIdDTO> GetById(Guid id)
         {
             var data = await _context.Clubs
-                .Where(c => c.Id == id && c.IsActive)
-                .Select(c => new ResponseClubDTO
+                .Where(c => c.Id == id && c.IsActive)    
+                .AsNoTracking()
+                .Select(c => new ResponseClubByIdDTO
                 {
-                    Id = c.Id,
                     Name = c.Name,
                     PhoneNumber = c.PhoneNumber,
                     ZipCode = c.Address.ZipCode,
@@ -58,7 +57,18 @@ namespace API_PI_Clubes.Application.Services
                     City = c.Address.City,
                     State = c.Address.State,
                     Country = c.Address.Country,
-                    Description = c.Description
+                    Description = c.Description,
+                    Courts = c.Courts
+                        .Where(co => co.IsActive)
+                        .Select(q => new ResponseCourtDTO
+                        {
+                            Id = q.Id,
+                            Name = q.Name,
+                            Type = q.Type,
+                            Surface = q.Surface,
+                            IsCovered = q.IsCovered,
+                            PricePerHour = q.PricePerHour
+                        }).ToList()
                 })
                 .FirstOrDefaultAsync();
 

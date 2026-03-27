@@ -20,20 +20,6 @@ namespace API_PI_Clubes.Application.Services
             _passwordHasher = passwordHasher;
         }
 
-        //public async Task<IEnumerable<ResponseUserDTO>> GetAll()
-        //{
-        //    return await _context.Users
-        //        .Where(c => c.IsActive)
-        //        .Select(c => new ResponseUserDTO
-        //        {
-        //            Id = c.Id,
-        //            Name = c.Name,
-        //            Email = c.Email,
-        //            PhoneNumber = c.PhoneNumber,
-        //            Role = c.Role
-        //        })
-        //        .ToListAsync();
-        //}
         public async Task<ResponseUserDTO> GetById(Guid id)
         {
             var data = await _context.Users

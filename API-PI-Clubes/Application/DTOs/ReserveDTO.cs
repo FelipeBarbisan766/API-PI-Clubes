@@ -5,7 +5,6 @@ namespace API_PI_Clubes.Application.DTOs
     public class CreatReserveDTO
     {
         public DateTime Date { get; set; }
-        public StatusEnum Status { get; set; }
 
         public Guid ScheduleId { get; set; }
         public Guid PlayerId { get; set; }

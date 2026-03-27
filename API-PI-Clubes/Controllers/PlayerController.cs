@@ -30,13 +30,15 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
+
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(CreatPlayerDTO dto)
         {
-            await _service.Create(dto);
-            return Ok();
+            var result = await _service.Create(dto);
+            return Ok(result);
         }
+        
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
@@ -44,6 +46,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)

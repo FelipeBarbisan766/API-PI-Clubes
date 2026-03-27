@@ -78,7 +78,7 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task Create(CreateClubDTO dto)
+        public async Task<ResponseIdDTO> Create(CreateClubDTO dto)
         {
             var entity = new Club
             {
@@ -108,6 +108,11 @@ namespace API_PI_Clubes.Application.Services
 
             _context.ClubAdmins.Add(clubAdmin);
             await _context.SaveChangesAsync();
+
+            return new ResponseIdDTO
+            {
+                Id = entity.Id
+            };
 
         }
 

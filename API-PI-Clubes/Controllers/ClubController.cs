@@ -34,8 +34,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateClubDTO dto)
         {
-            await _service.Create(dto);
-            return Ok();
+            var result = await _service.Create(dto);
+            return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]

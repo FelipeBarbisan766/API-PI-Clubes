@@ -54,7 +54,7 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task<ResponseCourtDTO> Create(CreatCourtDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatCourtDTO dto)
         {
             var entity = new Court
             {
@@ -70,16 +70,9 @@ namespace API_PI_Clubes.Application.Services
             _context.Courts.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new ResponseCourtDTO
+            return new ResponseIdDTO
             {
-                Id = entity.Id,
-                Name = entity.Name,
-                Type = entity.Type,
-                Surface = entity.Surface,
-                IsCovered = entity.IsCovered,
-                PricePerHour = entity.PricePerHour,
-                IsActive = entity.IsActive,
-                Description = entity.Description
+                Id = entity.Id
             };
         }
 

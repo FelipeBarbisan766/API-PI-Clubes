@@ -53,7 +53,7 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task Create(CreatPlayerDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatPlayerDTO dto)
         {
             var entity = new Player
             {
@@ -69,7 +69,12 @@ namespace API_PI_Clubes.Application.Services
             _context.Players.Add(entity);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-           
+
+            return new ResponseIdDTO
+            {
+                Id = entity.Id
+            };
+
         }
 
         public async Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto)

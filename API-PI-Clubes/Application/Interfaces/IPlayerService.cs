@@ -6,7 +6,7 @@ namespace API_PI_Clubes.Application.Interfaces
     {
         Task<IEnumerable<ResponsePlayerDTO>> GetAll();
         Task<ResponsePlayerDTO> GetById(Guid id);
-        Task Create(CreatPlayerDTO dto);
+        Task<ResponseIdDTO> Create(CreatPlayerDTO dto);
         Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto);
         Task Delete(Guid id);
     }

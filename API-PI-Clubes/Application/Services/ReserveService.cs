@@ -2,6 +2,7 @@
 using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Application.Services
@@ -44,12 +45,12 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task<ResponseReserveDTO> Create(CreatReserveDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatReserveDTO dto)
         {
             var entity = new Reserve
             {
                 Date = dto.Date,
-                Status = dto.Status,
+                Status = StatusEnum.AguardandoConfirmacao,
                 ScheduleId = dto.ScheduleId,
                 PlayerId = dto.PlayerId
             };
@@ -57,11 +58,9 @@ namespace API_PI_Clubes.Application.Services
             _context.Reserves.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new ResponseReserveDTO
+            return new ResponseIdDTO
             {
-                Id = entity.Id,
-                Date = entity.Date,
-                Status = entity.Status
+                Id = entity.Id
             };
         }
 

@@ -70,7 +70,7 @@ namespace API_PI_Clubes.Application.Services
                 })
                 .ToListAsync();
         }
-        public async Task<ResponseScheduleDTO> Create(CreatScheduleDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto)
         {
             var entity = new Schedule
             {
@@ -86,14 +86,9 @@ namespace API_PI_Clubes.Application.Services
             _context.Schedules.Add(entity);
             await _context.SaveChangesAsync();
 
-            return new ResponseScheduleDTO
+            return new ResponseIdDTO
             {
-                StartTime = entity.StartTime,
-                EndTime= entity.EndTime,
-                IsBlocked= entity.IsBlocked,
-                IsReserved = entity.IsReserved,
-                IsFixed = entity.IsFixed,
-                DayOfWeek = entity.DayOfWeek,
+                Id = entity.Id
             };
         }
 

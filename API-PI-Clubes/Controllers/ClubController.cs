@@ -1,5 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
-using API_PI_Clubes.Application.Interfaces;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

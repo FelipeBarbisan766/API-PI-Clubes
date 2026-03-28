@@ -1,49 +1,44 @@
 ﻿using API_PI_Clubes.Application.DTOs;
-using API_PI_Clubes.Application.Interfaces;
-using API_PI_Clubes.Infrastructure.Data;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Data;
 
 namespace API_PI_Clubes.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
-        public UserService(AppDbContext context, IPasswordHasher passwordHasher)
+
+        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
         {
-            _context = context;
+            _userRepository = userRepository;
             _passwordHasher = passwordHasher;
         }
 
         public async Task<ResponseUserDTO> GetById(Guid id)
         {
-            var data = await _context.Users
-                .Where(c => c.Id == id && c.IsActive)
-                .Select(c => new ResponseUserDTO
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Email = c.Email,
-                    PhoneNumber = c.PhoneNumber,
-                })
-                .FirstOrDefaultAsync();
+            var user = await _userRepository.GetByIdAsync(id);
 
-            if (data == null)
-                throw new Exception("User not found");  
+            if (user == null)
+                throw new Exception("User not found");
 
-            return data;
+            return new ResponseUserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+            };
         }
 
         public async Task Create(CreatUserDTO dto)
         {
-            var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            var userExists = await _userRepository.GetByEmailAsync(dto.Email);
 
-            if (userExists)
+            if (userExists != null)
                 throw new Exception("User already exists");
 
             var entity = new User
@@ -55,61 +50,60 @@ namespace API_PI_Clubes.Application.Services
                 Role = RoleEnum.None
             };
 
-            _context.Users.Add(entity);
-            await _context.SaveChangesAsync();
-
+            await _userRepository.AddAsync(entity);
+            await _userRepository.SaveChangesAsync();
         }
 
         public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto)
         {
-            var data = await _context.Users.FirstOrDefaultAsync(c => c.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
 
-            if (data == null)
+            if (user == null)
                 throw new Exception("User not found");
 
-            data.Name = dto.Name;
-            data.Email = dto.Email;
-            data.PhoneNumber = dto.PhoneNumber;
-            data.UpdatedAt = DateTime.UtcNow;
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.PhoneNumber = dto.PhoneNumber;
+            user.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
 
             return new ResponseUserDTO
             {
-                Id          = data.Id,
-                Name        = data.Name,
-                Email       = data.Email,
-                PhoneNumber = data.PhoneNumber,
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
             };
         }
+
         public async Task UpdateRole(Guid id, RoleEnum role)
         {
-            var data = await _context.Users.FirstOrDefaultAsync(c => c.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
 
-            if (data == null)
+            if (user == null)
                 throw new Exception("User not found");
 
-            if (data.Role == RoleEnum.None)
-                data.Role = role;
-            else
-                data.Role = RoleEnum.Both;
+            user.Role = (user.Role == RoleEnum.None) ? role : RoleEnum.Both;
+            user.UpdatedAt = DateTime.UtcNow;
 
-            data.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
         }
 
         public async Task Delete(Guid id)
         {
-            var data = await _context.Users.FirstOrDefaultAsync(c => c.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
 
-            if (data == null)
+            if (user == null)
                 throw new Exception("User not found");
 
-            data.IsActive = false;
-            data.UpdatedAt = DateTime.UtcNow;
+            user.IsActive = false;
+            user.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
         }
     }
 }

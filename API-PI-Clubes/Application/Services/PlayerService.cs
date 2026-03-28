@@ -1,5 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
-using API_PI_Clubes.Application.Interfaces;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;

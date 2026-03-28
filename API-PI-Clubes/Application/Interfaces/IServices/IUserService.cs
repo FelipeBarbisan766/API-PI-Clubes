@@ -2,7 +2,7 @@
 using API_PI_Clubes.Model.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API_PI_Clubes.Application.Interfaces
+namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IUserService
     {

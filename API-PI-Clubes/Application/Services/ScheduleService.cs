@@ -25,22 +25,28 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task<ResponseScheduleDTO> GetById(Guid id)
         {
+            ValidateId(id);
+
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new Exception("Schedule not found");
+                throw new InvalidOperationException("Schedule not found");
 
             return _mapper.ToDTO(data);
         }
 
         public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId)
         {
+            ValidateId(courtId);
+
             var data = await _repository.GetByCourtIdAsync(courtId);
             return _mapper.ToDTO(data);
         }
 
         public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto)
         {
+            ValidateScheduleDTO(dto);
+
             var entity = new Schedule
             {
                 StartTime = dto.StartTime,
@@ -60,10 +66,13 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto)
         {
+            ValidateId(id);
+            ValidateUpdateScheduleDTO(dto);
+
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new Exception("Schedule not found");
+                throw new InvalidOperationException("Schedule not found");
 
             data.StartTime = dto.StartTime;
             data.EndTime = dto.EndTime;
@@ -81,16 +90,42 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task Delete(Guid id)
         {
-            var data = await _repository.GetByIdAsync(id);
+            ValidateId(id);
 
-            if (data == null)
-                throw new Exception("Schedule not found");
+            var exists = await _repository.ExistsAsync(id);
 
-            data.IsActive = false;
-            data.UpdatedAt = DateTime.UtcNow;
+            if (!exists)
+                throw new InvalidOperationException("Schedule not found");
 
-            _repository.Update(data);
-            await _repository.SaveChangesAsync();
+            await _repository.DeleteAsync(id);
+        }
+
+        
+        private static void ValidateId(Guid id)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("Invalid ID", nameof(id));
+        }
+
+        private static void ValidateScheduleDTO(CreatScheduleDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (dto.StartTime >= dto.EndTime)
+                throw new ArgumentException("StartTime must be before EndTime");
+
+            if (dto.CourtId == Guid.Empty)
+                throw new ArgumentException("Invalid CourtId", nameof(dto.CourtId));
+        }
+
+        private static void ValidateUpdateScheduleDTO(UpdateScheduleDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (dto.StartTime >= dto.EndTime)
+                throw new ArgumentException("StartTime must be before EndTime");
         }
     }
 }

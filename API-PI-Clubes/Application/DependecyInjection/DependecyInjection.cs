@@ -15,10 +15,16 @@ namespace API_PI_Clubes.Application.DependencyInjection
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IClubService, ClubService>();
+            services.AddScoped<IClubRepository, ClubRepository>();
+            services.AddScoped<IClubMapper, ClubMapper>();
 
             services.AddScoped<ICourtService, CourtService>();
+            services.AddScoped<ICourtRepository, CourtRepository>();
+            services.AddScoped<ICourtMapper, CourtMapper>();
             
             services.AddScoped<IReserveService, ReserveService>();
+            services.AddScoped<IReserveRepository, ReserveRepository>();
+            services.AddScoped<IReserveMapper, ReserveMapper>();
             
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
@@ -26,15 +32,19 @@ namespace API_PI_Clubes.Application.DependencyInjection
             
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserMapper, UserMapper>();
             
             services.AddScoped<IPlayerService, PlayerService>();
+            services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IPlayerMapper, PlayerMapper>();
             
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IAdminRepository, AdminRepository>();
+            services.AddScoped<IAdminMapper, AdminMapper>();
             
             services.AddScoped<IAuthService, AuthService>();
             
             services.AddScoped<ITokenService, TokenService>();
-
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 

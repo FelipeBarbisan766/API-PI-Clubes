@@ -1,75 +1,44 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IMappers;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
-using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace API_PI_Clubes.Application.Services
 {
     public class ScheduleService : IScheduleService
     {
-        private readonly AppDbContext _context;
-        public ScheduleService(AppDbContext context)
+        private readonly IScheduleRepository _repository;
+        private readonly IScheduleMapper _mapper;
+
+        public ScheduleService(IScheduleRepository repository, IScheduleMapper mapper)
         {
-            _context = context;
+            _repository = repository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<ResponseScheduleDTO>> GetAll()
         {
-            return await _context.Schedules
-                .Where(c => c.IsActive)
-                .Select(c => new ResponseScheduleDTO
-                {
-                    StartTime = c.StartTime,
-                    EndTime = c.EndTime,
-                    IsBlocked = c.IsBlocked,
-                    IsReserved = c.IsReserved,
-                    IsFixed = c.IsFixed,
-                    DayOfWeek = c.DayOfWeek,
-                    CourtId = c.CourtId
-                })
-                .ToListAsync();
+            var data = await _repository.GetAllAsync();
+            return _mapper.ToDTO(data);
         }
+
         public async Task<ResponseScheduleDTO> GetById(Guid id)
         {
-            var data = await _context.Schedules
-                .Where(c => c.Id == id && c.IsActive)
-                .Select(c => new ResponseScheduleDTO
-                {
-                    StartTime = c.StartTime,
-                    EndTime = c.EndTime,
-                    IsBlocked = c.IsBlocked,
-                    IsReserved = c.IsReserved,
-                    IsFixed = c.IsFixed,
-                    DayOfWeek = c.DayOfWeek,
-                    CourtId = c.CourtId
-                })
-                .FirstOrDefaultAsync();
+            var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
                 throw new Exception("Schedule not found");
 
-            return data;
+            return _mapper.ToDTO(data);
         }
-        public async Task<List<ResponseScheduleDTO>> GetByCourtId(Guid courtId)
+
+        public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId)
         {
-            return await _context.Schedules
-                .AsNoTracking()
-                .Where(c => c.CourtId == courtId)
-                .Select(c => new ResponseScheduleDTO
-                {
-                    Id = c.Id,
-                    StartTime = c.StartTime,
-                    EndTime = c.EndTime,
-                    IsBlocked = c.IsBlocked,
-                    IsReserved = c.IsReserved,
-                    IsFixed = c.IsFixed,
-                    DayOfWeek = c.DayOfWeek,
-                    CourtId = c.CourtId
-                })
-                .ToListAsync();
+            var data = await _repository.GetByCourtIdAsync(courtId);
+            return _mapper.ToDTO(data);
         }
+
         public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto)
         {
             var entity = new Schedule
@@ -83,18 +52,15 @@ namespace API_PI_Clubes.Application.Services
                 CourtId = dto.CourtId
             };
 
-            _context.Schedules.Add(entity);
-            await _context.SaveChangesAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
 
-            return new ResponseIdDTO
-            {
-                Id = entity.Id
-            };
+            return new ResponseIdDTO { Id = entity.Id };
         }
 
         public async Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto)
         {
-            var data = await _context.Schedules.FirstOrDefaultAsync(c => c.Id == id);
+            var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
                 throw new Exception("Schedule not found");
@@ -107,23 +73,15 @@ namespace API_PI_Clubes.Application.Services
             data.DayOfWeek = dto.DayOfWeek;
             data.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            _repository.Update(data);
+            await _repository.SaveChangesAsync();
 
-            return new ResponseScheduleDTO
-            {
-                StartTime  =   data.StartTime,
-                EndTime    =   data.EndTime,
-                IsBlocked  =   data.IsBlocked,
-                IsReserved =   data.IsReserved,
-                IsFixed    =   data.IsFixed,
-                DayOfWeek  =   data.DayOfWeek,
-                CourtId    =   data.CourtId
-            };
+            return _mapper.ToDTO(data);
         }
 
         public async Task Delete(Guid id)
         {
-            var data = await _context.Schedules.FirstOrDefaultAsync(c => c.Id == id);
+            var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
                 throw new Exception("Schedule not found");
@@ -131,7 +89,8 @@ namespace API_PI_Clubes.Application.Services
             data.IsActive = false;
             data.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            _repository.Update(data);
+            await _repository.SaveChangesAsync();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Security;
@@ -9,34 +10,30 @@ namespace API_PI_Clubes.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserRepository _repository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IUserMapper _mapper;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IUserMapper mapper)
         {
-            _userRepository = userRepository;
+            _repository = userRepository;
             _passwordHasher = passwordHasher;
+            _mapper = mapper;
         }
 
         public async Task<ResponseUserDTO> GetById(Guid id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
                 throw new Exception("User not found");
 
-            return new ResponseUserDTO
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-            };
+            return _mapper.ToDTO(user);
         }
 
         public async Task Create(CreatUserDTO dto)
         {
-            var userExists = await _userRepository.GetByEmailAsync(dto.Email);
+            var userExists = await _repository.GetByEmailAsync(dto.Email);
 
             if (userExists != null)
                 throw new Exception("User already exists");
@@ -50,13 +47,13 @@ namespace API_PI_Clubes.Application.Services
                 Role = RoleEnum.None
             };
 
-            await _userRepository.AddAsync(entity);
-            await _userRepository.SaveChangesAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
                 throw new Exception("User not found");
@@ -66,21 +63,15 @@ namespace API_PI_Clubes.Application.Services
             user.PhoneNumber = dto.PhoneNumber;
             user.UpdatedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
 
-            return new ResponseUserDTO
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-            };
+            return _mapper.ToDTO(user);
         }
 
         public async Task UpdateRole(Guid id, RoleEnum role)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
                 throw new Exception("User not found");
@@ -88,13 +79,13 @@ namespace API_PI_Clubes.Application.Services
             user.Role = (user.Role == RoleEnum.None) ? role : RoleEnum.Both;
             user.UpdatedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
         }
 
         public async Task Delete(Guid id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
                 throw new Exception("User not found");
@@ -102,8 +93,8 @@ namespace API_PI_Clubes.Application.Services
             user.IsActive = false;
             user.UpdatedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
         }
     }
 }

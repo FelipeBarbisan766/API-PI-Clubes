@@ -18,13 +18,17 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Clubs
                 .Where(c => c.IsActive)
+                .Include(c => c.Courts.Where(co => co.IsActive))
                 .ToListAsync();
         }
 
         public async Task<Club?> GetByIdAsync(Guid id)
         {
             return await _context.Clubs
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Courts.Where(co => co.IsActive))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> ExistsAsync(Guid id)
@@ -33,24 +37,29 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .AnyAsync(s => s.Id == id && s.IsActive);
         }
 
-        public async Task AddAsync(Club Club)
+        public async Task AddAsync(Club club)
         {
-            await _context.Clubs.AddAsync(Club);
+            await _context.Clubs.AddAsync(club);
         }
 
-        public void Update(Club Club)
+        public async Task AddClubAdminAsync(ClubAdmin clubAdmin)
         {
-            _context.Clubs.Update(Club);
+            await _context.ClubAdmins.AddAsync(clubAdmin);
+        }
+
+        public void Update(Club club)
+        {
+            _context.Clubs.Update(club);
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var Club = await _context.Clubs.FindAsync(id);
-            if (Club != null)
+            var club = await _context.Clubs.FindAsync(id);
+            if (club != null)
             {
-                Club.IsActive = false;
-                Club.UpdatedAt = DateTime.UtcNow;
-                _context.Clubs.Update(Club);
+                club.IsActive = false;
+                club.UpdatedAt = DateTime.UtcNow;
+                _context.Clubs.Update(club);
             }
         }
 

@@ -5,7 +5,8 @@ namespace API_PI_Clubes.Application.Interfaces.IMappers
 {
     public interface IClubMapper
     {
-        ResponseClubDTO ToDTO(Club club);
-        IEnumerable<ResponseClubDTO> ToDTO(IEnumerable<Club> clubs);
+        IEnumerable<ResponseClubDTO> ToDTO(IEnumerable<Club> entities);
+        ResponseClubDTO ToDTO(Club entity);
+        ResponseClubByIdDTO ToDTOById(Club entity);
     }
 }

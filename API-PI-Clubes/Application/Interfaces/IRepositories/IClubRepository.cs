@@ -5,11 +5,12 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
     public interface IClubRepository
     {
         Task<IEnumerable<Club>> GetAllAsync();
-        Task<Club?> GetByIdAsync(Guid id);
-        Task<bool> ExistsAsync(Guid id);
-        Task AddAsync(Club Club);
-        Task SaveChangesAsync();
-        void Update(Club Club);
+        Task<Club> GetByIdAsync(Guid id);
+        Task AddAsync(Club entity);
+        Task AddClubAdminAsync(ClubAdmin clubAdmin);
+        void Update(Club entity);
         Task DeleteAsync(Guid id);
+        Task<bool> ExistsAsync(Guid id);
+        Task SaveChangesAsync();
     }
 }

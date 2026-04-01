@@ -1,4 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IMappers;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
@@ -9,110 +11,104 @@ namespace API_PI_Clubes.Application.Services
 {
     public class PlayerService : IPlayerService
     {
-        private readonly AppDbContext _context;
-        private readonly IUserService _userService;
-        public PlayerService(AppDbContext context, IUserService userService)
+        private readonly IPlayerRepository _repository;
+        private readonly IPlayerMapper _mapper;
+
+        public PlayerService(IPlayerMapper mapper, IPlayerRepository repository)
         {
-            _context = context;
-            _userService = userService;
+            _mapper = mapper;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<ResponsePlayerDTO>> GetAll()
         {
-            return await _context.Players
-                .Where(c => c.IsActive)
-                .Select(c => new ResponsePlayerDTO
-                {
-                    Id = c.Id,
-                    UserName = c.UserName,
-                    ContactNumber = c.ContactNumber,
-                    Description = c.Description,
-                    RankCategory = c.RankCategory,
-                    UserId = c.UserId
-                })
-                .ToListAsync();
+            var data = await _repository.GetAllAsync();
+            return _mapper.ToDTO(data);
         }
+
         public async Task<ResponsePlayerDTO> GetById(Guid id)
         {
-            var data = await _context.Players
-                .Where(c => c.Id == id && c.IsActive)
-                .Select(c => new ResponsePlayerDTO
-                {
-                    Id = c.Id,
-                    UserName = c.UserName,
-                    ContactNumber = c.ContactNumber,
-                    Description = c.Description,
-                    RankCategory = c.RankCategory,
-                    UserId = c.UserId
-                })
-                .FirstOrDefaultAsync();
+            ValidateId(id);
+
+            var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new Exception("Player not found");
+                throw new InvalidOperationException("Player not found");
 
-            return data;
+            return _mapper.ToDTO(data);
         }
-
         public async Task<ResponseIdDTO> Create(CreatPlayerDTO dto)
         {
+            ValidatePlayerDTO(dto);
+
             var entity = new Player
             {
                 UserName = dto.UserName,
                 ContactNumber = dto.ContactNumber,
                 Description = dto.Description,
+                RankCategory = RankCategoryEnum.none,
                 UserId = dto.UserId,
-                RankCategory = RankCategoryEnum.none
+                CreatedAt = DateTime.UtcNow
             };
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
 
-            _context.Players.Add(entity);
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
 
-            return new ResponseIdDTO
-            {
-                Id = entity.Id
-            };
+            return new ResponseIdDTO { Id = entity.Id };
 
         }
 
+
         public async Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto)
         {
-            var data = await _context.Players.FirstOrDefaultAsync(c => c.Id == id);
+            ValidateId(id);
+            ValidateUpdatePlayerDTO(dto);
+
+            var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new Exception("Player not found");
+                throw new InvalidOperationException("Player not found");
 
             data.UserName = dto.UserName;
             data.ContactNumber = dto.ContactNumber;
             data.Description = dto.Description;
+            data.RankCategory = RankCategoryEnum.none;
             data.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            _repository.Update(data);
+            await _repository.SaveChangesAsync();
 
-            return new ResponsePlayerDTO
-            {
-                Id = data.Id,
-                UserName = data.UserName,
-                ContactNumber = data.ContactNumber,
-                Description = data.Description,
-                RankCategory = data.RankCategory,
-                UserId = data.UserId
-            };
+            return _mapper.ToDTO(data);
         }
 
         public async Task Delete(Guid id)
         {
-            var data = await _context.Players.FirstOrDefaultAsync(c => c.Id == id);
+            ValidateId(id);
 
-            if (data == null)
-                throw new Exception("Player not found");
+            var exists = await _repository.ExistsAsync(id);
 
-            data.IsActive = false;
-            data.UpdatedAt = DateTime.UtcNow;
+            if (!exists)
+                throw new InvalidOperationException("Player not found");
 
-            await _context.SaveChangesAsync();
+            await _repository.DeleteAsync(id);
+        }
+
+        private static void ValidateId(Guid id)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("Invalid ID", nameof(id));
+        }
+
+        private static void ValidatePlayerDTO(CreatPlayerDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+        }
+
+        private static void ValidateUpdatePlayerDTO(UpdatePlayerDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
         }
     }
 }

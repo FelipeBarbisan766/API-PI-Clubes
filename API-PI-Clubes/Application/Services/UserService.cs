@@ -1,8 +1,9 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
-using API_PI_Clubes.Infrastructure.Security;
+using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 
@@ -31,25 +32,6 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(user);
         }
 
-        public async Task Create(CreatUserDTO dto)
-        {
-            var userExists = await _repository.GetByEmailAsync(dto.Email);
-
-            if (userExists != null)
-                throw new Exception("User already exists");
-
-            var entity = new User
-            {
-                Name = dto.Name,
-                Email = dto.Email,
-                PasswordHash = _passwordHasher.Hash(dto.Password),
-                PhoneNumber = dto.PhoneNumber,
-                Role = RoleEnum.None
-            };
-
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
-        }
 
         public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto)
         {

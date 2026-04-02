@@ -24,13 +24,6 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreatUserDTO dto)
-        {
-            await _service.Create(dto);
-            return Ok() ;
-        }
-
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateUserDTO dto)

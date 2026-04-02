@@ -1,4 +1,4 @@
-﻿namespace API_PI_Clubes.Infrastructure.Security
+﻿namespace API_PI_Clubes.Infrastructure.Security.Interfaces
 {
     public interface IPasswordHasher
     {

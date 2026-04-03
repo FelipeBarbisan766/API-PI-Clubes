@@ -56,5 +56,13 @@ namespace API_PI_Clubes.Controllers
 
             return Ok("E-mail verificado com sucesso!");
         }
+        [HttpGet("resend")]
+        public async Task<IActionResult> ResendEmail(string email)
+        {
+            await _authService.ResendEmailToken(email);
+            return Ok("Verifique seu e-mail.");
+        }
+
+
     }
 }

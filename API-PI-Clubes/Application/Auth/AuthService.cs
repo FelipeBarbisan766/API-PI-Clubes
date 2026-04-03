@@ -77,6 +77,7 @@ namespace API_PI_Clubes.Application.Auth
 
         }
 
+
         public async Task<bool> ValidateEmailToken(string token)
         {
             var principal = _tokenService.ValidateEmailVerificationToken(token);
@@ -98,6 +99,23 @@ namespace API_PI_Clubes.Application.Auth
 
             _repository.Update(user);
             await _repository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ResendEmailToken(string email)
+        {
+            var userExists =
+                await _repository.GetByEmailAsync(email);
+
+            if (userExists == null)
+                throw new Exception("User not exists");
+
+            if (userExists.EmailVerification.IsConfirmed)
+                throw new Exception("Email already verified");
+
+            var token = _tokenService.GenerateEmailVerificationToken(userExists.Id);
+            await _emailService.SendVerificationEmailAsync(userExists.Email, userExists.Name, token);
 
             return true;
         }

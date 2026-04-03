@@ -7,5 +7,7 @@ namespace API_PI_Clubes.Application.Auth
         Task<string> LoginAsync(LoginDTO dto);
         Task Register(CreatUserDTO dto);
         Task<bool> ValidateEmailToken(string token);
+        Task<bool> ResendEmailToken(string email);
+
     }
 }

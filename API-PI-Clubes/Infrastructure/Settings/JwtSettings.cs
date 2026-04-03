@@ -5,8 +5,8 @@
         public string Key { get; set; }
         public string Issuer { get; set; }
         public string Audience { get; set; }
-        public int ExpirationHours { get; set; }
+        public int Expiration { get; set; }
         public string EmailVerificationKey { get; set; }
-        public int ExpirationHoursOfEmail { get; set; }
+        public int ExpirationOfEmail { get; set; }
     }
 }

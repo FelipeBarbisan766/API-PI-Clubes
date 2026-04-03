@@ -30,7 +30,7 @@ namespace API_PI_Clubes.Infrastructure.Security
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = GenerateClaims(user),
-                Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpirationHours),
+                Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration),
                 Issuer = _jwtSettings.Issuer,
                 Audience = _jwtSettings.Audience,
                 SigningCredentials = credentials
@@ -73,7 +73,7 @@ namespace API_PI_Clubes.Infrastructure.Security
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(_jwtSettings.ExpirationHoursOfEmail), 
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationOfEmail), 
                 signingCredentials: credentials
             );
 

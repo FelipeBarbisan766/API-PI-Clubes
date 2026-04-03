@@ -1,7 +1,8 @@
-﻿using MailKit.Net.Smtp;
-using MimeKit;
+﻿using API_PI_Clubes.Application.Email;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
-using API_PI_Clubes.Application.Email;
+using MimeKit;
 
 public class EmailService : IEmailService
 {
@@ -29,27 +30,32 @@ public class EmailService : IEmailService
         using var client = new SmtpClient();
         try
         {
-            await client.ConnectAsync(_settings.SmtpServer, _settings.SmtpPort, _settings.EnableSsl);
+            
+            var options = _settings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
+
+            await client.ConnectAsync(_settings.SmtpServer, _settings.SmtpPort, options);
+
             await client.AuthenticateAsync(_settings.SmtpUsername, _settings.SmtpPassword);
             await client.SendAsync(message);
+
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation($"Email enviado para {recipientEmail}");
+            _logger.LogInformation("Email enviado com sucesso para {Email}", recipientEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Falha no envio de email: {ex.Message}");
-            throw;
+            _logger.LogError(ex, "Falha crítica no envio de email para {Email}. Erro: {Message}", recipientEmail, ex.Message);
+            throw; 
         }
     }
 
     public async Task SendVerificationEmailAsync(string recipientEmail, string recipientName, string jwtToken)
     {
        
-        var baseUrl = "https://seusite.com/verify-email";
+        var baseUrl = "http://localhost:5000/api/auth/verify-email";
         var verificationLink = $"{baseUrl}?token={jwtToken}";
 
-        var subject = "Verifique seu Email";
+        var subject = "Verifique seu Email - Clube PI";
         var htmlBody = _emailBodyService.GenerateVerificationEmailHtml(recipientName, verificationLink);
 
         await SendEmailAsync(recipientEmail, recipientName, subject, htmlBody);

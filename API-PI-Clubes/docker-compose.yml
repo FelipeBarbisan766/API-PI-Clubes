@@ -27,6 +27,9 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ClubesDB;User Id=sa;Password=SenhaForte@123;TrustServerCertificate=True"
       ASPNETCORE_ENVIRONMENT: Development
+      Email__SenderEmail: "donotreply@72554687-aa0d-4b68-92b3-607ba3db1772.azurecomm.net"
+      Email__SmtpPassword: "4pb8Q~qx~yBOfrZX3ohT28eFDJSy3Aei4jRvzctj"
+      Email__SmtpUsername: "API-Clubes-Email"
     networks:
       - clubes-network
 

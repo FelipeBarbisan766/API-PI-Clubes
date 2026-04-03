@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Model;
@@ -35,11 +36,25 @@ namespace API_PI_Clubes.Controllers
             }
 
         }
-        [Authorize]
-        [HttpGet("Test")]
-        public IActionResult GetProtectedData()
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(CreatUserDTO dto)
         {
-            return Ok("Você está autenticado");
+            await _authService.Register(dto);
+            return Ok("Usuário registrado! Verifique seu e-mail.");
+        }
+
+        
+        [HttpGet("verify")]
+        public async Task<IActionResult> VerifyEmail(string token)
+        {
+            var result = await _authService.ValidateEmailToken(token);
+
+            if (!result)
+            {
+                return BadRequest("O link de verificação é inválido ou expirou.");
+            }
+
+            return Ok("E-mail verificado com sucesso!");
         }
     }
 }

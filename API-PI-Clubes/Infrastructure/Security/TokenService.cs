@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Infrastructure.Settings;
+﻿using API_PI_Clubes.Infrastructure.Security.Interfaces;
+using API_PI_Clubes.Infrastructure.Settings;
 using API_PI_Clubes.Model;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -53,6 +54,69 @@ namespace API_PI_Clubes.Infrastructure.Security
                 claims.AddClaim(new Claim(ClaimTypes.Role, role.Trim()));
             }
             return claims;
+        }
+
+        public string GenerateEmailVerificationToken(Guid id)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim("purpose", "email_verification") 
+            };
+
+            var keyBytes = Encoding.UTF8.GetBytes(_jwtSettings.EmailVerificationKey);
+            var key = new SymmetricSecurityKey(keyBytes);
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(_jwtSettings.ExpirationHoursOfEmail), 
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public ClaimsPrincipal? ValidateEmailVerificationToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.EmailVerificationKey)),
+
+                ValidateIssuer = true,
+                ValidIssuer = _jwtSettings.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = _jwtSettings.Audience,
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero 
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                var purpose = principal.FindFirst("purpose")?.Value;
+                if (purpose != "email_verification")
+                {
+                    return null;
+                }
+
+                return principal;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

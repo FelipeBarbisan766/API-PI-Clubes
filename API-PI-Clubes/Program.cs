@@ -1,5 +1,6 @@
 using API_PI_Clubes.Application;
 using API_PI_Clubes.Application.DependencyInjection;
+using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Settings;
@@ -61,6 +62,10 @@ builder.Services
     });
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthorization();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 var app = builder.Build();
 

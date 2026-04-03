@@ -8,7 +8,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     {
         //Task<IEnumerable<ResponseUserDTO>> GetAll();
         Task<ResponseUserDTO> GetById(Guid id);
-        Task Create(CreatUserDTO dto);
         Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto);
         Task UpdateRole(Guid id, RoleEnum role);
         Task Delete(Guid id);

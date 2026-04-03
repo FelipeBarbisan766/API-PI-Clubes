@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -6,6 +7,7 @@ using API_PI_Clubes.Application.Mappers;
 using API_PI_Clubes.Application.Services;
 using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Infrastructure.Security;
+using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API_PI_Clubes.Application.DependencyInjection
@@ -43,7 +45,10 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IAdminMapper, AdminMapper>();
             
             services.AddScoped<IAuthService, AuthService>();
-            
+
+            services.AddScoped<EmailBodyService>();
+            services.AddScoped<IEmailService, EmailService>();
+
             services.AddScoped<ITokenService, TokenService>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();

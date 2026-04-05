@@ -11,6 +11,7 @@ namespace API_PI_Clubes.Infrastructure.Configuration
             builder.HasKey(a => a.Id);
 
             builder.OwnsOne(x => x.EmailVerification);
+            builder.OwnsOne(x => x.ResetPassword);
         }
     }
 }

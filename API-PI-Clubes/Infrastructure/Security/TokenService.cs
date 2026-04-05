@@ -73,7 +73,7 @@ namespace API_PI_Clubes.Infrastructure.Security
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationOfEmail), 
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationEmailVerification), 
                 signingCredentials: credentials
             );
 
@@ -117,6 +117,71 @@ namespace API_PI_Clubes.Infrastructure.Security
             {
                 return null;
             }
+
         }
+        public string GenerateEmailResetPasswordToken(Guid id)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim("purpose", "reset_password")
+            };
+
+            var keyBytes = Encoding.UTF8.GetBytes(_jwtSettings.ResetPasswordKey);
+            var key = new SymmetricSecurityKey(keyBytes);
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationResetPassword),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public ClaimsPrincipal? ValidateEmailResetPasswordToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.ResetPasswordKey)),
+
+                ValidateIssuer = true,
+                ValidIssuer = _jwtSettings.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = _jwtSettings.Audience,
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                var purpose = principal.FindFirst("purpose")?.Value;
+                if (purpose != "reset_password")
+                {
+                    return null;
+                }
+
+                return principal;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+        }
+
     }
 }

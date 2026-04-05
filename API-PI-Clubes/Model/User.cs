@@ -11,6 +11,7 @@ namespace API_PI_Clubes.Model
         public string PasswordHash { get; set; }
         public string PhoneNumber { get; set; }
         public EmailVerificationVO EmailVerification { get; set; }
+        public ResetPasswordVO ResetPassword { get; set; }
         public RoleEnum Role { get; set; }
 
         public ICollection<Admin> Admins { get; set; }

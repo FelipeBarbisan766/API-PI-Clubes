@@ -55,11 +55,21 @@ public class EmailService : IEmailService
         var baseUrl = "http://localhost:5000/api/auth/verify-email";
         var verificationLink = $"{baseUrl}?token={jwtToken}";
 
-        var subject = "Verifique seu Email - Clube PI";
+        var subject = "Verifique seu Email - Clubera PI";
         var htmlBody = _emailBodyService.GenerateVerificationEmailHtml(recipientName, verificationLink);
 
         await SendEmailAsync(recipientEmail, recipientName, subject, htmlBody);
     }
+    public async Task SendResetPasswordAsync(string recipientEmail, string recipientName, string jwtToken)
+    {
 
+        var baseUrl = "http://localhost:5000/api/auth/";
+        var verificationLink = $"{baseUrl}?token={jwtToken}";
+
+        var subject = "Recuperação de Senha - Clubera PI";
+        var htmlBody = _emailBodyService.GenerateResetPassowordHtml(recipientName, verificationLink);
+
+        await SendEmailAsync(recipientEmail, recipientName, subject, htmlBody);
+    }
 
 }

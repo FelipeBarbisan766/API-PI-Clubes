@@ -3,7 +3,7 @@ using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
-
+using API_PI_Clubes.Infrastructure.Settings;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
@@ -68,12 +68,12 @@ namespace API_PI_Clubes.Application.Auth
                 EmailVerification = EmailVerificationVO.Create()
             };
 
-            await _repository.AddAsync(entity);
-
-            await _repository.SaveChangesAsync();
 
             var token = _tokenService.GenerateEmailVerificationToken(entity.Id);
-            await _emailService.SendVerificationEmailAsync(entity.Email,entity.Name,token);
+            await _emailService.SendVerificationEmailAsync(entity.Email, entity.Name, token);
+
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
 
         }
 
@@ -92,8 +92,8 @@ namespace API_PI_Clubes.Application.Auth
 
             if (user == null) return false;
 
-            
-            if (user.EmailVerification.IsConfirmed) return true; 
+
+            if (user.EmailVerification.IsConfirmed) return true;
 
             user.EmailVerification = EmailVerificationVO.Confirm();
 
@@ -105,20 +105,58 @@ namespace API_PI_Clubes.Application.Auth
 
         public async Task<bool> ResendEmailToken(string email)
         {
-            var userExists =
+            var user =
                 await _repository.GetByEmailAsync(email);
 
-            if (userExists == null)
+            if (user == null)
                 throw new Exception("User not exists");
 
-            if (userExists.EmailVerification.IsConfirmed)
+            if (user.EmailVerification.IsConfirmed)
                 throw new Exception("Email already verified");
 
-            var token = _tokenService.GenerateEmailVerificationToken(userExists.Id);
-            await _emailService.SendVerificationEmailAsync(userExists.Email, userExists.Name, token);
+            var token = _tokenService.GenerateEmailVerificationToken(user.Id);
+            await _emailService.SendVerificationEmailAsync(user.Email, user.Name, token);
 
             return true;
         }
+        public async Task RequestResetPassword(string email)
+        {
+            var user =
+                await _repository.GetByEmailAsync(email);
 
+            if (user == null)
+                throw new Exception("User not exists");
+
+
+            var token = _tokenService.GenerateEmailResetPasswordToken(user.Id);
+            await _emailService.SendResetPasswordAsync(user.Email, user.Name, token);
+
+            user.ResetPassword = ResetPasswordVO.Create(token, DateTime.UtcNow.AddMinutes(15));
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
+
+        }
+
+        public async Task<bool> ResetPassword(string token, string password)
+        {
+            var principal = _tokenService.ValidateEmailResetPasswordToken(token);
+            if (principal == null) return false;
+
+            var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(id)) return false;
+
+            var user = await _repository.GetByIdAsync(Guid.Parse(id));
+            if (user == null) return false;
+
+            if (user.ResetPassword.PasswordResetToken != token) return false;
+
+            if (user.ResetPassword.ResetTokenExpires < DateTime.UtcNow) return false;
+
+            user.PasswordHash = _passwordHasher.Hash(password);
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

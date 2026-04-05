@@ -64,5 +64,26 @@ namespace API_PI_Clubes.Controllers
         }
 
 
+        [HttpPost("requestPassword")]
+        public async Task<IActionResult> RequestResetPassword(string email)
+        {
+            await _authService.RequestResetPassword(email);
+            return Ok("Requisisao realizada! Verifique seu e-mail.");
+        }
+
+        
+        [HttpGet("resetPassword")]
+        public async Task<IActionResult> ResetPassword(string token,string password)
+        {
+            var result = await _authService.ResetPassword(token, password);
+
+            if (!result)
+            {
+                return BadRequest("O link de verificação é inválido ou expirou.");
+            }
+
+            return Ok("Senha recuperada com sucesso!");
+        }
+
     }
 }

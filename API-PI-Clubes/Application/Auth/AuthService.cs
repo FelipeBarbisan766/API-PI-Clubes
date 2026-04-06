@@ -22,7 +22,7 @@ namespace API_PI_Clubes.Application.Auth
 
         public AuthService(
             IUserRepository repository,
-        ITokenService tokenService,
+            ITokenService tokenService,
             IPasswordHasher passwordHasher,
             IEmailService emailService)
         {
@@ -39,7 +39,13 @@ namespace API_PI_Clubes.Application.Auth
             if (user == null)
                 throw new Exception("User not found");
 
-            var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);
+            if (!user.EmailVerification.IsConfirmed)
+                throw new Exception("Email not verified");
+
+            if (dto.Password != null)
+                throw new Exception("Password is required");
+
+                var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);
 
             if (!validPassword)
                 throw new Exception("Invalid password");
@@ -92,8 +98,8 @@ namespace API_PI_Clubes.Application.Auth
 
             if (user == null) return false;
 
-
             if (user.EmailVerification.IsConfirmed) return true;
+
 
             user.EmailVerification = EmailVerificationVO.Confirm();
 

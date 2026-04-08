@@ -76,7 +76,7 @@ namespace API_PI_Clubes.Application.Services
 
                     entity.Images.Add(new Image
                     {
-                        Url = imageUrl,
+                        Url = file.FileName,
                         Name = uniqueFileName
                     });
                 }

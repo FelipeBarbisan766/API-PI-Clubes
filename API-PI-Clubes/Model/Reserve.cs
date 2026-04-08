@@ -11,9 +11,9 @@ namespace API_PI_Clubes.Model
         public StatusEnum Status { get; set; }
 
         public Guid ScheduleId { get; set; }
-        public Schedule Schedule { get; set; }
+        public virtual Schedule Schedule { get; set; }
 
         public Guid PlayerId { get; set; }
-        public Player Player { get; set; }
+        public virtual Player Player { get; set; }
     }
 }

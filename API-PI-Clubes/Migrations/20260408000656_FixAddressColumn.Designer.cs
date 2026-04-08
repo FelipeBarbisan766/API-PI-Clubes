@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_PI_Clubes.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260325234853_Fix")]
-    partial class Fix
+    [Migration("20260408000656_FixAddressColumn")]
+    partial class FixAddressColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -168,6 +168,44 @@ namespace API_PI_Clubes.Migrations
                     b.HasIndex("ClubId");
 
                     b.ToTable("Courts");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.Image", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ClubId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CourtId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
+
+                    b.HasIndex("CourtId");
+
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Player", b =>
@@ -419,6 +457,21 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("Club");
                 });
 
+            modelBuilder.Entity("API_PI_Clubes.Model.Image", b =>
+                {
+                    b.HasOne("API_PI_Clubes.Model.Club", "Club")
+                        .WithMany("Images")
+                        .HasForeignKey("ClubId");
+
+                    b.HasOne("API_PI_Clubes.Model.Court", "Court")
+                        .WithMany("Images")
+                        .HasForeignKey("CourtId");
+
+                    b.Navigation("Club");
+
+                    b.Navigation("Court");
+                });
+
             modelBuilder.Entity("API_PI_Clubes.Model.Player", b =>
                 {
                     b.HasOne("API_PI_Clubes.Model.User", "User")
@@ -460,6 +513,56 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("Court");
                 });
 
+            modelBuilder.Entity("API_PI_Clubes.Model.User", b =>
+                {
+                    b.OwnsOne("API_PI_Clubes.Model.ValueObjects.EmailVerificationVO", "EmailVerification", b1 =>
+                        {
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<bool>("IsConfirmed")
+                                .HasColumnType("bit");
+
+                            b1.Property<DateTime?>("VerifiedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("Users");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
+                    b.OwnsOne("API_PI_Clubes.Model.ValueObjects.ResetPasswordVO", "ResetPassword", b1 =>
+                        {
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("PasswordResetToken")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime?>("ResetPasswordAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime?>("ResetTokenExpires")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("Users");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
+                    b.Navigation("EmailVerification")
+                        .IsRequired();
+
+                    b.Navigation("ResetPassword")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("API_PI_Clubes.Model.Admin", b =>
                 {
                     b.Navigation("ClubAdmin");
@@ -470,10 +573,14 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("ClubAdmin");
 
                     b.Navigation("Courts");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Court", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Schedules");
                 });
 

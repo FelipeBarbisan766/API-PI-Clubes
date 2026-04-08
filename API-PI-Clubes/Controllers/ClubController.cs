@@ -32,7 +32,7 @@ namespace API_PI_Clubes.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(CreateClubDTO dto)
+        public async Task<IActionResult> Create([FromForm] CreateClubDTO dto)
         {
             var result = await _service.Create(dto);
             return Ok(result);

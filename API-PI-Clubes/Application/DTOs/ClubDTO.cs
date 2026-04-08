@@ -18,6 +18,8 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
+
+        public List<IFormFile> Images { get; set; }
     }
 
     public class UpdateClubDTO
@@ -68,6 +70,4 @@ namespace API_PI_Clubes.Application.DTOs
         public string Country { get; set; }
         public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
-
-
 }

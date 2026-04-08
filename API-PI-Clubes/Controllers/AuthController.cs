@@ -34,10 +34,10 @@ namespace API_PI_Clubes.Controllers
                 var token = await _authService.LoginAsync(dto);
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true,   
+                    HttpOnly = true,
                     Secure = false, //Ativar quando for usar HTTPS
                     SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration) 
+                    Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
                 };
 
                 Response.Cookies.Append("jwt", token, cookieOptions);
@@ -57,7 +57,7 @@ namespace API_PI_Clubes.Controllers
             return Ok("Usuário registrado! Verifique seu e-mail.");
         }
 
-        
+
         [HttpGet("verify")]
         public async Task<IActionResult> VerifyEmail(string token)
         {
@@ -85,9 +85,9 @@ namespace API_PI_Clubes.Controllers
             return Ok("Requisisao realizada! Verifique seu e-mail.");
         }
 
-        
+
         [HttpGet("resetPassword")]
-        public async Task<IActionResult> ResetPassword(string token,string password)
+        public async Task<IActionResult> ResetPassword(string token, string password)
         {
             var result = await _authService.ResetPassword(token, password);
 
@@ -104,4 +104,5 @@ namespace API_PI_Clubes.Controllers
             Response.Cookies.Delete("jwt");
             return Ok(new { message = "Logout realizado com sucesso" });
         }
+    }
 }

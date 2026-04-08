@@ -10,7 +10,7 @@ namespace API_PI_Clubes.Infrastructure.Configuration
         {
             builder.HasKey(a => a.Id);
 
-            builder.OwnsOne(x => x.Address);
+            builder.OwnsOne(c => c.Address);
         }
     }
 }

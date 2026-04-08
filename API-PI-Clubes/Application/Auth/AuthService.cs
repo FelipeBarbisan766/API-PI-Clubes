@@ -42,7 +42,7 @@ namespace API_PI_Clubes.Application.Auth
             if (!user.EmailVerification.IsConfirmed)
                 throw new Exception("Email not verified");
 
-            if (dto.Password != null)
+            if (dto.Password == null)
                 throw new Exception("Password is required");
 
                 var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);

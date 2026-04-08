@@ -2,9 +2,11 @@
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -36,19 +38,13 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateAdminDTO(dto);
 
-            if (string.IsNullOrWhiteSpace(dto.UserName))
-                throw new ArgumentException("UserName é obrigatório", nameof(dto.UserName));
+            var user = await _userService.GetById(dto.UserId)
+                       ?? throw new KeyNotFoundException("Usuário não encontrado");
 
-            if (dto.UserId == Guid.Empty)
-                throw new ArgumentException("UserId é obrigatório e deve ser válido", nameof(dto.UserId));
-
-            var userExists = await _userService.GetById(dto.UserId);
-            if (userExists == null)
-                throw new InvalidOperationException("Usuário não encontrado");
-
+            using var transaction = (IDbContextTransaction)await _repository.BeginTransactionAsync();
             try
             {
-                var entity = new Admin
+                var entity = new Admin 
                 {
                     UserName = dto.UserName,
                     ContactNumber = dto.ContactNumber,
@@ -57,18 +53,19 @@ namespace API_PI_Clubes.Application.Services
                     TypeAccess = TypeAccessEnum.write,
                     CreatedAt = DateTime.UtcNow
                 };
-
                 await _repository.AddAsync(entity);
 
                 await _userService.UpdateRole(dto.UserId, RoleEnum.Admin);
 
                 await _repository.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new ResponseIdDTO { Id = entity.Id };
             }
-            catch (DbUpdateException ex)
+            catch (Exception)
             {
-                throw new InvalidOperationException("Erro ao criar administrador", ex);
+                await transaction.RollbackAsync();
+                throw;
             }
         }
 

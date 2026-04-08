@@ -6,6 +6,7 @@ using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -13,11 +14,13 @@ namespace API_PI_Clubes.Application.Services
     {
         private readonly IPlayerRepository _repository;
         private readonly IPlayerMapper _mapper;
+        private readonly IUserService _userService;
 
-        public PlayerService(IPlayerMapper mapper, IPlayerRepository repository)
+        public PlayerService(IPlayerMapper mapper, IPlayerRepository repository, IUserService userService)
         {
             _mapper = mapper;
             _repository = repository;
+            _userService = userService;
         }
 
         public async Task<IEnumerable<ResponsePlayerDTO>> GetAll()
@@ -40,21 +43,33 @@ namespace API_PI_Clubes.Application.Services
         public async Task<ResponseIdDTO> Create(CreatPlayerDTO dto)
         {
             ValidatePlayerDTO(dto);
-
-            var entity = new Player
+            
+            using var transaction = (IDbContextTransaction)await _repository.BeginTransactionAsync();
+            try
             {
-                UserName = dto.UserName,
-                ContactNumber = dto.ContactNumber,
-                Description = dto.Description,
-                RankCategory = RankCategoryEnum.none,
-                UserId = dto.UserId,
-                CreatedAt = DateTime.UtcNow
-            };
+                var entity = new Player
+                {
+                    UserName = dto.UserName,
+                    ContactNumber = dto.ContactNumber,
+                    Description = dto.Description,
+                    RankCategory = RankCategoryEnum.none,
+                    UserId = dto.UserId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _repository.AddAsync(entity);
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+                await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
 
-            return new ResponseIdDTO { Id = entity.Id };
+                await _repository.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ResponseIdDTO { Id = entity.Id };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
         }
 

@@ -1,7 +1,12 @@
-﻿using API_PI_Clubes.Application.DTOs;
+﻿using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Security.Interfaces;
+using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API_PI_Clubes.Controllers
 {
@@ -10,10 +15,18 @@ namespace API_PI_Clubes.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _service;
-        public AdminController(IAdminService service)
+        private readonly JwtSettings _jwtSettings;
+        private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
+
+        public AdminController(IAdminService service, IOptions<JwtSettings> options, ITokenService tokenService, IUserRepository userRepository)
         {
             _service = service;
+            _jwtSettings = options.Value;
+            _tokenService = tokenService;
+            _userRepository = userRepository;
         }
+      
 
         [Authorize]
         [HttpGet("{id}")]
@@ -28,6 +41,19 @@ namespace API_PI_Clubes.Controllers
         public async Task<IActionResult> Create(CreatAdminDTO dto)
         {
             var result = await _service.Create(dto);
+
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            var token = _tokenService.GenerateToken(user);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
+            };
+
+            Response.Cookies.Append("jwt", token, cookieOptions);
             return Ok(result);
         }
 

@@ -11,5 +11,6 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task SaveChangesAsync();
         void Update(Player Player);
         Task DeleteAsync(Guid id);
+        Task<IDisposable> BeginTransactionAsync();
     }
 }

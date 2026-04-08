@@ -58,5 +58,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+        public async Task<IDisposable> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync();
+        }
     }
 }

@@ -5,6 +5,7 @@ using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Mappers;
 using API_PI_Clubes.Application.Services;
+using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
@@ -48,6 +49,8 @@ namespace API_PI_Clubes.Application.DependencyInjection
 
             services.AddScoped<EmailBodyService>();
             services.AddScoped<IEmailService, EmailService>();
+
+            services.AddScoped<IStorageService, AzureStorageService>();
 
             services.AddScoped<ITokenService, TokenService>();
 

@@ -6,6 +6,7 @@ using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -25,13 +26,25 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// --- 2. Injeção de Dependência da Camada Application ---
+// --- 2. Configurações de Storage (Azure Blob Storage) ---
+var storageConnectionString = builder.Configuration.GetSection("AzureStorage:ConnectionString").Value
+    ?? throw new InvalidOperationException("Azure Storage connection string not found.");
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(storageConnectionString);
+});
+
+// --- 3. Injeção de Dependência da Camada Application ---
 builder.Services.AddApplication();
 builder.Services.AddTransient<TokenService>();
+
+// Configurações de E-mail
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// --- 3. Configurações de Segurança (JWT & Cookies) ---
+
+// --- 4. Configurações de Segurança (JWT & Cookies) ---
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
     ?? throw new InvalidOperationException("Jwt settings not configured.");
@@ -63,7 +76,6 @@ builder.Services
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Cookies["jwt"];
-
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     context.Token = accessToken;
@@ -76,12 +88,12 @@ builder.Services
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthorization();
 
-// --- 4. Configuração de CORS (Obrigatório para Cookies entre domínios) ---
+// --- 5. Configuração de CORS ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // URL do Angular
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -90,7 +102,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- 5. Pipeline de Execução ---
+// --- 6. Pipeline de Execução ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -105,12 +117,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors("DefaultPolicy");
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

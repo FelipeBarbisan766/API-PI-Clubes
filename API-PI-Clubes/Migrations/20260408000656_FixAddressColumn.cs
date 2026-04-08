@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API_PI_Clubes.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class FixAddressColumn : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,6 +17,14 @@ namespace API_PI_Clubes.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_ZipCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Neighborhood = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Complement = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address_City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -37,6 +45,11 @@ namespace API_PI_Clubes.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EmailVerification_IsConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    EmailVerification_VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ResetPassword_PasswordResetToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResetPassword_ResetTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ResetPassword_ResetPasswordAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Role = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -56,7 +69,7 @@ namespace API_PI_Clubes.Migrations
                     Type = table.Column<int>(type: "int", nullable: false),
                     Surface = table.Column<int>(type: "int", nullable: false),
                     IsCovered = table.Column<bool>(type: "bit", nullable: false),
-                    PricePerHour = table.Column<double>(type: "float", nullable: false),
+                    PricePerHour = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClubId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -125,6 +138,34 @@ namespace API_PI_Clubes.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Images",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ClubId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CourtId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Images_Clubs_ClubId",
+                        column: x => x.ClubId,
+                        principalTable: "Clubs",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Images_Courts_CourtId",
+                        column: x => x.CourtId,
+                        principalTable: "Courts",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Schedules",
                 columns: table => new
                 {
@@ -155,16 +196,16 @@ namespace API_PI_Clubes.Migrations
                 name: "ClubAdmins",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClubId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClubAdmins", x => x.Id);
+                    table.PrimaryKey("PK_ClubAdmins", x => new { x.ClubId, x.AdminId });
                     table.ForeignKey(
                         name: "FK_ClubAdmins_Admins_AdminId",
                         column: x => x.AdminId,
@@ -220,14 +261,19 @@ namespace API_PI_Clubes.Migrations
                 column: "AdminId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClubAdmins_ClubId",
-                table: "ClubAdmins",
-                column: "ClubId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Courts_ClubId",
                 table: "Courts",
                 column: "ClubId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Images_ClubId",
+                table: "Images",
+                column: "ClubId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Images_CourtId",
+                table: "Images",
+                column: "CourtId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Players_UserId",
@@ -255,6 +301,9 @@ namespace API_PI_Clubes.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ClubAdmins");
+
+            migrationBuilder.DropTable(
+                name: "Images");
 
             migrationBuilder.DropTable(
                 name: "Reserves");

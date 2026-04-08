@@ -10,8 +10,8 @@ namespace API_PI_Clubes.Model
         public RankCategoryEnum RankCategory { get; set; }
 
         public Guid UserId { get; set; }
-        public User User { get; set; }
+        public virtual User User { get; set; }
 
-        public ICollection<Reserve> Reserves { get; set; }
+        public virtual ICollection<Reserve> Reserves { get; set; }
     }
 }

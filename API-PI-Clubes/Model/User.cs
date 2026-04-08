@@ -14,7 +14,7 @@ namespace API_PI_Clubes.Model
         public ResetPasswordVO ResetPassword { get; set; }
         public RoleEnum Role { get; set; }
 
-        public ICollection<Admin> Admins { get; set; }
-        public ICollection<Player> Players { get; set; }
+        public virtual ICollection<Admin> Admins { get; set; }
+        public virtual ICollection<Player> Players { get; set; }
     }
 }

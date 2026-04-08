@@ -2,6 +2,7 @@
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.ValueObjects;
 
@@ -11,11 +12,13 @@ namespace API_PI_Clubes.Application.Services
     {
         private readonly IClubRepository _repository;
         private readonly IClubMapper _mapper;
+        private readonly IStorageService _storageService;
 
-        public ClubService(IClubMapper mapper, IClubRepository repository)
+        public ClubService(IClubMapper mapper, IClubRepository repository, IStorageService storageService)
         {
             _mapper = mapper;
             _repository = repository;
+            _storageService = storageService;
         }
 
         public async Task<IEnumerable<ResponseClubDTO>> GetAll()
@@ -40,6 +43,7 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateClubDTO(dto);
 
+            
             var entity = new Club
             {
                 Name = dto.Name,
@@ -54,8 +58,29 @@ namespace API_PI_Clubes.Application.Services
                     dto.State,
                     dto.Country
                 ),
-                Description = dto.Description
+                Description = dto.Description,
+                Images = new List<Image>() 
             };
+
+            
+            if (dto.Images != null && dto.Images.Any())
+            {
+                foreach (var file in dto.Images)
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+                    using var stream = file.OpenReadStream();
+
+                    var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
+
+                    entity.Images.Add(new Image
+                    {
+                        Url = imageUrl,
+                        Name = uniqueFileName
+                    });
+                }
+            }
 
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
@@ -71,7 +96,6 @@ namespace API_PI_Clubes.Application.Services
 
             return new ResponseIdDTO { Id = entity.Id };
         }
-
         public async Task<ResponseClubDTO> Update(Guid id, UpdateClubDTO dto)
         {
             ValidateId(id);

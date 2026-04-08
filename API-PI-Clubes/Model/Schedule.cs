@@ -11,9 +11,9 @@
         public DayOfWeek DayOfWeek { get; set; }
 
         public Guid CourtId { get; set; }
-        public Court Court { get; set; }
+        public virtual Court Court { get; set; }
 
-        public ICollection<Reserve> Reserves { get; set; }
+        public virtual ICollection<Reserve> Reserves { get; set; }
 
     }
 }

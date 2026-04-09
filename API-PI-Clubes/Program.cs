@@ -91,9 +91,9 @@ builder.Services.AddAuthorization();
 // --- 5. Configuração de CORS ---
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DefaultPolicy", policy =>
+    options.AddPolicy("CluberaPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("https://www.clubera.dev", "https://clubera.dev", "http://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -116,7 +116,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-app.UseCors("DefaultPolicy");
+app.UseCors("CluberaPolicy");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

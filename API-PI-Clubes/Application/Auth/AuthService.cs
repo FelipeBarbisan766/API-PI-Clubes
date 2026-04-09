@@ -164,5 +164,21 @@ namespace API_PI_Clubes.Application.Auth
 
             return true;
         }
+        public async Task<UserDTO> GetCurrentUserInfo(ClaimsPrincipal user)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                throw new Exception("User ID not found in token");
+            var entity = await _repository.GetByIdAsync(Guid.Parse(userId));
+            if (entity == null)
+                throw new Exception("User not found");
+            return new UserDTO
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Email = entity.Email,
+                Role = entity.Role
+            };
+        }
     }
 }

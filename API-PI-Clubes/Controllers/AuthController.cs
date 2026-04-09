@@ -42,7 +42,7 @@ namespace API_PI_Clubes.Controllers
 
                 Response.Cookies.Append("jwt", token, cookieOptions);
 
-                return Ok(new { message = "Login realizado com sucesso" });
+                return Ok("Login realizado com sucesso");
             }
             catch (Exception ex)
             {
@@ -102,7 +102,14 @@ namespace API_PI_Clubes.Controllers
         public IActionResult Logout()
         {
             Response.Cookies.Delete("jwt");
-            return Ok(new { message = "Logout realizado com sucesso" });
+            return Ok("Logout realizado com sucesso");
+        }
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var result = await _authService.GetCurrentUserInfo(User);
+            return Ok(result);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using System.Security.Claims;
 
 namespace API_PI_Clubes.Application.Auth
 {
@@ -10,6 +11,7 @@ namespace API_PI_Clubes.Application.Auth
         Task<bool> ResendEmailToken(string email);
         Task RequestResetPassword(string email);
         Task<bool> ResetPassword(string token, string password);
+        Task<UserDTO> GetCurrentUserInfo(ClaimsPrincipal user);
 
     }
 }

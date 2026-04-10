@@ -50,7 +50,7 @@ namespace API_PI_Clubes.Controllers
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
             };

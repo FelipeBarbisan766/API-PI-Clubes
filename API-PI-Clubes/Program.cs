@@ -100,6 +100,18 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,               
+                maxRetryDelay: TimeSpan.FromSeconds(10), 
+                errorNumbersToAdd: null);      
+        }));
+
+
 var app = builder.Build();
 
 // --- 6. Pipeline de Execução ---

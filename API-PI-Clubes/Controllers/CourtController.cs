@@ -34,7 +34,7 @@ namespace API_PI_Clubes.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(CreatCourtDTO dto)
+        public async Task<IActionResult> Create([FromForm] CreatCourtDTO dto)
         {
             var result = await _service.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

@@ -42,11 +42,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
-        public string ZipCode { get; set; }
         public string Street { get; set; }
-        public string Number { get; set; }
-        public string Neighborhood { get; set; }
-        public string? Complement { get; set; }
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
@@ -54,6 +50,7 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
         public List<TypeEnum> Types { get; set; }
+        public List<string> ImagesUrls { get; set; }
     }
     public class ResponseClubByIdDTO
     {
@@ -68,6 +65,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
+        public List<string> ImagesUrls { get; set; }
         public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
 }

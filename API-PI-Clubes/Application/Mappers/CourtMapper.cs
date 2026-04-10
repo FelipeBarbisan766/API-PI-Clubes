@@ -16,7 +16,6 @@ namespace API_PI_Clubes.Application.Mappers
                 Surface = court.Surface,
                 IsCovered = court.IsCovered,
                 PricePerHour = court.PricePerHour,
-                IsActive = court.IsActive,
                 Description = court.Description
             };
         }

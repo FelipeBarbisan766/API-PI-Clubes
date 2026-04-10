@@ -16,7 +16,9 @@ namespace API_PI_Clubes.Application.Mappers
                 Surface = court.Surface,
                 IsCovered = court.IsCovered,
                 PricePerHour = court.PricePerHour,
-                Description = court.Description
+                Description = court.Description,
+                ClubId = court.ClubId,
+                ImagesUrls = court.Images?.Select(i => i.Url).ToList() ?? new List<string>()
             };
         }
 

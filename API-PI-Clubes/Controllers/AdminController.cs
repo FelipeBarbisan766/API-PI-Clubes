@@ -43,6 +43,8 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
 
             var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null) 
+                return NotFound("User not found.");
             var token = _tokenService.GenerateToken(user);
 
             var cookieOptions = new CookieOptions

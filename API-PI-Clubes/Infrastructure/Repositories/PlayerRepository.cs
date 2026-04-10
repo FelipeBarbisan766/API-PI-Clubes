@@ -2,6 +2,7 @@
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Infrastructure.Repositories
 {
@@ -58,7 +59,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
-        public async Task<IDisposable> BeginTransactionAsync()
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return await _context.Database.BeginTransactionAsync();
         }

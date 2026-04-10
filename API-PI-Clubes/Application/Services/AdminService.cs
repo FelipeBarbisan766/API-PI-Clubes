@@ -38,35 +38,42 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateAdminDTO(dto);
 
-            var user = await _userService.GetById(dto.UserId)
-                       ?? throw new KeyNotFoundException("Usuário não encontrado");
+            var strategy = _repository.CreateExecutionStrategy();
 
-            using var transaction = (IDbContextTransaction)await _repository.BeginTransactionAsync();
-            try
+            return await strategy.ExecuteAsync(async () =>
             {
-                var entity = new Admin 
+                using var transaction = await _repository.BeginTransactionAsync();
+
+                try
                 {
-                    UserName = dto.UserName,
-                    ContactNumber = dto.ContactNumber,
-                    Description = dto.Description,
-                    UserId = dto.UserId,
-                    TypeAccess = TypeAccessEnum.write,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _repository.AddAsync(entity);
+                    var user = await _userService.GetById(dto.UserId)
+                               ?? throw new KeyNotFoundException("Usuário não encontrado");
 
-                await _userService.UpdateRole(dto.UserId, RoleEnum.Admin);
+                    var entity = new Admin
+                    {
+                        UserName = dto.UserName,
+                        ContactNumber = dto.ContactNumber,
+                        Description = dto.Description,
+                        UserId = dto.UserId,
+                        TypeAccess = TypeAccessEnum.write,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                await _repository.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    await _repository.AddAsync(entity);
 
-                return new ResponseIdDTO { Id = entity.Id };
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                    await _userService.UpdateRole(dto.UserId, RoleEnum.Admin);
+
+                    await _repository.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return new ResponseIdDTO { Id = entity.Id };
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
 
 

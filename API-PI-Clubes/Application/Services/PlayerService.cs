@@ -43,36 +43,44 @@ namespace API_PI_Clubes.Application.Services
         public async Task<ResponseIdDTO> Create(CreatPlayerDTO dto)
         {
             ValidatePlayerDTO(dto);
-            
-            using var transaction = (IDbContextTransaction)await _repository.BeginTransactionAsync();
-            try
+
+            var strategy = _repository.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
-                var entity = new Player
+                using var transaction = await _repository.BeginTransactionAsync();
+
+                try
                 {
-                    UserName = dto.UserName,
-                    ContactNumber = dto.ContactNumber,
-                    Description = dto.Description,
-                    RankCategory = RankCategoryEnum.none,
-                    UserId = dto.UserId,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _repository.AddAsync(entity);
+                    var user = await _userService.GetById(dto.UserId)
+                               ?? throw new KeyNotFoundException("Usuário não encontrado");
 
-                await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
+                    var entity = new Player
+                    {
+                        UserName = dto.UserName,
+                        ContactNumber = dto.ContactNumber,
+                        Description = dto.Description,
+                        RankCategory = RankCategoryEnum.none,
+                        UserId = dto.UserId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _repository.AddAsync(entity);
 
-                await _repository.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
 
-                return new ResponseIdDTO { Id = entity.Id };
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                    await _repository.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
+                    return new ResponseIdDTO { Id = entity.Id };
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+
+            });
         }
-
 
         public async Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto)
         {

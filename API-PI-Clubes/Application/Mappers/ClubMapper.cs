@@ -13,11 +13,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Id = club.Id,
                 Name = club.Name,
                 PhoneNumber = club.PhoneNumber,
-                ZipCode = club.Address.ZipCode,
                 Street = club.Address.Street,
-                Number = club.Address.Number,
-                Neighborhood = club.Address.Neighborhood,
-                Complement = club.Address.Complement,
                 City = club.Address.City,
                 State = club.Address.State,
                 Country = club.Address.Country,
@@ -55,6 +51,7 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
+                ImagesUrls = club.Images.Select(i => i.Url).ToList(),
                 Courts = club.Courts
                     .Where(co => co.IsActive)
                     .Select(q => new ResponseCourtDTO
@@ -64,8 +61,10 @@ namespace API_PI_Clubes.Application.Mappers
                         Type = q.Type,
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
-                        PricePerHour = q.PricePerHour
+                        PricePerHour = q.PricePerHour,
+                        ImagesUrls = q.Images.Select(i => i.Url).ToList()
                     }).ToList()
+
             };
         }
     }

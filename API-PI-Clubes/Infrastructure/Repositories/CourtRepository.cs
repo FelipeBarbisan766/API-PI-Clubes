@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Application.Interfaces.IRepositories;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,23 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Court>> GetAllAsync()
+        public async Task<IEnumerable<ResponseCourtDTO>> GetAllAsync()
         {
             return await _context.Courts
                 .Where(c => c.IsActive)
+                .Include(c => c.Images)
+                .Select(c => new ResponseCourtDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                    Surface = c.Surface,
+                    IsCovered = c.IsCovered,
+                    PricePerHour = c.PricePerHour,
+                    Description = c.Description,
+                    ClubId = c.ClubId,
+                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                })
                 .ToListAsync();
         }
 

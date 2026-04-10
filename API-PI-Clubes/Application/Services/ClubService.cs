@@ -3,6 +3,7 @@ using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Storage;
+using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.ValueObjects;
 
@@ -23,8 +24,7 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task<IEnumerable<ResponseClubDTO>> GetAll()
         {
-            var data = await _repository.GetAllAsync();
-            return _mapper.ToDTO(data);
+            return await _repository.GetAllAsync();
         }
 
         public async Task<ResponseClubByIdDTO> GetById(Guid id)
@@ -62,25 +62,18 @@ namespace API_PI_Clubes.Application.Services
                 Images = new List<Image>() 
             };
 
-            
-            if (dto.Images != null && dto.Images.Any())
+            var uploadTasks = dto.Images.Select(async file =>
             {
-                foreach (var file in dto.Images)
-                {
-                    var extension = Path.GetExtension(file.FileName);
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                var extension = Path.GetExtension(file.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                using var stream = file.OpenReadStream();
+                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
 
-                    using var stream = file.OpenReadStream();
+                return new Image { Url = imageUrl, Name = file.FileName };
+            }).ToList();
 
-                    var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
-
-                    entity.Images.Add(new Image
-                    {
-                        Url = imageUrl,
-                        Name = file.FileName
-                    });
-                }
-            }
+            var uploadedImages = await Task.WhenAll(uploadTasks);
+            entity.Images.AddRange(uploadedImages);
 
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();

@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Application.Interfaces.IRepositories;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,36 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Club>> GetAllAsync()
+        public async Task<IEnumerable<ResponseClubDTO>> GetAllAsync()
         {
             return await _context.Clubs
                 .Where(c => c.IsActive)
                 .Include(c => c.Courts.Where(co => co.IsActive))
+                .Include(c => c.Images)
+                .Select(c => new ResponseClubDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    PhoneNumber = c.PhoneNumber,
+                    Description = c.Description,
+                    Street = c.Address.Street,
+                    City = c.Address.City,
+                    State = c.Address.State,
+                    Country = c.Address.Country,
+
+                    MinPrice = c.Courts.Where(co => co.IsActive).Any()
+                       ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
+                       : 0,
+
+                    CourtCount = c.Courts.Count(co => co.IsActive),
+
+                    Types = c.Courts.Where(co => co.IsActive)
+                           .Select(co => co.Type)
+                           .Distinct()
+                           .ToList(),
+
+                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                })
                 .ToListAsync();
         }
 
@@ -26,7 +52,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Clubs
                 .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Images)
                 .Include(c => c.Courts.Where(co => co.IsActive))
+                    .ThenInclude(co => co.Images)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }

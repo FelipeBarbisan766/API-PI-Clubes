@@ -52,7 +52,7 @@ public class EmailService : IEmailService
     public async Task SendVerificationEmailAsync(string recipientEmail, string recipientName, string jwtToken)
     {
        
-        var baseUrl = "http://localhost:5000/api/auth/verify-email";
+        var baseUrl = "https://www.clubera.dev/verify-mail";
         var verificationLink = $"{baseUrl}?token={jwtToken}";
 
         var subject = "Verifique seu Email - Clubera PI";

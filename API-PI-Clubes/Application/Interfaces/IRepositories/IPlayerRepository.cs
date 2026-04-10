@@ -1,4 +1,6 @@
 ﻿using API_PI_Clubes.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
@@ -11,6 +13,8 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task SaveChangesAsync();
         void Update(Player Player);
         Task DeleteAsync(Guid id);
-        Task<IDisposable> BeginTransactionAsync();
+        IExecutionStrategy CreateExecutionStrategy();
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        
     }
 }

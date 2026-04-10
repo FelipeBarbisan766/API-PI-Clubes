@@ -38,6 +38,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Court?> GetByIdAsync(Guid id)
         {
             return await _context.Courts
+                .Include(c => c.Images)
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
 

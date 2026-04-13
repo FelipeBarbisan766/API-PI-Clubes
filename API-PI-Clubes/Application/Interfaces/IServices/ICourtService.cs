@@ -9,5 +9,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponseIdDTO> Create(CreatCourtDTO dto);
         Task<ResponseCourtDTO> Update(Guid id, UpdateCourtDTO dto);
         Task Delete(Guid id);
+        Task Upload(Guid id, UploadImageDTO dto);
+        Task DeleteImages(Guid id, DeleteImageDto dto);
     }
 }

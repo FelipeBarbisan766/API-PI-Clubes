@@ -17,16 +17,27 @@ public class AzureStorageService : IStorageService
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
-        // Cria o container caso ele não exista (opcional, mas seguro)
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
         var blobClient = containerClient.GetBlobClient(fileName);
 
-        // Define o tipo de conteúdo (ex: image/jpeg) para abrir direto no navegador
         var blobHttpHeader = new BlobHttpHeaders { ContentType = "image/jpeg" };
 
         await blobClient.UploadAsync(fileStream, new BlobUploadOptions { HttpHeaders = blobHttpHeader });
 
         return blobClient.Uri.ToString(); // Retorna a URL para salvar no seu banco SQL
     }
+
+    public async Task<bool> DeleteFileAsync(string blobName)
+    {
+        if (string.IsNullOrWhiteSpace(blobName))
+            throw new InvalidOperationException("blobName is null or empty");
+
+        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var blobClient = containerClient.GetBlobClient(blobName);
+
+        var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+        return result.Value;
+    }
+
 }

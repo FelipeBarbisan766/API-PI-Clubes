@@ -137,77 +137,78 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateId(id);
 
-            if (dto == null)
-                throw new InvalidOperationException("Dto Null");
-
-            if (dto.Images == null || !dto.Images.Any())
+            if (dto?.Images == null || !dto.Images.Any())
                 throw new InvalidOperationException("No images provided");
 
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Id not found");
+                throw new InvalidOperationException("Club not found");
 
-            data.Images ??= new List<Image>();
+            var uploadedImages = new List<Image>();
 
-            var uploadTasks = dto.Images.Select(async file =>
+            foreach (var file in dto.Images)
             {
-                if (file == null)
-                    throw new InvalidOperationException("File Null");
-
                 var extension = Path.GetExtension(file.FileName);
                 var uniqueFileName = $"{Guid.NewGuid()}{extension}";
 
                 using var stream = file.OpenReadStream();
-                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
 
-                return new Image { Url = imageUrl, Name = uniqueFileName };
-            }).ToList();
+                var imageUrl = await _storageService
+                    .UploadFileAsync(stream, uniqueFileName);
 
-            var uploadedImages = await Task.WhenAll(uploadTasks);
+                uploadedImages.Add(new Image
+                {
+                    Url = imageUrl,
+                    Name = uniqueFileName,
+                    ClubId = data.Id
+                });
+            }
+
+            data.Images ??= new List<Image>();
 
             data.Images.AddRange(uploadedImages);
 
-            _repository.Update(data);
             await _repository.SaveChangesAsync();
         }
-
         public async Task DeleteImages(Guid id, DeleteImageDto dto)
         {
             ValidateId(id);
 
-            if (dto == null)
-                throw new InvalidOperationException("Dto Null");
-
-            if (dto.ImageIds == null || !dto.ImageIds.Any())
+            if (dto?.ImageIds == null || !dto.ImageIds.Any())
                 throw new InvalidOperationException("No images provided");
 
             var data = await _repository.GetByIdAsync(id);
-            if (data == null)
-                throw new InvalidOperationException("Id not found");
 
-            if (data.Images == null || !data.Images.Any())
+            if (data?.Images == null || !data.Images.Any())
                 throw new InvalidOperationException("Club has no images");
 
             var imagesToDelete = data.Images
-                .Where(i => dto.ImageIds.Contains(i.ClubId))
+                .Where(i => dto.ImageIds.Contains(i.Id))
                 .ToList();
 
             if (!imagesToDelete.Any())
                 throw new InvalidOperationException("No matching images found");
 
-            foreach (var img in imagesToDelete)
+            try
             {
-                await _storageService.DeleteFileAsync(img.Name);
+                var deleteTasks = imagesToDelete
+                    .Select(img =>
+                        _storageService.DeleteFileAsync(img.Name));
+
+                await Task.WhenAll(deleteTasks);
+
+                foreach (var img in imagesToDelete)
+                    data.Images.Remove(img);
+
+                await _repository.SaveChangesAsync();
             }
-
-            foreach (var img in imagesToDelete)
-                data.Images.Remove(img);
-
-            _repository.Update(data);
-            await _repository.SaveChangesAsync();
+            catch
+            {
+                throw new InvalidOperationException(
+                    "Error deleting images from storage.");
+            }
         }
-
 
         private static void ValidateId(Guid id)
         {

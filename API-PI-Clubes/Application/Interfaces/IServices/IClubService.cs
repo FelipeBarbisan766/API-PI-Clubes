@@ -10,6 +10,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponseClubDTO> Update(Guid id, UpdateClubDTO dto);
         Task Delete(Guid id);
         Task Upload(Guid id, UploadImageDTO dto);
-    Task DeleteImages(Guid id, DeleteImageDto dto);
+        Task DeleteImages(Guid id, DeleteImageDto dto);
     }
 }

@@ -167,7 +167,7 @@ namespace API_PI_Clubes.Application.Services
                 throw new InvalidOperationException("Court has no images");
 
             var imagesToDelete = data.Images
-                .Where(i => dto.ImageIds.Contains(i.CourtId))
+                .Where(i => dto.ImageIds.Contains(i.Id))
                 .ToList();
 
             if (!imagesToDelete.Any())

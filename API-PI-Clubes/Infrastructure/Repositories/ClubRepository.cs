@@ -55,7 +55,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Images)
                 .Include(c => c.Courts.Where(co => co.IsActive))
                     .ThenInclude(co => co.Images)
-                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 

@@ -57,8 +57,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPut("Images/{id}")]
         public async Task<IActionResult> Upload(Guid id ,[FromForm] UploadImageDTO dto)
         {
-            var result = await _service.Upload(dto);
-            return Ok(result);
+            await _service.Upload(id, dto);
+            return Ok();
         }
         [Authorize(Roles = "Admin")]
         [HttpDelete("Images/{id}")]

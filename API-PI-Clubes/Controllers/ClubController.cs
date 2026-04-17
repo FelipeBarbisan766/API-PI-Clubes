@@ -53,19 +53,7 @@ namespace API_PI_Clubes.Controllers
             await _service.Delete(id);
             return NoContent();
         }
-        [Authorize(Roles = "Admin")]
-        [HttpPut("Images/{id}")]
-        public async Task<IActionResult> Upload(Guid id ,[FromForm] UploadImageDTO dto)
-        {
-            await _service.Upload(id, dto);
-            return Ok();
-        }
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("Images/{id}")]
-        public async Task<IActionResult> DeleteImages(Guid id ,DeleteImageDto dto)
-        {
-            await _service.DeleteImages(id, dto);
-            return NoContent();
-        }
+        
+        
     }
 }

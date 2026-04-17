@@ -52,6 +52,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Clubs
                 .Where(u => u.Id == id && u.IsActive)
+                .AsNoTracking()
                 .Include(c => c.Images)
                 .Include(c => c.Courts.Where(co => co.IsActive))
                     .ThenInclude(co => co.Images)

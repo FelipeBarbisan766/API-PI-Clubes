@@ -4,5 +4,6 @@
     {
         Task<string> UploadFileAsync(Stream fileStream, string fileName);
         Task<bool> DeleteFileAsync(string blobName);
+        Task<bool> DeleteBlobAsync(string blobName);
     }
 }

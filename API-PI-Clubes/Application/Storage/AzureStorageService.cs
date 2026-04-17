@@ -39,5 +39,12 @@ public class AzureStorageService : IStorageService
         var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
         return result.Value;
     }
+    public async Task<bool> DeleteBlobAsync(string blobName)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var blobClient = containerClient.GetBlobClient(blobName);
+
+        return await blobClient.DeleteIfExistsAsync();
+    }
 
 }

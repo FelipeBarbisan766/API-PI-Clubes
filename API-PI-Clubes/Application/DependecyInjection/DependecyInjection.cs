@@ -44,11 +44,15 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAdminRepository, AdminRepository>();
             services.AddScoped<IAdminMapper, AdminMapper>();
+
+            services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<IImageRepository, ImageRepository>();
             
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<EmailBodyService>();
             services.AddScoped<IEmailService, EmailService>();
+
 
             services.AddScoped<IStorageService, AzureStorageService>();
 

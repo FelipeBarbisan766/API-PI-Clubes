@@ -41,6 +41,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Images)
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
+        public async Task<Court?> GetByIdWithImagesAsync(Guid id)
+        {
+            return await _context.Courts
+                .Include(c => c.Images)
+                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+        }
 
         public async Task<bool> ExistsAsync(Guid id)
         {

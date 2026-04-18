@@ -4,6 +4,7 @@ using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Extensions;
+using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Model;
 
 
@@ -14,12 +15,14 @@ namespace API_PI_Clubes.Application.Services
         private readonly ICourtRepository _repository;
         private readonly ICourtMapper _mapper;
         private readonly IStorageService _storageService;
+        private readonly IImageRepository _imageRepository;
 
-        public CourtService(ICourtMapper mapper, ICourtRepository repository, IStorageService storageService)
+        public CourtService(ICourtMapper mapper, ICourtRepository repository, IStorageService storageService, IImageRepository imageRepository )
         {
             _mapper = mapper;
             _repository = repository;
             _storageService = storageService;
+            _imageRepository = imageRepository;
         }
 
         public async Task<IEnumerable<ResponseCourtDTO>> GetAll()
@@ -110,7 +113,40 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.DeleteAsync(id);
         }
+        public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
+        {
+            ValidateId(id);
 
+            var entity = await _repository.GetByIdWithImagesAsync(id);
+            if (entity == null) throw new Exception("Entity Not Found");
+
+
+            var uploadTasks = dto.Images.Select(async file =>
+            {
+                var extension = Path.GetExtension(file.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+                using var stream = file.OpenReadStream();
+                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
+
+                return new Image
+                {
+                    Name = uniqueFileName,
+                    Url = imageUrl,
+                    CourtId = id
+                };
+            }).ToList();
+
+            var uploadedImages = await Task.WhenAll(uploadTasks);
+
+
+            foreach (var img in uploadedImages)
+            {
+                _imageRepository.Add(img);
+            }
+
+            await _repository.SaveChangesAsync();
+        }
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)

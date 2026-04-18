@@ -9,5 +9,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponseIdDTO> Create(CreateClubDTO dto);
         Task<ResponseClubDTO> Update(Guid id, UpdateClubDTO dto);
         Task Delete(Guid id);
+        Task AddMoreImagesAsync(Guid clubId, UploadImageDTO dto);
     }
 }

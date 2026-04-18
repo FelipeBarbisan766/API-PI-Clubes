@@ -7,6 +7,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
     {
         Task<Image> GetByBlobNameAsync(string blobName);
         void Remove(Image image);
+        void Add(Image image);
         Task<bool> SaveChangesAsync();
     }
 }

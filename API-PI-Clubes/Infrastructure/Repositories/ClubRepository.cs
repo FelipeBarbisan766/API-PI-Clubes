@@ -58,6 +58,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     .ThenInclude(co => co.Images)
                 .FirstOrDefaultAsync();
         }
+        public async Task<Club?> GetByIdWithImagesAsync(Guid id)
+        {
+            return await _context.Clubs
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Images)
+                .FirstOrDefaultAsync();
+        }
 
         public async Task<bool> ExistsAsync(Guid id)
         {
@@ -95,5 +102,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }

@@ -6,6 +6,7 @@ using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -14,12 +15,14 @@ namespace API_PI_Clubes.Application.Services
         private readonly IClubRepository _repository;
         private readonly IClubMapper _mapper;
         private readonly IStorageService _storageService;
+        private readonly IImageRepository _imageRepository;
 
-        public ClubService(IClubMapper mapper, IClubRepository repository, IStorageService storageService)
+        public ClubService(IClubMapper mapper, IClubRepository repository, IStorageService storageService, IImageRepository imageRepository)
         {
             _mapper = mapper;
             _repository = repository;
             _storageService = storageService;
+            _imageRepository = imageRepository;
         }
 
         public async Task<IEnumerable<ResponseClubDTO>> GetAll()
@@ -132,6 +135,47 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.DeleteAsync(id);
         }
+
+        public async Task AddMoreImagesAsync(Guid clubId, UploadImageDTO dto)
+        { 
+            ValidateId(clubId);
+            
+            var club = await _repository.GetByIdWithImagesAsync(clubId);
+
+            if (club == null) throw new Exception("Club Not Found");
+
+
+            var uploadTasks = dto.Images.Select(async file =>
+            {
+                var extension = Path.GetExtension(file.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+                using var stream = file.OpenReadStream();
+                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
+
+                return new Image
+                {
+                    Id = Guid.NewGuid(), 
+                    Name = uniqueFileName,
+                    Url = imageUrl,
+                    ClubId = club.Id,    
+                    CreatedAt = DateTime.UtcNow, 
+                    IsActive = true
+                };
+            }).ToList();
+
+            var uploadedImages = await Task.WhenAll(uploadTasks);
+
+            
+            foreach (var img in uploadedImages)
+            {
+                _imageRepository.Add(img);
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
+
 
         private static void ValidateId(Guid id)
         {

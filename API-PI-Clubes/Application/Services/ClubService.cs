@@ -136,13 +136,12 @@ namespace API_PI_Clubes.Application.Services
             await _repository.DeleteAsync(id);
         }
 
-        public async Task AddMoreImagesAsync(Guid clubId, UploadImageDTO dto)
+        public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
         { 
-            ValidateId(clubId);
+            ValidateId(id);
             
-            var club = await _repository.GetByIdWithImagesAsync(clubId);
-
-            if (club == null) throw new Exception("Club Not Found");
+            var entity = await _repository.GetByIdWithImagesAsync(id);
+            if (entity == null) throw new Exception("Entity Not Found");
 
 
             var uploadTasks = dto.Images.Select(async file =>
@@ -155,12 +154,9 @@ namespace API_PI_Clubes.Application.Services
 
                 return new Image
                 {
-                    Id = Guid.NewGuid(), 
                     Name = uniqueFileName,
                     Url = imageUrl,
-                    ClubId = club.Id,    
-                    CreatedAt = DateTime.UtcNow, 
-                    IsActive = true
+                    ClubId = id
                 };
             }).ToList();
 
@@ -174,8 +170,6 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.SaveChangesAsync();
         }
-
-
 
         private static void ValidateId(Guid id)
         {

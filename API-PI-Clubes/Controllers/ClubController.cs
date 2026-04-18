@@ -38,10 +38,10 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
-        [HttpPost("images/{clubId}")]
-        public async Task<IActionResult> AddMoreImages(Guid clubId, [FromForm] UploadImageDTO dto)
+        [HttpPost("images/{id}")]
+        public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
-            await _service.AddMoreImagesAsync(clubId, dto);
+            await _service.AddMoreImagesAsync(id, dto);
             return Ok();
         }
 

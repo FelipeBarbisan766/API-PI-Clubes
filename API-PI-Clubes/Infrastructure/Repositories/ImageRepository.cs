@@ -24,6 +24,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             _context.Images.Remove(image);
         }
+
+        public void Add(Image image)
+        {
+            _context.Images.Add(image);
+        }
+
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;

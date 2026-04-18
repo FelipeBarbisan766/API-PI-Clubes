@@ -37,6 +37,13 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
             return Ok(result);
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("images/{clubId}")]
+        public async Task<IActionResult> AddMoreImages(Guid clubId, [FromForm] UploadImageDTO dto)
+        {
+            await _service.AddMoreImagesAsync(clubId, dto);
+            return Ok();
+        }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]

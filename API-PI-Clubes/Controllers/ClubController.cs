@@ -10,9 +10,11 @@ namespace API_PI_Clubes.Controllers
     public class ClubController : ControllerBase
     {
         private readonly IClubService _service;
-        public ClubController(IClubService service)
+        private readonly IAuthorizationService _authorizationService;
+        public ClubController(IClubService service, IAuthorizationService authorizationService)
         {
             _service = service;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet]
@@ -30,33 +32,51 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateClubDTO dto)
         {
             var result = await _service.Create(dto);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
+            var isAuthorized = await _authorizationService
+                .AuthorizeAsync(User, id, "AdminClubPolicy");
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             await _service.AddMoreImagesAsync(id, dto);
             return Ok();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto)
         {
+            var isAuthorized = await _authorizationService
+                .AuthorizeAsync(User, id, "AdminClubPolicy");
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var isAuthorized = await _authorizationService
+                .AuthorizeAsync(User, id, "AdminClubPolicy");
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             await _service.Delete(id);
             return NoContent();
         }

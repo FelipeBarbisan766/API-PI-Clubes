@@ -364,7 +364,9 @@ FodyWeavers.xsd
 
 AppSettings.Development.json 
 AppSettings.json
+appsettings.json
 
 Dockerfile
 Docker-compose.yml
+docker-compose.yml
 Configuration.json

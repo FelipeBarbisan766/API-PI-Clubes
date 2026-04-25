@@ -23,7 +23,7 @@ namespace API_PI_Imagees.Controllers
         //    return Ok(result);
         //}
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpDelete]
         public async Task<IActionResult> Delete(string blobName)
         {

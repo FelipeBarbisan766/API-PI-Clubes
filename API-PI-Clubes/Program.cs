@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
+using API_PI_Clubes.Application.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -111,9 +112,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 errorNumbersToAdd: null);      
         }));
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminClubPolicy", policy =>
+        policy.Requirements.Add(new ManageClubRequirement()));
+});
 
 var app = builder.Build();
-
+    
 // --- 6. Pipeline de Execução ---
 if (app.Environment.IsDevelopment())
 {

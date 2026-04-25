@@ -39,21 +39,21 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetByCourtId(courtId);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpPost]
         public async Task<IActionResult> Create(CreatScheduleDTO dto)
         {
             var result = await _service.Create(dto);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateScheduleDTO dto)
         {
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Both")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

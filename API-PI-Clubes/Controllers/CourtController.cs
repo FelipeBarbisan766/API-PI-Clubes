@@ -46,6 +46,14 @@ namespace API_PI_Clubes.Controllers
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
+            var data = await _service.GetById(id);
+            var clubId = data.ClubId;
+            var isAuthorized = await _authorizationService
+                .AuthorizeAsync(User, clubId, "AdminClubPolicy");
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             await _service.AddMoreImagesAsync(id, dto);
             return Ok();
         }
@@ -53,6 +61,14 @@ namespace API_PI_Clubes.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
         {
+            var data = await _service.GetById(id);
+            var clubId = data.ClubId;
+            var isAuthorized = await _authorizationService
+                .AuthorizeAsync(User, clubId, "AdminClubPolicy");
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             var result = await _service.Update(id, dto);
             return Ok(result);
         }

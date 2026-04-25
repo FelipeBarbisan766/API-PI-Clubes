@@ -40,7 +40,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin,None")]
         [HttpPost]
         public async Task<IActionResult> Create(CreatPlayerDTO dto)
         {
@@ -61,7 +61,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         
-        [Authorize]
+        [Authorize(Roles = "Player,Both")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
         {
@@ -69,7 +69,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Player,Both")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

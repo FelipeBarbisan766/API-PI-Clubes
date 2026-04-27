@@ -6,6 +6,7 @@ using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API_PI_Clubes.Controllers
 {
@@ -17,10 +18,10 @@ namespace API_PI_Clubes.Controllers
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
-        public PlayerController(IPlayerService service, JwtSettings jwtSettings, IUserRepository userRepository, ITokenService tokenService)
+        public PlayerController(IPlayerService service, IOptions<JwtSettings> options, IUserRepository userRepository, ITokenService tokenService)
         {
             _service = service;
-            _jwtSettings = jwtSettings;
+            _jwtSettings = options.Value;
             _userRepository = userRepository;
             _tokenService = tokenService;
         }
@@ -47,6 +48,8 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
 
             var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null) 
+                return NotFound("User not found.");
             var token = _tokenService.GenerateToken(user);
 
             var cookieOptions = new CookieOptions

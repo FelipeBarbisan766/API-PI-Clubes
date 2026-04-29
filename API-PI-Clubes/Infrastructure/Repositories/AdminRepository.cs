@@ -15,11 +15,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Admin>> GetAllAsync()
+        public async Task<Admin?> GetByUserIdAsync(Guid id)
         {
             return await _context.Admins
-                .Where(c => c.IsActive)
-                .ToListAsync();
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IsActive);
         }
 
         public async Task<Admin?> GetByIdAsync(Guid id)

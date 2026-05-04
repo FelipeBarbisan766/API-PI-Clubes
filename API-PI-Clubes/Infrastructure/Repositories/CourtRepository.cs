@@ -41,6 +41,26 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Images)
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
+        public async Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id)
+        {
+            return await _context.Courts
+                .AsQueryable()
+                .Where(c => c.ClubId == id && c.IsActive)
+                .Include(c => c.Images)
+                .Select(c => new ResponseCourtDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                    Surface = c.Surface,
+                    IsCovered = c.IsCovered,
+                    PricePerHour = c.PricePerHour,
+                    Description = c.Description,
+                    ClubId = c.ClubId,
+                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                })
+                .ToListAsync();
+        }
         public async Task<Court?> GetByIdWithImagesAsync(Guid id)
         {
             return await _context.Courts

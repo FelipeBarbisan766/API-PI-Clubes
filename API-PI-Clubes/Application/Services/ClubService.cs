@@ -41,6 +41,19 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTOById(data);
         }
+        
+        public async Task<List<ResponseClubDTO>> GetAllByAdminId(Guid id)
+        {
+            ValidateId(id);
+
+            var data = await _repository.GetAllByAdminIdAsync(id);
+
+            if (data == null)
+                throw new InvalidOperationException("Club not found");
+
+            return data;
+        }
+        
 
         public async Task<ResponseIdDTO> Create(CreateClubDTO dto)
         {

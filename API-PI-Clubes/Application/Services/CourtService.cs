@@ -41,6 +41,15 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
+        public async Task<List<ResponseCourtDTO>> GetByClubId(Guid id)
+        {
+            ValidateId(id);
+            var data = await _repository.GetAllByClubIdAsync(id);
+            if (data == null)
+                throw new InvalidOperationException("Court not found");
+
+            return data;
+        }
         public async Task<ResponseIdDTO> Create(CreatCourtDTO dto)
         {
             ValidateCourtDTO(dto);

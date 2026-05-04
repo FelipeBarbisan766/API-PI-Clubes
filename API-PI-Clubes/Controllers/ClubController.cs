@@ -31,6 +31,14 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
+        
+        [Authorize(Roles = "Admin,Both")]
+        [HttpGet("admin/{id}")]
+        public async Task<IActionResult> GetAllByAdminId(Guid id)
+        {
+            var result = await _service.GetAllByAdminId(id);
+            return Ok(result);
+        }
 
         [Authorize(Roles = "Admin,Both")]
         [HttpPost]

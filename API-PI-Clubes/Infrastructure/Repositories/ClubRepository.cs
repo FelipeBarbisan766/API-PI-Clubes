@@ -58,6 +58,38 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     .ThenInclude(co => co.Images)
                 .FirstOrDefaultAsync();
         }
+        public async Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id)
+        {
+            return await _context.Clubs
+                .AsQueryable()
+                .Where(c => c.ClubAdmin.Any(ca => ca.AdminId == id) && c.IsActive)
+                .Select(c => new ResponseClubDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    PhoneNumber = c.PhoneNumber,
+                    Description = c.Description,
+                    Street = c.Address.Street,
+                    City = c.Address.City,
+                    State = c.Address.State,
+                    Country = c.Address.Country,
+
+                    MinPrice = c.Courts.Where(co => co.IsActive).Any()
+                        ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
+                        : 0,
+
+                    CourtCount = c.Courts.Count(co => co.IsActive),
+
+                    Types = c.Courts
+                        .Where(co => co.IsActive)
+                        .Select(co => co.Type)
+                        .Distinct()
+                        .ToList(),
+
+                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                })
+                .ToListAsync();
+        }
         public async Task<Club?> GetByIdWithImagesAsync(Guid id)
         {
             return await _context.Clubs

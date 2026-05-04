@@ -8,6 +8,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
     {
         Task<IEnumerable<Player>> GetAllAsync();
         Task<Player?> GetByIdAsync(Guid id);
+        Task<Player?> GetByUserIdAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Player Player);
         Task SaveChangesAsync();

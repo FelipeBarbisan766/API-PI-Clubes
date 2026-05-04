@@ -27,6 +27,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Players
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
+        
+        public async Task<Player?> GetByUserIdAsync(Guid id)
+        {
+            return await _context.Players
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IsActive);
+        }
 
         public async Task<bool> ExistsAsync(Guid id)
         {

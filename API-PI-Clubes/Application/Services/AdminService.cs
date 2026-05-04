@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Application.DTOs;
+﻿using System.Security.Claims;
+using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -34,16 +35,16 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
-        public async Task<ResponseAdminDTO> GetByUserId(Guid id)
+        public async Task<ResponseAdminDTO> GetCurrentUserInfo(ClaimsPrincipal user)
         {
-            ValidateId(id);
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                throw new Exception("User ID not found in token");
+            var entity = await _repository.GetByUserIdAsync(Guid.Parse(userId));
+            if (entity == null)
+                throw new Exception("User not found");
 
-            var data = await _repository.GetByUserIdAsync(id);
-
-            if (data == null)
-                throw new InvalidOperationException("Admin not found");
-
-            return _mapper.ToDTO(data);
+            return _mapper.ToDTO(entity);
         }
         public async Task<ResponseIdDTO> Create(CreatAdminDTO dto)
         {

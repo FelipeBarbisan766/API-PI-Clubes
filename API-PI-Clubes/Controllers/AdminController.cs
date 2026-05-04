@@ -35,11 +35,11 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
-        [Authorize]
-        [HttpGet("user/{id}")]
-        public async Task<IActionResult> GetByUserId(Guid id)
+        [Authorize(Roles = "Admin,Both")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
         {
-            var result = await _service.GetByUserId(id);
+            var result = await _service.GetCurrentUserInfo(User);
             return Ok(result);
         }
 

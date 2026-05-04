@@ -40,6 +40,14 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
+        
+        [Authorize(Roles = "Player,Both")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var result = await _service.GetCurrentUserInfo(User);
+            return Ok(result);
+        }
 
         [Authorize(Roles = "Admin,None")]
         [HttpPost]

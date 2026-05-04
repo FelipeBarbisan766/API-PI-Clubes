@@ -7,6 +7,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
     {
         Task<IEnumerable<ResponseCourtDTO>> GetAllAsync();
         Task<Court?> GetByIdAsync(Guid id);
+        Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id);
         Task<Court?> GetByIdWithImagesAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Court Court);

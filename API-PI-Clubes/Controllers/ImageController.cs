@@ -15,14 +15,6 @@ namespace API_PI_Imagees.Controllers
             _service = service;
         }
 
-        //[Authorize(Roles = "Admin")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Upload(Guid id, UpdateImageDTO dto)
-        //{
-        //    var result = await _service.Update(id, dto);
-        //    return Ok(result);
-        //}
-
         [Authorize(Roles = "Admin,Both")]
         [HttpDelete]
         public async Task<IActionResult> Delete(string blobName)

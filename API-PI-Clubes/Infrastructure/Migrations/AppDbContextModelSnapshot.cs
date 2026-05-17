@@ -345,10 +345,12 @@ namespace API_PI_Clubes.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

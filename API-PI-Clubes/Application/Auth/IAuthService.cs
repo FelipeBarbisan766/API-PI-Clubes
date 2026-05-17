@@ -12,6 +12,8 @@ namespace API_PI_Clubes.Application.Auth
         Task RequestResetPassword(string email);
         Task<bool> ResetPassword(string token, string password);
         Task<UserDTO> GetCurrentUserInfo(ClaimsPrincipal user);
+        Task GoogleSignUp(string idToken);
+        Task<string> GoogleLogin(string idToken);
 
     }
 }

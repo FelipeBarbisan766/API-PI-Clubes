@@ -111,5 +111,37 @@ namespace API_PI_Clubes.Controllers
             var result = await _authService.GetCurrentUserInfo(User);
             return Ok(result);
         }
+        [HttpPost("google/signup")]
+        public async Task<IActionResult> GoogleSignUp([FromBody] GoogleSignUpRequest request)
+        {
+            await _authService.GoogleSignUp(request.IdToken);
+            return Ok("Usuario gerado com sucesso!");
+        }
+
+        public record GoogleSignUpRequest(string IdToken);
+        
+        [HttpPost("google/login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleSignUpRequest request)
+        {
+            try
+            {
+                var token = await _authService.GoogleLogin(request.IdToken);
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
+                };
+
+                Response.Cookies.Append("jwt", token, cookieOptions);
+
+                return Ok("Login realizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
     }
 }

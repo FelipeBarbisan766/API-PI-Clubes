@@ -8,11 +8,12 @@ namespace API_PI_Clubes.Model
     {
         public string Name { get; set; }
         public string Email { get; set; }
-        public string PasswordHash { get; set; }
-        public string PhoneNumber { get; set; }
+        public string? PasswordHash { get; set; }
+        public string? PhoneNumber { get; set; }
         public EmailVerificationVO EmailVerification { get; set; }
         public ResetPasswordVO ResetPassword { get; set; }
         public RoleEnum Role { get; set; }
+        public string Provider { get; set; } = "local";
 
         public virtual ICollection<Admin> Admins { get; set; }
         public virtual ICollection<Player> Players { get; set; }

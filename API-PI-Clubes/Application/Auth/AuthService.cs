@@ -8,6 +8,8 @@ using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
 using System.Security.Claims;
+using Google.Apis.Auth;
+using Microsoft.Extensions.Options;
 
 
 namespace API_PI_Clubes.Application.Auth
@@ -18,18 +20,20 @@ namespace API_PI_Clubes.Application.Auth
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUserRepository _repository;
         private readonly IEmailService _emailService;
-
+        private readonly IConfiguration _config;
 
         public AuthService(
             IUserRepository repository,
             ITokenService tokenService,
             IPasswordHasher passwordHasher,
-            IEmailService emailService)
+            IEmailService emailService,
+            IConfiguration config)
         {
             _repository = repository;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
             _emailService = emailService;
+            _config = config;
         }
 
         public async Task<string> LoginAsync(LoginDTO dto)
@@ -45,7 +49,7 @@ namespace API_PI_Clubes.Application.Auth
             if (dto.Password == null)
                 throw new Exception("Password is required");
 
-                var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);
+            var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);
 
             if (!validPassword)
                 throw new Exception("Invalid password");
@@ -179,6 +183,68 @@ namespace API_PI_Clubes.Application.Auth
                 Email = entity.Email,
                 Role = entity.Role
             };
+        }
+        public async Task GoogleSignUp(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = [_config["Google:ClientId"]]
+            };
+
+            GoogleJsonWebSignature.Payload payload;
+
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            }
+            catch (InvalidJwtException)
+            {
+                throw new Exception("Token do Google inválido ou expirado.");
+            }
+
+            var userExists = await _repository.GetByEmailAsync(payload.Email);
+            if (userExists != null)
+                throw new Exception("User already exists");
+
+            if (!payload.EmailVerified)
+                throw new Exception("E-mail do Google não verificado.");
+
+            var entity = new User
+            {
+                Name = payload.Name,
+                Email = payload.Email,
+                Provider = "google",
+                Role = RoleEnum.None,
+            };
+            entity.EmailVerification = EmailVerificationVO.Confirm();
+            await _repository.AddAsync(entity);
+            await _repository.SaveChangesAsync();
+
+        }
+        public async Task<string> GoogleLogin(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = [_config["Google:ClientId"]]
+            };
+
+            GoogleJsonWebSignature.Payload payload;
+
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            }
+            catch (InvalidJwtException)
+            {
+                throw new Exception("Token do Google inválido ou expirado.");
+            }
+
+            var user = await _repository.GetByEmailAsync(payload.Email);
+            if (user is null)
+                throw new Exception("Nenhuma conta encontrada com esse e-mail. Faça o cadastro primeiro.");
+            
+            var token = _tokenService.GenerateToken(user);
+            return token;
         }
     }
 }

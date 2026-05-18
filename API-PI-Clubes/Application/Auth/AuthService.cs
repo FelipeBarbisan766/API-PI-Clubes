@@ -72,7 +72,7 @@ namespace API_PI_Clubes.Application.Auth
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 PhoneNumber = dto.PhoneNumber,
-
+                Provider = "local",
                 Role = RoleEnum.None,
 
                 EmailVerification = EmailVerificationVO.Create()

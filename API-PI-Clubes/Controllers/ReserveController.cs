@@ -29,6 +29,13 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
+        
+        [HttpGet("club/{id}")]
+        public async Task<IActionResult> GetByClubId(Guid id)
+        {
+            var result = await _service.GetByClubId(id);
+            return Ok(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreatReserveDTO dto)

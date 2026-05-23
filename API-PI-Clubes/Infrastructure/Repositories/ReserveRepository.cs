@@ -26,7 +26,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Reserves
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
-
+        public async Task<IEnumerable<Reserve>> GetAllByClubIdAsync(Guid clubId)
+        {
+            return await _context.Reserves
+                .Where(r => r.IsActive &&
+                            r.Schedule.Court.ClubId == clubId)
+                .Include(r => r.Schedule)
+                .ThenInclude(s => s.Court)
+                .ToListAsync();
+        }
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Reserves

@@ -39,6 +39,17 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
+        public async Task<IEnumerable<ResponseReserveDTO>> GetByClubId(Guid id)
+        {
+            ValidateId(id);
+
+            var data = await _repository.GetAllByClubIdAsync(id);
+
+            if (data == null)
+                throw new InvalidOperationException("Reserve not found");
+
+            return _mapper.ToDTO(data);
+        }
         public async Task<ResponseIdDTO> Create(CreatReserveDTO dto)
         {
             ValidateReserveDTO(dto);

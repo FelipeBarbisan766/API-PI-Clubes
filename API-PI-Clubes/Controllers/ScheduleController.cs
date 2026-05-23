@@ -33,7 +33,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [HttpGet("courts/{courtId}")]
+        [HttpGet("court/{courtId}")]
         public async Task<IActionResult> GetByCourtId(Guid courtId)
         {     
             var result = await _service.GetByCourtId(courtId);

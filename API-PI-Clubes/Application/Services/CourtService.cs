@@ -66,18 +66,21 @@ namespace API_PI_Clubes.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 Images = new List<Image>()
             };
-            var uploadTasks = dto.Images.Select(async file =>
+            if (dto.Images.Count > 0)
             {
-                var extension = Path.GetExtension(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                using var stream = file.OpenReadStream();
-                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
+                var uploadTasks = dto.Images.Select(async file =>
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    using var stream = file.OpenReadStream();
+                    var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
 
-                return new Image { Url = imageUrl, Name = uniqueFileName };
-            }).ToList();
+                    return new Image { Url = imageUrl, Name = uniqueFileName };
+                }).ToList();
 
-            var uploadedImages = await Task.WhenAll(uploadTasks);
-            entity.Images.AddRange(uploadedImages);
+                var uploadedImages = await Task.WhenAll(uploadTasks);
+                entity.Images.AddRange(uploadedImages);
+            }
 
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();

@@ -66,7 +66,7 @@ namespace API_PI_Clubes.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 Images = new List<Image>()
             };
-            if (dto.Images.Count > 0)
+            if (dto.Images != null && dto.Images.Count > 0)
             {
                 var uploadTasks = dto.Images.Select(async file =>
                 {

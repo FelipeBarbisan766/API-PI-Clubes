@@ -77,7 +77,7 @@ namespace API_PI_Clubes.Application.Services
                 Description = dto.Description,
                 Images = new List<Image>() 
             };
-            if (dto.Images.Count > 0)
+            if (dto.Images != null && dto.Images.Count > 0)
             {
                 var uploadTasks = dto.Images.Select(async file =>
                 {

@@ -128,11 +128,11 @@ if (app.Environment.IsDevelopment())
 }
 
 // Aplicação automática de Migrations
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     db.Database.Migrate();
+// }
 
 app.UseCors("CluberaPolicy");
 app.UseRouting();

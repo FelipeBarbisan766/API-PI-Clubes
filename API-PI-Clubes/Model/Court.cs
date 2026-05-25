@@ -17,6 +17,6 @@ namespace API_PI_Clubes.Model
         public virtual Club Club { get; set; }
 
         public virtual ICollection<Schedule> Schedules { get; set; }
-        public virtual ICollection<Image> Images { get; set; }
+        public virtual ICollection<Image>? Images { get; set; }
     }
 }

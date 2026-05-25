@@ -11,9 +11,6 @@ namespace API_PI_Clubes.Application.Mappers
             return new ResponsePlayerDTO
             {
                 Id = player.Id,
-                UserName = player.UserName,
-                ContactNumber = player.ContactNumber,
-                Description = player.Description,
                 RankCategory = player.RankCategory,
                 UserId = player.UserId
             };

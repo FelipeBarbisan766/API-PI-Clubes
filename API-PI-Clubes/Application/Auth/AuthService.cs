@@ -71,7 +71,6 @@ namespace API_PI_Clubes.Application.Auth
                 Name = dto.Name,
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
-                PhoneNumber = dto.PhoneNumber,
                 Provider = "local",
                 Role = RoleEnum.None,
 

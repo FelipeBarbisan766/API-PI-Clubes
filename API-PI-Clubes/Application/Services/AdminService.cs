@@ -63,9 +63,6 @@ namespace API_PI_Clubes.Application.Services
 
                     var entity = new Admin
                     {
-                        UserName = dto.UserName,
-                        ContactNumber = dto.ContactNumber,
-                        Description = dto.Description,
                         UserId = dto.UserId,
                         TypeAccess = TypeAccessEnum.write,
                         CreatedAt = DateTime.UtcNow
@@ -99,9 +96,6 @@ namespace API_PI_Clubes.Application.Services
             if (data == null)
                 throw new InvalidOperationException("Admin not found");
 
-            data.UserName = dto.UserName;
-            data.ContactNumber = dto.ContactNumber;
-            data.Description = dto.Description;
             data.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(data);

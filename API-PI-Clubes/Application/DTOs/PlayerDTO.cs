@@ -4,10 +4,6 @@ namespace API_PI_Clubes.Application.DTOs
 {
     public class CreatPlayerDTO
     {
-        public string UserName { get; set; }
-        public string ContactNumber { get; set; }
-        public string Description { get; set; }
-
         public Guid UserId { get; set; }
     }
 

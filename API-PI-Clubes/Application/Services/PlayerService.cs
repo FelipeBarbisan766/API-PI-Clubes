@@ -71,9 +71,6 @@ namespace API_PI_Clubes.Application.Services
 
                     var entity = new Player
                     {
-                        UserName = dto.UserName,
-                        ContactNumber = dto.ContactNumber,
-                        Description = dto.Description,
                         RankCategory = RankCategoryEnum.none,
                         UserId = dto.UserId,
                         CreatedAt = DateTime.UtcNow
@@ -106,9 +103,6 @@ namespace API_PI_Clubes.Application.Services
             if (data == null)
                 throw new InvalidOperationException("Player not found");
 
-            data.UserName = dto.UserName;
-            data.ContactNumber = dto.ContactNumber;
-            data.Description = dto.Description;
             data.RankCategory = RankCategoryEnum.none;
             data.UpdatedAt = DateTime.UtcNow;
 

@@ -11,7 +11,7 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal PricePerHour { get; set; }
         public string Description { get; set; }
         public Guid ClubId { get; set; }
-        public List<IFormFile> Images { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 
     public class UpdateCourtDTO

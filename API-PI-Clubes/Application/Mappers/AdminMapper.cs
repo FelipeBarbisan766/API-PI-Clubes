@@ -12,9 +12,6 @@ namespace API_PI_Clubes.Application.Mappers
             return new ResponseAdminDTO
             {
                 Id = admin.Id,
-                UserName = admin.UserName,
-                ContactNumber = admin.ContactNumber,
-                Description = admin.Description,
                 TypeAccess = admin.TypeAccess,
                 UserId = admin.UserId
 

@@ -4,9 +4,6 @@ namespace API_PI_Clubes.Model
 {
     public class Player : BaseEntity
     {
-        public string UserName { get; set; }
-        public string ContactNumber { get; set; }
-        public string Description { get; set; }
         public RankCategoryEnum RankCategory { get; set; }
 
         public Guid UserId { get; set; }

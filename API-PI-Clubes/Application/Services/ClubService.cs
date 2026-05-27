@@ -25,9 +25,17 @@ namespace API_PI_Clubes.Application.Services
             _imageRepository = imageRepository;
         }
 
-        public async Task<IEnumerable<ResponseClubDTO>> GetAll()
+        public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query)
         {
-            return await _repository.GetAllAsync();
+            var (items, total) = await _repository.GetAllAsync(query);
+
+            return new PagedResultDTO<ResponseClubDTO>
+            {
+                Data = items,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
 
         public async Task<ResponseClubByIdDTO> GetById(Guid id)

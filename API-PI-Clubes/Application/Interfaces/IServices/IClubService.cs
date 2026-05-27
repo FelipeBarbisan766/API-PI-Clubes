@@ -4,7 +4,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IClubService
     {
-        Task<IEnumerable<ResponseClubDTO>> GetAll();
+        Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query);
         Task<ResponseClubByIdDTO> GetById(Guid id);
         Task<List<ResponseClubDTO>> GetAllByAdminId(Guid id);
         Task<ResponseIdDTO> Create(CreateClubDTO dto);

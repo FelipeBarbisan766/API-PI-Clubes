@@ -15,10 +15,26 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<ResponseClubDTO>> GetAllAsync()
+        public async Task<(IEnumerable<ResponseClubDTO> Items, int TotalCount)> GetAllAsync(ClubQueryDTO query)
         {
-            return await _context.Clubs
+            var q = _context.Clubs
                 .Where(c => c.IsActive)
+                .AsQueryable();
+
+            // Filtros
+            if (!string.IsNullOrWhiteSpace(query.Name))
+                q = q.Where(c => c.Name.Contains(query.Name));
+
+            if (!string.IsNullOrWhiteSpace(query.City))
+                q = q.Where(c => c.Address.City.Contains(query.City));
+
+            if (query.Types != null && query.Types.Count > 0)
+                q = q.Where(c => c.Courts
+                    .Any(co => co.IsActive && query.Types.Contains(co.Type)));
+
+            var totalCount = await q.CountAsync();
+
+            var items = await q
                 .Include(c => c.Courts.Where(co => co.IsActive))
                 .Include(c => c.Images)
                 .Select(c => new ResponseClubDTO
@@ -31,21 +47,20 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     City = c.Address.City,
                     State = c.Address.State,
                     Country = c.Address.Country,
-
                     MinPrice = c.Courts.Where(co => co.IsActive).Any()
-                       ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
-                       : 0,
-
+                        ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
+                        : 0,
                     CourtCount = c.Courts.Count(co => co.IsActive),
-
                     Types = c.Courts.Where(co => co.IsActive)
-                           .Select(co => co.Type)
-                           .Distinct()
-                           .ToList(),
-
+                        .Select(co => co.Type).Distinct().ToList(),
                     ImagesUrls = c.Images.Select(i => i.Url).ToList()
                 })
+                .OrderBy(c => c.Name)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task<Club?> GetByIdAsync(Guid id)

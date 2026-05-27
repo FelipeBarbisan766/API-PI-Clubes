@@ -3,7 +3,16 @@ using Microsoft.Identity.Client;
 
 namespace API_PI_Clubes.Application.DTOs
 {
-   
+    public class ClubQueryDTO
+    {
+        public string? Name { get; set; }
+        public string? City { get; set; }
+        public List<TypeEnum>? Types { get; set; } 
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
     public class CreateClubDTO
     {
         public Guid adminId { get; set; }

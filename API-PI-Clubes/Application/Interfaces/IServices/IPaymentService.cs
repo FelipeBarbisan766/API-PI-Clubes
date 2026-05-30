@@ -4,7 +4,8 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IPaymentService
     {
-        Task<ResponseIdDTO> Create(CreatPaymentDTO dto);
-        Task<ResponsePaymentDTO> ConfirmFromWebhook(Guid gatewayId);
+        Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto);
+        Task HandleWebhookAsync(MercadoPagoWebhookDto webhook);
+        Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId);
     }
 }

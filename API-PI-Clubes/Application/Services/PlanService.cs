@@ -13,50 +13,76 @@ namespace API_PI_Clubes.Application.Services
 {
     public class PlanService : IPlanService
     {
-        private readonly IPlanRepository _repository;
+        private readonly IPlanRepository _planRepository;
 
-        public PlanService(IPlanRepository repository)
+        public PlanService(IPlanRepository planRepository)
         {
-            _repository = repository;
+            _planRepository = planRepository;
         }
 
-        public async Task<IEnumerable<ResponsePlanDTO>> GetAll()
+        public async Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync()
         {
-            return null;
+            var plans = await _planRepository.GetAllActiveAsync();
+            return plans.Select(MapToDto);
         }
-
-        public async Task<ResponseIdDTO> Create(CreatPlanDTO dto)
+ 
+        public async Task<PlanResponseDto> CreateAsync(CreatePlanDto dto)
         {
-            return null;
-
+            var plan = new Plan
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                QuantClub = dto.QuantClub,
+                QuantCourt = dto.QuantCourt,
+                DurationDays = dto.DurationDays,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+ 
+            await _planRepository.AddAsync(plan);
+            return MapToDto(plan);
         }
-
-        public async Task<ResponsePlanDTO> Update(Guid id, UpdatePlanDTO dto)
+ 
+        public async Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto)
         {
-            return null;
+            var plan = await _planRepository.GetByIdAsync(id)
+                       ?? throw new Exception("Plano não encontrado.");
+ 
+            // Só atualiza os campos que foram enviados
+            if (dto.Name is not null) plan.Name = dto.Name;
+            if (dto.Description is not null) plan.Description = dto.Description;
+            if (dto.Price is not null) plan.Price = dto.Price.Value;
+            if (dto.QuantClub is not null) plan.QuantClub = dto.QuantClub.Value;
+            if (dto.QuantCourt is not null) plan.QuantCourt = dto.QuantCourt.Value;
+            if (dto.DurationDays is not null) plan.DurationDays = dto.DurationDays.Value;
+ 
+            await _planRepository.UpdateAsync(plan);
+            return MapToDto(plan);
         }
-
-        public async Task<ResponsePlanDTO> SetActive(Guid id, bool Action)
+ 
+        public async Task SetActiveAsync(Guid id, bool isActive)
         {
-            return null;
+            var plan = await _planRepository.GetByIdAsync(id)
+                       ?? throw new Exception("Plano não encontrado.");
+ 
+            plan.IsActive = isActive;
+            await _planRepository.UpdateAsync(plan);
         }
+        
+        
+        private static PlanResponseDto MapToDto(Plan p) => new(
+            Id: p.Id,
+            Name: p.Name,
+            Description: p.Description,
+            Price: p.Price,
+            QuantClub: p.QuantClub,
+            QuantCourt: p.QuantCourt,
+            DurationDays: p.DurationDays,
+            IsActive: p.IsActive
+        );
 
-        private static void ValidateId(Guid id)
-        {
-            if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
-        }
 
-        private static void ValidatePlanDTO(CreatPlanDTO dto)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-        }
-
-        private static void ValidateUpdatePlanDTO(UpdatePlanDTO dto)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-        }
     }
 }

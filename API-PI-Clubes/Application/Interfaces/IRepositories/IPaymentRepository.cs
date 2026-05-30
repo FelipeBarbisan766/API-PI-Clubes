@@ -4,6 +4,11 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
     public interface IPaymentRepository
     {
-        Task SaveChangesAsync();
+        Task<Payment?> GetByIdAsync(Guid id);
+        Task<Payment?> GetByGatewayTransactionIdAsync(string gatewayTransactionId);
+        Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId);
+        Task AddAsync(Payment payment);
+        Task UpdateAsync(Payment payment);
+
     }
 }

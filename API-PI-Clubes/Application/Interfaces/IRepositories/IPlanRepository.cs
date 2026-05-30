@@ -4,6 +4,11 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
     public interface IPlanRepository
     {
-        Task SaveChangesAsync();
+        Task<Plan?> GetByIdAsync(Guid id);
+        Task<IEnumerable<Plan>> GetAllActiveAsync();
+        Task AddAsync(Plan plan);
+        Task UpdateAsync(Plan plan);
+
+
     }
 }

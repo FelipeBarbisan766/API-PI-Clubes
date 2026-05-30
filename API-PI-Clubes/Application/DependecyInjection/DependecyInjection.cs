@@ -50,6 +50,16 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IImageRepository, ImageRepository>();
             
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            
+            services.AddScoped<ISubscriptionService, SubscriptionService>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            
+            services.AddScoped<IPlanService, PlanService>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
+
+            
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<EmailBodyService>();

@@ -2,17 +2,33 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
-    public class CreatPlanDTO
-    {
-        
-    }
-    public class UpdatePlanDTO
-    {
-        
-    }
+    public record CreatePlanDto(
+        string Name,
+        string Description,
+        decimal Price,
+        int QuantClub,
+        int QuantCourt,
+        int DurationDays
+    );
+ 
+    public record UpdatePlanDto(
+        string? Name,
+        string? Description,
+        decimal? Price,
+        int? QuantClub,
+        int? QuantCourt,
+        int? DurationDays
+    );
+ 
+    public record PlanResponseDto(
+        Guid Id,
+        string Name,
+        string Description,
+        decimal Price,
+        int QuantClub,
+        int QuantCourt,
+        int DurationDays,
+        bool IsActive
+    );
 
-    public class ResponsePlanDTO
-    {
-        
-    }
 }

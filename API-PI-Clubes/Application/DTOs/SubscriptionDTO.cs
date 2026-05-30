@@ -2,17 +2,20 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
-    public class CreatSubscriptionDTO
-    {
-        
-    }
-    public class UpdateSubscriptionDTO
-    {
-        
-    }
+    public record CreateSubscriptionDto(
+        Guid AdminId,
+        Guid PlanId,
+        Guid PaymentId
+    );
+ 
+    public record SubscriptionResponseDto(
+        Guid Id,
+        Guid AdminId,
+        Guid PlanId,
+        string PlanName,
+        DateTime StartDate,
+        DateTime ExpiresAt,
+        bool IsActive
+    );
 
-    public class ResponseSubscriptionDTO
-    {
-        
-    }
 }

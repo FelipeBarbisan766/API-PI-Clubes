@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Infrastructure.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,6 +118,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminClubPolicy", policy =>
         policy.Requirements.Add(new ManageClubRequirement()));
 });
+
+builder.Services.AddHostedService<SubscriptionExpiryJob>();
 
 var app = builder.Build();
     

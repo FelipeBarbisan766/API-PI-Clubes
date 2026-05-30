@@ -13,58 +13,84 @@ namespace API_PI_Clubes.Application.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private readonly ISubscriptionRepository _repository;
+        private readonly ISubscriptionRepository _subscriptionRepository;
+        private readonly IPlanRepository _planRepository;   
 
-        public SubscriptionService(ISubscriptionRepository repository)
+        public SubscriptionService(    
+            ISubscriptionRepository subscriptionRepository,
+            IPlanRepository planRepository
+        )
         {
-            _repository = repository;
+            _subscriptionRepository = subscriptionRepository;
+            _planRepository = planRepository;
         }
 
-        public async Task<ResponseSubscriptionDTO> CheckAccess(Guid id)
+        public async Task<SubscriptionResponseDto?> GetActiveByAdminAsync(Guid adminId)
         {
-            return null;
+            var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+     
+            if (subscription is null)
+                return null;
+     
+            return MapToDto(subscription);
         }
-        public async Task<ResponseSubscriptionDTO> GetActiveByAdmin(Guid id)
+     
+        public async Task<bool> CheckAccessAsync(Guid adminId)
         {
-            return null;
+            var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+     
+            if (subscription is null)
+                return false;
+     
+            return subscription.IsActive && subscription.ExpiresAt > DateTime.UtcNow;
         }
-        public async Task<ResponseIdDTO> Create(CreatSubscriptionDTO dto)
+     
+        public async Task RenewAsync(Guid adminId, Guid paymentId)
         {
-            return null;
-
+            var current = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+     
+            if (current is null)
+                throw new Exception("Nenhuma assinatura ativa encontrada para renovar.");
+     
+            var plan = await _planRepository.GetByIdAsync(current.PlanId)
+                ?? throw new Exception("Plano da assinatura não encontrado.");
+     
+            current.PaymentId = paymentId;
+            current.StartDate = current.ExpiresAt;
+            current.ExpiresAt = current.ExpiresAt.AddDays(plan.DurationDays);
+            current.IsActive = true;
+     
+            await _subscriptionRepository.UpdateAsync(current);
         }
-
-
-        public async Task<ResponseSubscriptionDTO> Renew(Guid id, UpdateSubscriptionDTO dto)
+     
+        public async Task CancelAsync(Guid subscriptionId)
         {
-            return null;
+            var subscription = await _subscriptionRepository.GetByIdAsync(subscriptionId)
+                ?? throw new Exception("Assinatura não encontrada.");
+     
+            subscription.IsActive = false;
+            await _subscriptionRepository.UpdateAsync(subscription);
         }
-
-        public async Task Cancel(Guid id)
+     
+        public async Task ExpireOverdueAsync()
         {
-            
+            var expired = await _subscriptionRepository.GetExpiredAsync();
+     
+            foreach (var subscription in expired)
+            {
+                subscription.IsActive = false;
+                await _subscriptionRepository.UpdateAsync(subscription);
+            }
         }
-
-        public async Task ExpireOverdue()
-        {
-        }
-
-        private static void ValidateId(Guid id)
-        {
-            if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
-        }
-
-        private static void ValidateSubscriptionDTO(CreatSubscriptionDTO dto)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-        }
-
-        private static void ValidateUpdateSubscriptionDTO(UpdateSubscriptionDTO dto)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-        }
+        
+        private static SubscriptionResponseDto MapToDto(Subscription s) => new(
+            Id: s.Id,
+            AdminId: s.AdminId,
+            PlanId: s.PlanId,
+            PlanName: s.Plan.Name,
+            StartDate: s.StartDate,
+            ExpiresAt: s.ExpiresAt,
+            IsActive: s.IsActive
+        );
     }
 }

@@ -14,10 +14,27 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task SaveChangesAsync()
+        public async Task<Plan?> GetByIdAsync(Guid id)
+            => await _context.Plans.FindAsync(id);
+ 
+        public async Task<IEnumerable<Plan>> GetAllActiveAsync()
+            => await _context.Plans
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.Price)
+                .ToListAsync();
+ 
+        public async Task AddAsync(Plan plan)
         {
+            await _context.Plans.AddAsync(plan);
             await _context.SaveChangesAsync();
         }
+ 
+        public async Task UpdateAsync(Plan plan)
+        {
+            _context.Plans.Update(plan);
+            await _context.SaveChangesAsync();
+        }
+
     
     }
 }

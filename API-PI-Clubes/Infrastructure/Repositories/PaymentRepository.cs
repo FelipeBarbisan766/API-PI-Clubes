@@ -14,10 +14,32 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task SaveChangesAsync()
+        public async Task<Payment?> GetByIdAsync(Guid id)
+            => await _context.Payments.FindAsync(id);
+ 
+        public async Task<Payment?> GetByGatewayTransactionIdAsync(string gatewayTransactionId)
+            => await _context.Payments
+                .FirstOrDefaultAsync(p => p.GatewayTransactionId == gatewayTransactionId);
+ 
+        public async Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId)
+            => await _context.Subscriptions
+                .Where(s => s.AdminId == adminId)
+                .Include(s => s.Payment)
+                .Select(s => s.Payment)
+                .ToListAsync();
+ 
+        public async Task AddAsync(Payment payment)
         {
+            await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
         }
+ 
+        public async Task UpdateAsync(Payment payment)
+        {
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+        }
+
     
     }
 }

@@ -34,7 +34,7 @@ namespace API_PI_Clubes.Application.Services
             _configuration = configuration;
         }
 
-            public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto)
+    public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto)
     {
         var plan = await _planRepository.GetByIdAsync(dto.PlanId)
             ?? throw new Exception("Plano não encontrado.");
@@ -52,10 +52,40 @@ namespace API_PI_Clubes.Application.Services
  
         MercadoPagoConfig.AccessToken = _configuration["MercadoPago:AccessToken"]!;
  
+        var paymentMethodsConfig = new PreferencePaymentMethodsRequest();
+        var methodString = dto.Method.ToString();
+        if (methodString == "Pix")
+        {
+            // paymentMethodsConfig.DefaultPaymentMethodId = "pix";
+            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+            {
+                new PreferencePaymentTypeRequest { Id = "credit_card" },
+                new PreferencePaymentTypeRequest { Id = "debit_card" },
+                new PreferencePaymentTypeRequest { Id = "ticket" }
+            };
+        }
+        else if (methodString == "Boleto")
+        {
+            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+            {
+                new PreferencePaymentTypeRequest { Id = "credit_card" },
+                new PreferencePaymentTypeRequest { Id = "debit_card" },
+                new PreferencePaymentTypeRequest { Id = "bank_transfer" } 
+            };
+        }
+        else if (methodString == "CreditCard")
+        {
+            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+            {
+                new PreferencePaymentTypeRequest { Id = "ticket" },
+                new PreferencePaymentTypeRequest { Id = "bank_transfer" }
+            };
+        }
         var preferenceRequest = new PreferenceRequest
         {
-            Items =
-            [
+            Items = new List<PreferenceItemRequest>
+            {
+                
                 new PreferenceItemRequest
                 {
                     Id = plan.Id.ToString(),
@@ -65,8 +95,10 @@ namespace API_PI_Clubes.Application.Services
                     CurrencyId = "BRL",
                     UnitPrice = plan.Price
                 }
-            ],
-            // URLs de retorno após o pagamento
+            },
+            
+            PaymentMethods = paymentMethodsConfig,
+
             BackUrls = new PreferenceBackUrlsRequest
             {
                 Success = _configuration["MercadoPago:BackUrls:Success"],
@@ -75,21 +107,17 @@ namespace API_PI_Clubes.Application.Services
             },
             AutoReturn = "approved",
  
-            // URL do seu webhook para receber notificações
             NotificationUrl = _configuration["MercadoPago:WebhookUrl"],
  
-            // ExternalReference liga a preference ao seu Payment interno
             ExternalReference = payment.Id.ToString()
         };
  
         var client = new PreferenceClient();
         Preference preference = await client.CreateAsync(preferenceRequest);
  
-        // 3. Salva o PreferenceId como referência temporária no gateway
         payment.GatewayTransactionId = preference.Id;
         await _paymentRepository.UpdateAsync(payment);
  
-        // 4. Cria a Subscription já vinculada, aguardando confirmação
         var subscription = new Subscription
         {
             Id = Guid.NewGuid(),
@@ -98,14 +126,14 @@ namespace API_PI_Clubes.Application.Services
             PaymentId = payment.Id,
             StartDate = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(plan.DurationDays),
-            IsActive = false  // só ativa após webhook de confirmação
+            IsActive = false  
         };
  
         await _subscriptionRepository.AddAsync(subscription);
  
         return new PaymentInitiatedDto(
             PaymentId: payment.Id,
-            CheckoutUrl: preference.InitPoint  // URL do Checkout Pro
+            CheckoutUrl: preference.InitPoint  
         );
     }
  

@@ -20,179 +20,229 @@ namespace API_PI_Clubes.Application.Services
         private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly IPlanRepository _planRepository;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<PaymentService> _logger;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
             ISubscriptionRepository subscriptionRepository,
             IPlanRepository planRepository,
-            IConfiguration configuration
+            IConfiguration configuration,
+            ILogger<PaymentService> logger
             )
         {
             _paymentRepository = paymentRepository;
             _subscriptionRepository = subscriptionRepository;
             _planRepository = planRepository;   
             _configuration = configuration;
+            _logger = logger;
         }
 
-    public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto)
-    {
-        var plan = await _planRepository.GetByIdAsync(dto.PlanId)
-            ?? throw new Exception("Plano não encontrado.");
- 
-        var payment = new Payment
+        public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto)
         {
-            Id = Guid.NewGuid(),
-            Amount = plan.Price,
-            Method = dto.Method,
-            Status = PaymentStatus.Pending,
-            Date = DateTime.UtcNow
-        };
- 
-        await _paymentRepository.AddAsync(payment);
- 
-        MercadoPagoConfig.AccessToken = _configuration["MercadoPago:AccessToken"]!;
- 
-        var paymentMethodsConfig = new PreferencePaymentMethodsRequest();
-        var methodString = dto.Method.ToString();
-        if (methodString == "Pix")
-        {
-            // paymentMethodsConfig.DefaultPaymentMethodId = "pix";
-            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+            var plan = await _planRepository.GetByIdAsync(dto.PlanId)
+                ?? throw new Exception("Plano não encontrado.");
+     
+            // Cria o Payment pendente
+            var payment = new Payment
             {
-                new PreferencePaymentTypeRequest { Id = "credit_card" },
-                new PreferencePaymentTypeRequest { Id = "debit_card" },
-                new PreferencePaymentTypeRequest { Id = "ticket" }
+                Id = Guid.NewGuid(),
+                Amount = plan.Price,
+                Method = dto.Method,
+                Status = PaymentStatus.Pending,
+                Date = DateTime.UtcNow,
+                AdminId = dto.AdminId,   // ← obrigatório
+                PlanId = dto.PlanId      // ← obrigatório
             };
-        }
-        else if (methodString == "Boleto")
-        {
-            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
-            {
-                new PreferencePaymentTypeRequest { Id = "credit_card" },
-                new PreferencePaymentTypeRequest { Id = "debit_card" },
-                new PreferencePaymentTypeRequest { Id = "bank_transfer" } 
-            };
-        }
-        else if (methodString == "CreditCard")
-        {
-            paymentMethodsConfig.ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
-            {
-                new PreferencePaymentTypeRequest { Id = "ticket" },
-                new PreferencePaymentTypeRequest { Id = "bank_transfer" }
-            };
-        }
-        var preferenceRequest = new PreferenceRequest
-        {
-            Items = new List<PreferenceItemRequest>
-            {
-                
-                new PreferenceItemRequest
-                {
-                    Id = plan.Id.ToString(),
-                    Title = plan.Name,
-                    Description = plan.Description,
-                    Quantity = 1,
-                    CurrencyId = "BRL",
-                    UnitPrice = plan.Price
-                }
-            },
+
+            await _paymentRepository.AddAsync(payment);
+
+            var successUrl = _configuration["MercadoPago:BackUrls:Success"];
+            var failureUrl = _configuration["MercadoPago:BackUrls:Failure"];
+            var pendingUrl = _configuration["MercadoPago:BackUrls:Pending"];
+            if (string.IsNullOrEmpty(successUrl))
+                throw new InvalidOperationException(
+                    "MercadoPago:BackUrls:Success não configurado no appsettings.");
+
+            // Cria a preference no Mercado Pago
+            MercadoPagoConfig.AccessToken = _configuration["MercadoPago:AccessToken"]!;
             
-            PaymentMethods = paymentMethodsConfig,
-
-            BackUrls = new PreferenceBackUrlsRequest
+            var preferenceRequest = new PreferenceRequest
             {
-                Success = _configuration["MercadoPago:BackUrls:Success"],
-                Failure = _configuration["MercadoPago:BackUrls:Failure"],
-                Pending = _configuration["MercadoPago:BackUrls:Pending"]
-            },
-            AutoReturn = "approved",
- 
-            NotificationUrl = _configuration["MercadoPago:WebhookUrl"],
- 
-            ExternalReference = payment.Id.ToString()
-        };
- 
-        var client = new PreferenceClient();
-        Preference preference = await client.CreateAsync(preferenceRequest);
- 
-        payment.GatewayTransactionId = preference.Id;
-        await _paymentRepository.UpdateAsync(payment);
- 
-        var subscription = new Subscription
+                Items =
+                [
+                    new PreferenceItemRequest
+                    {
+                        Id = plan.Id.ToString(),
+                        Title = plan.Name,
+                        Description = plan.Description,
+                        Quantity = 1,
+                        CurrencyId = "BRL",
+                        UnitPrice = plan.Price
+                    }
+                ],
+                BackUrls = new PreferenceBackUrlsRequest
+                {
+                    Success = successUrl,
+                    Failure = failureUrl,
+                    Pending = pendingUrl
+                },
+                AutoReturn = "approved",
+                NotificationUrl = _configuration["MercadoPago:WebhookUrl"],
+     
+                ExternalReference = payment.Id.ToString()
+            };
+     
+            var client = new PreferenceClient();
+            var preference = await client.CreateAsync(preferenceRequest);
+            payment.GatewayTransactionId = preference.Id;
+            await _paymentRepository.UpdateAsync(payment);
+            
+            _logger.LogInformation(
+                "Pagamento {PaymentId} iniciado para Admin {AdminId}, Plano {PlanId}",
+                payment.Id, dto.AdminId, dto.PlanId);
+     
+            return new PaymentInitiatedDto(
+                PaymentId: payment.Id,
+                CheckoutUrl: preference.InitPoint
+            );
+        }
+     
+        public async Task HandleWebhookAsync(MercadoPagoWebhookDto webhook)
         {
-            Id = Guid.NewGuid(),
-            AdminId = dto.AdminId,
-            PlanId = dto.PlanId,
-            PaymentId = payment.Id,
-            StartDate = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddDays(plan.DurationDays),
-            IsActive = false  
-        };
- 
-        await _subscriptionRepository.AddAsync(subscription);
- 
-        return new PaymentInitiatedDto(
-            PaymentId: payment.Id,
-            CheckoutUrl: preference.InitPoint  
-        );
-    }
- 
-    public async Task HandleWebhookAsync(MercadoPagoWebhookDto webhook)
-    {
-        // Só processa eventos de pagamento relevantes
-        if (webhook.Action is not ("payment.updated" or "payment.created"))
-            return;
- 
-        // Busca o pagamento real no Mercado Pago pelo ID recebido no webhook
-        MercadoPagoConfig.AccessToken = _configuration["MercadoPago:AccessToken"]!;
-        var mpPaymentClient = new MercadoPago.Client.Payment.PaymentClient();
-        var mpPayment = await mpPaymentClient.GetAsync(long.Parse(webhook.Data.Id));
- 
-        if (mpPayment?.ExternalReference is null)
-            return;
- 
-        // Acha o Payment interno pela ExternalReference
-        var internalPaymentId = Guid.Parse(mpPayment.ExternalReference);
-        var payment = await _paymentRepository.GetByIdAsync(internalPaymentId);
- 
-        if (payment is null)
-            return;
- 
-        // Atualiza o status conforme retorno do MP
-        payment.Status = mpPayment.Status switch
+            // Filtra ações relevantes — loga as desconhecidas para diagnóstico
+            if (webhook.Action is not ("payment.updated" or "payment.created" or "payment" or ""))
+            {
+                _logger.LogInformation("Webhook ignorado — action: {Action}", webhook.Action);
+                return;
+            }
+     
+            // CORREÇÃO: TryParse em vez de Parse direto
+            if (!long.TryParse(webhook.Data?.Id, out var mpPaymentId))
+            {
+                _logger.LogWarning("Webhook com ID inválido: {Id}", webhook.Data?.Id);
+                return;
+            }
+     
+            // Busca o pagamento real no Mercado Pago
+            MercadoPagoConfig.AccessToken = _configuration["MercadoPago:AccessToken"]!;
+            var mpClient = new MercadoPago.Client.Payment.PaymentClient();
+            var mpPayment = await mpClient.GetAsync(mpPaymentId);
+     
+            if (mpPayment?.ExternalReference is null)
+            {
+                _logger.LogWarning("Pagamento {MpId} sem ExternalReference. Ignorando.", mpPaymentId);
+                return;
+            }
+     
+            if (!Guid.TryParse(mpPayment.ExternalReference, out var internalPaymentId))
+            {
+                _logger.LogWarning("ExternalReference inválida: {Ref}", mpPayment.ExternalReference);
+                return;
+            }
+     
+            var payment = await _paymentRepository.GetByIdAsync(internalPaymentId);
+     
+            if (payment is null)
+            {
+                _logger.LogWarning("Payment interno {Id} não encontrado.", internalPaymentId);
+                return;
+            }
+     
+            // CORREÇÃO: Idempotência — ignora se já foi processado
+            var newStatus = mpPayment.Status switch
+            {
+                "approved" => PaymentStatus.Confirmed,
+                "rejected" or "cancelled" => PaymentStatus.Failed,
+                _ => PaymentStatus.Pending
+            };
+     
+            if (payment.Status == newStatus)
+            {
+                _logger.LogInformation(
+                    "Webhook duplicado ignorado — Payment {Id} já está {Status}",
+                    payment.Id, payment.Status);
+                return;
+            }
+     
+            // Atualiza o Payment
+            payment.Status = newStatus;
+            payment.GatewayTransactionId = mpPayment.Id.ToString();
+            await _paymentRepository.UpdateAsync(payment);
+     
+            _logger.LogInformation(
+                "Payment {Id} atualizado para {Status}", payment.Id, payment.Status);
+     
+            // Só age na subscription se foi aprovado ou recusado
+            if (newStatus == PaymentStatus.Confirmed)
+                await HandleApprovedPaymentAsync(payment, mpPayment.ExternalReference);
+            else if (newStatus == PaymentStatus.Failed)
+                await HandleFailedPaymentAsync(payment);
+        }
+     
+        private async Task HandleApprovedPaymentAsync(Payment payment, string externalReference)
         {
-            "approved" => PaymentStatus.Confirmed,
-            "rejected" or "cancelled" => PaymentStatus.Failed,
-            _ => PaymentStatus.Pending
-        };
- 
-        // Salva o ID da transação real (não mais o PreferenceId)
-        payment.GatewayTransactionId = mpPayment.Id.ToString();
-        await _paymentRepository.UpdateAsync(payment);
- 
-        // Ativa ou desativa a Subscription conforme o resultado
-        var subscription = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id);
- 
-        if (subscription is null)
-            return;
- 
-        subscription.IsActive = payment.Status == PaymentStatus.Confirmed;
-        await _subscriptionRepository.UpdateAsync(subscription);
-    }
- 
-    public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId)
-    {
-        var payments = await _paymentRepository.GetByAdminIdAsync(adminId);
- 
-        return payments.Select(p => new PaymentHistoryDto(
-            Id: p.Id,
-            Amount: p.Amount,
-            Date: p.Date,
-            Method: p.Method.ToString(),
-            Status: p.Status.ToString(),
-            GatewayTransactionId: p.GatewayTransactionId
-        ));
-    }
+            // Verifica se já existe subscription para esse payment (idempotência)
+            var existing = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id);
+     
+            if (existing is not null)
+            {
+                // Já existe — só garante que está ativa
+                if (!existing.IsActive)
+                {
+                    existing.IsActive = true;
+                    await _subscriptionRepository.UpdateAsync(existing);
+                }
+                return;
+            }
+     
+            var plan = await _planRepository.GetByIdAsync(payment.PlanId)
+                ?? throw new Exception($"Plano {payment.PlanId} não encontrado.");
+     
+            var subscription = new Subscription
+            {
+                Id = Guid.NewGuid(),
+                AdminId = payment.AdminId,
+                PlanId = payment.PlanId,
+                PaymentId = payment.Id,
+                StartDate = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(plan.DurationDays),
+                IsActive = true
+            };
+     
+            await _subscriptionRepository.AddAsync(subscription);
+     
+            _logger.LogInformation(
+                "Subscription {SubId} criada para Admin {AdminId}, expira em {Expires}",
+                subscription.Id, subscription.AdminId, subscription.ExpiresAt);
+        }
+     
+        private async Task HandleFailedPaymentAsync(Payment payment)
+        {
+            var subscription = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id);
+     
+            if (subscription is null) return;
+     
+            subscription.IsActive = false;
+            await _subscriptionRepository.UpdateAsync(subscription);
+     
+            _logger.LogInformation(
+                "Subscription {SubId} desativada por falha no pagamento.", subscription.Id);
+        }
+     
+        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId)
+        {
+            var payments = await _paymentRepository.GetByAdminIdAsync(adminId);
+     
+            return payments.Select(p => new PaymentHistoryDto(
+                Id: p.Id,
+                Amount: p.Amount,
+                Date: p.Date,
+                Method: p.Method.ToString(),
+                Status: p.Status.ToString(),
+                GatewayTransactionId: p.GatewayTransactionId
+            ));
+        }
+
 
 
     }

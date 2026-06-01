@@ -11,6 +11,9 @@ namespace API_PI_Clubes.Model
  
             public string? GatewayTransactionId { get; set; }
  
+            public Guid AdminId { get; set; }
+            public Guid PlanId { get; set; }
+
             public Subscription? Subscription { get; set; }
 
         }

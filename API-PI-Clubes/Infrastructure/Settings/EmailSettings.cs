@@ -11,4 +11,5 @@ public class EmailSettings
     public string SmtpUsername { get; set; }
     public string SmtpPassword { get; set; }
     public bool EnableSsl { get; set; }
+    public string BaseUrl { get; set; }
 }

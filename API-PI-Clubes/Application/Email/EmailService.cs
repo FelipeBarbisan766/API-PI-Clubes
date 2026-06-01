@@ -51,9 +51,9 @@ public class EmailService : IEmailService
 
     public async Task SendVerificationEmailAsync(string recipientEmail, string recipientName, string jwtToken)
     {
-       
-        var baseUrl = "https://www.clubera.dev/verify-mail";
-        var verificationLink = $"{baseUrl}?token={jwtToken}";
+        var baseUrl = _settings.BaseUrl;
+        var finalUrl = $"{baseUrl}/verify-mail";
+        var verificationLink = $"{finalUrl}?token={jwtToken}";
 
         var subject = "Verifique seu Email - Clubera PI";
         var htmlBody = _emailBodyService.GenerateVerificationEmailHtml(recipientName, verificationLink);
@@ -63,8 +63,9 @@ public class EmailService : IEmailService
     public async Task SendResetPasswordAsync(string recipientEmail, string recipientName, string jwtToken)
     {
 
-        var baseUrl = "http://localhost:5000/api/auth/";
-        var verificationLink = $"{baseUrl}?token={jwtToken}";
+        var baseUrl = _settings.BaseUrl;
+        var finalUrl = $"{baseUrl}/forgot-password";
+        var verificationLink = $"{finalUrl}?token={jwtToken}";
 
         var subject = "Recuperação de Senha - Clubera PI";
         var htmlBody = _emailBodyService.GenerateResetPassowordHtml(recipientName, verificationLink);

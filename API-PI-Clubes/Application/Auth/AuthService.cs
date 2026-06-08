@@ -8,6 +8,7 @@ using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
 using System.Security.Claims;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 
@@ -21,19 +22,23 @@ namespace API_PI_Clubes.Application.Auth
         private readonly IUserRepository _repository;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
+        private readonly IPlayerService _playerService;
 
         public AuthService(
             IUserRepository repository,
             ITokenService tokenService,
             IPasswordHasher passwordHasher,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            IPlayerService playerService
+            )
         {
             _repository = repository;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
             _emailService = emailService;
             _config = config;
+            _playerService =  playerService;
         }
 
         public async Task<string> LoginAsync(LoginDTO dto)
@@ -105,7 +110,9 @@ namespace API_PI_Clubes.Application.Auth
 
 
             user.EmailVerification = EmailVerificationVO.Confirm();
-
+            
+            await _playerService.Create(user.Id);
+            
             _repository.Update(user);
             await _repository.SaveChangesAsync();
 
@@ -218,6 +225,8 @@ namespace API_PI_Clubes.Application.Auth
             entity.EmailVerification = EmailVerificationVO.Confirm();
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
+            
+            await _playerService.Create(entity.Id);
 
         }
         public async Task<string> GoogleLogin(string idToken)

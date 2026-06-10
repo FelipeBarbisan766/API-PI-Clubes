@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Settings;
 using API_PI_Clubes.Model;

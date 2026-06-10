@@ -23,12 +23,7 @@ namespace API_PI_Clubes.Application.Services
             _repository = repository;
             _userService = userService;
         }
-
-        public async Task<IEnumerable<ResponsePlayerDTO>> GetAll()
-        {
-            var data = await _repository.GetAllAsync();
-            return _mapper.ToDTO(data);
-        }
+        
 
         public async Task<ResponsePlayerDTO> GetById(Guid id)
         {
@@ -54,10 +49,8 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(entity);
         }
         
-        public async Task<ResponseIdDTO> Create(CreatPlayerDTO dto)
+        public async Task<ResponseIdDTO> Create(Guid id)
         {
-            ValidatePlayerDTO(dto);
-
             var strategy = _repository.CreateExecutionStrategy();
 
             return await strategy.ExecuteAsync(async () =>
@@ -66,18 +59,18 @@ namespace API_PI_Clubes.Application.Services
 
                 try
                 {
-                    var user = await _userService.GetById(dto.UserId)
+                    var user = await _userService.GetById(id)
                                ?? throw new KeyNotFoundException("Usuário não encontrado");
 
                     var entity = new Player
                     {
                         RankCategory = RankCategoryEnum.none,
-                        UserId = dto.UserId,
+                        UserId = id,
                         CreatedAt = DateTime.UtcNow
                     };
                     await _repository.AddAsync(entity);
 
-                    await _userService.UpdateRole(dto.UserId, RoleEnum.Player);
+                    await _userService.UpdateRole(id, RoleEnum.Player);
 
                     await _repository.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -128,12 +121,6 @@ namespace API_PI_Clubes.Application.Services
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Invalid ID", nameof(id));
-        }
-
-        private static void ValidatePlayerDTO(CreatPlayerDTO dto)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
         }
 
         private static void ValidateUpdatePlayerDTO(UpdatePlayerDTO dto)

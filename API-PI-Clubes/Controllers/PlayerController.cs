@@ -25,15 +25,6 @@ namespace API_PI_Clubes.Controllers
             _userRepository = userRepository;
             _tokenService = tokenService;
         }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAll();
-
-            return Ok(result);
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -46,29 +37,6 @@ namespace API_PI_Clubes.Controllers
         public async Task<IActionResult> GetCurrentUser()
         {
             var result = await _service.GetCurrentUserInfo(User);
-            return Ok(result);
-        }
-
-        [Authorize(Roles = "Admin,None")]
-        [HttpPost]
-        public async Task<IActionResult> Create(CreatPlayerDTO dto)
-        {
-            var result = await _service.Create(dto);
-
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null) 
-                return NotFound("User not found.");
-            var token = _tokenService.GenerateToken(user);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
-            };
-
-            Response.Cookies.Append("jwt", token, cookieOptions);
             return Ok(result);
         }
         

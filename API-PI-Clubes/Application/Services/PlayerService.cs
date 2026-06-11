@@ -70,7 +70,7 @@ namespace API_PI_Clubes.Application.Services
                     };
                     await _repository.AddAsync(entity);
 
-                    await _userService.UpdateRole(id, RoleEnum.Player);
+                    //await _userService.UpdateRole(id, RoleEnum.Player);
 
                     await _repository.SaveChangesAsync();
                     await transaction.CommitAsync();

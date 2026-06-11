@@ -43,14 +43,14 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
                 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreatCourtDTO dto)
         {
             var result = await _service.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
@@ -65,7 +65,7 @@ namespace API_PI_Clubes.Controllers
             await _service.AddMoreImagesAsync(id, dto);
             return Ok();
         }
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
         {
@@ -80,7 +80,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

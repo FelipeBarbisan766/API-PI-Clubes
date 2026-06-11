@@ -15,7 +15,7 @@ namespace API_PI_Imagees.Controllers
             _service = service;
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete]
         public async Task<IActionResult> Delete(string blobName)
         {

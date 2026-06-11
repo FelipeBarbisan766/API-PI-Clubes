@@ -31,7 +31,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("admin/{id}")]
         public async Task<IActionResult> GetAllByAdminId(Guid id)
         {
@@ -39,14 +39,14 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateClubDTO dto)
         {
             var result = await _service.Create(dto);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
@@ -60,7 +60,7 @@ namespace API_PI_Clubes.Controllers
             return Ok();
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto)
         {
@@ -74,7 +74,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

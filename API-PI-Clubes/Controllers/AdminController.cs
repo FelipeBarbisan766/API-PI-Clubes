@@ -35,7 +35,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -43,7 +43,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "None,Player")]
+        [Authorize(Roles = "Player")]
         [HttpPost]
         public async Task<IActionResult> Create(CreatAdminDTO dto)
         {
@@ -66,7 +66,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateAdminDTO dto)
         {
@@ -74,7 +74,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Both")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

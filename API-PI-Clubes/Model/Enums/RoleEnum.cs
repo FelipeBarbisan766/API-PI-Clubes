@@ -5,6 +5,6 @@
         None = 0,
         Player = 1,
         Admin = 2,
-        Both = 3
+        //Both = 3
     }
 }

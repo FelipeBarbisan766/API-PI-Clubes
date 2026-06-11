@@ -77,7 +77,7 @@ namespace API_PI_Clubes.Application.Auth
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 Provider = "local",
-                Role = RoleEnum.None,
+                Role = RoleEnum.Player,
 
                 EmailVerification = EmailVerificationVO.Create()
             };
@@ -220,7 +220,7 @@ namespace API_PI_Clubes.Application.Auth
                 Name = payload.Name,
                 Email = payload.Email,
                 Provider = "google",
-                Role = RoleEnum.None,
+                Role = RoleEnum.Player,
             };
             entity.EmailVerification = EmailVerificationVO.Confirm();
             await _repository.AddAsync(entity);

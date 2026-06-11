@@ -58,7 +58,7 @@ namespace API_PI_Clubes.Application.Services
             if (user == null)
                 throw new Exception("User not found");
 
-            user.Role = (user.Role == RoleEnum.None) ? role : RoleEnum.Both;
+            user.Role = RoleEnum.Admin;
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);

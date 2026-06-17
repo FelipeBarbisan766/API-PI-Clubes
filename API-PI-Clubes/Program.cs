@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Infrastructure.Jobs;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +130,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Servir a pasta wwwroot/uploads via HTTP
 
 // Aplicação automática de Migrations
 // using (var scope = app.Services.CreateScope())
@@ -136,7 +138,14 @@ if (app.Environment.IsDevelopment())
 //     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 //     db.Database.Migrate();
 // }
-
+var wwwrootPath = app.Environment.WebRootPath 
+                  ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(wwwrootPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(wwwrootPath),
+    RequestPath = ""
+});
 app.UseCors("CluberaPolicy");
 app.UseRouting();
 app.UseAuthentication();

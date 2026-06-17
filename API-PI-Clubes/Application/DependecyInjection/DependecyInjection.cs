@@ -67,7 +67,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
 
             services.AddScoped<IAuthorizationHandler, ClubAuthorizationHandler>();
             
-            services.AddScoped<IStorageService, AzureStorageService>();
+            services.AddScoped<IStorageService, LocalStorageService>();
 
             services.AddScoped<ITokenService, TokenService>();
 

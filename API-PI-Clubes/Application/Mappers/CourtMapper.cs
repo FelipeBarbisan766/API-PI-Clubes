@@ -6,6 +6,13 @@ namespace API_PI_Clubes.Application.Mappers
 {
     public class CourtMapper : ICourtMapper
     {
+        private static ImageDTO ToImageDTO(Image i) => new()
+        {
+            ThumbUrl  = i.ThumbUrl,
+            MediumUrl = i.MediumUrl,
+            FullUrl   = i.FullUrl
+        };
+
         public ResponseCourtDTO ToDTO(Court court)
         {
             return new ResponseCourtDTO
@@ -18,7 +25,9 @@ namespace API_PI_Clubes.Application.Mappers
                 PricePerHour = court.PricePerHour,
                 Description = court.Description,
                 ClubId = court.ClubId,
-                ImagesUrls = court.Images?.Select(i => i.Url).ToList() ?? new List<string>()
+                Images = court.Images
+                    .Select(ToImageDTO)
+                    .ToList()
             };
         }
 

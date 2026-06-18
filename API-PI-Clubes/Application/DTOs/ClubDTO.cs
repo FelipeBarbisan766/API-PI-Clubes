@@ -59,7 +59,7 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
         public List<TypeEnum> Types { get; set; }
-        public List<string> ImagesUrls { get; set; }
+        public List<ImageDTO> Images { get; set; }
     }
     public class ResponseClubByIdDTO
     {
@@ -74,7 +74,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
-        public List<string> ImagesUrls { get; set; }
+        public List<ImageDTO> Images { get; set; }
         public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
 }

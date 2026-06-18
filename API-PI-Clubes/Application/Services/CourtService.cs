@@ -6,6 +6,7 @@ using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 
 
 namespace API_PI_Clubes.Application.Services
@@ -16,13 +17,19 @@ namespace API_PI_Clubes.Application.Services
         private readonly ICourtMapper _mapper;
         private readonly IStorageService _storageService;
         private readonly IImageRepository _imageRepository;
+        private readonly IImageProcessingService _imageProcessor;
 
-        public CourtService(ICourtMapper mapper, ICourtRepository repository, IStorageService storageService, IImageRepository imageRepository )
+        public CourtService(ICourtMapper mapper, 
+            ICourtRepository repository, 
+            IStorageService storageService, 
+            IImageRepository imageRepository,
+            IImageProcessingService imageProcessor)
         {
             _mapper = mapper;
             _repository = repository;
             _storageService = storageService;
             _imageRepository = imageRepository;
+            _imageProcessor = imageProcessor;
         }
 
         public async Task<IEnumerable<ResponseCourtDTO>> GetAll()
@@ -54,8 +61,19 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateCourtDTO(dto);
 
+            var courtId = Guid.NewGuid();
+            
+            var imageEntities = new List<Image>();
+            if (dto.Images != null && dto.Images.Count > 0)
+            {
+                var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, courtId));
+                var uploaded    = await Task.WhenAll(uploadTasks);
+                imageEntities.AddRange(uploaded);
+            }
+            
             var entity = new Court
             {
+                Id = courtId,
                 Name = dto.Name,
                 Type = dto.Type,
                 Surface = dto.Surface,
@@ -66,27 +84,10 @@ namespace API_PI_Clubes.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 Images = new List<Image>()
             };
-            if (dto.Images != null && dto.Images.Count > 0)
-            {
-                var uploadTasks = dto.Images.Select(async file =>
-                {
-                    var extension = Path.GetExtension(file.FileName);
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    using var stream = file.OpenReadStream();
-                    var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
-
-                    return new Image { Url = imageUrl, Name = uniqueFileName };
-                }).ToList();
-
-                var uploadedImages = await Task.WhenAll(uploadTasks);
-                entity.Images.AddRange(uploadedImages);
-            }
-
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
-
-            return new ResponseIdDTO { Id = entity.Id };
             
+            return new ResponseIdDTO { Id = entity.Id };
         }
 
 
@@ -127,35 +128,15 @@ namespace API_PI_Clubes.Application.Services
         }
         public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
         {
-            ValidateId(id);
-
             var entity = await _repository.GetByIdWithImagesAsync(id);
-            if (entity == null) throw new Exception("Entity Not Found");
+            if (entity == null) throw new InvalidOperationException("Court not found");
+
+            var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
+            var uploaded    = await Task.WhenAll(uploadTasks);
 
 
-            var uploadTasks = dto.Images.Select(async file =>
-            {
-                var extension = Path.GetExtension(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-
-                using var stream = file.OpenReadStream();
-                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
-
-                return new Image
-                {
-                    Name = uniqueFileName,
-                    Url = imageUrl,
-                    CourtId = id
-                };
-            }).ToList();
-
-            var uploadedImages = await Task.WhenAll(uploadTasks);
-
-
-            foreach (var img in uploadedImages)
-            {
+            foreach (var img in uploaded)
                 _imageRepository.Add(img);
-            }
 
             await _repository.SaveChangesAsync();
         }
@@ -176,5 +157,31 @@ namespace API_PI_Clubes.Application.Services
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
         }
+        
+        private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid courtId)
+        {
+            using var inputStream = file.OpenReadStream();
+            using var result = await _imageProcessor.ProcessAsync(inputStream);
+
+            var urls = new Dictionary<ImageVariantType, string>();
+
+            // Upload de cada variante (podem ser paralelos se quiser velocidade extra)
+            foreach (var variant in result.Variants)
+            {
+                urls[variant.Variant] = await _storageService.UploadFileAsync(
+                    variant.Stream,
+                    variant.FileName
+                );
+            }
+
+            return new Image
+            {
+                Name      = result.BaseName,
+                ThumbUrl  = urls[ImageVariantType.Thumb],
+                MediumUrl = urls[ImageVariantType.Medium],
+                FullUrl   = urls[ImageVariantType.Full],
+                CourtId    = courtId
+            };
+        }   
     }
 }

@@ -3,9 +3,11 @@
     public class Image : BaseEntity
     {
         public string Name { get; set; }
-        public string Url { get; set; }
 
-
+        public string ThumbUrl  { get; set; } = string.Empty;
+        public string MediumUrl { get; set; } = string.Empty;
+        public string FullUrl   { get; set; } = string.Empty;
+        
         public Guid? ClubId { get; set; }
         public virtual Club Club { get; set; }
 

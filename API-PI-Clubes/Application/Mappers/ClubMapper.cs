@@ -6,6 +6,13 @@ namespace API_PI_Clubes.Application.Mappers
 {
     public class ClubMapper : IClubMapper
     {
+        private static ImageDTO ToImageDTO(Image i) => new()
+        {
+            ThumbUrl  = i.ThumbUrl,
+            MediumUrl = i.MediumUrl,
+            FullUrl   = i.FullUrl
+        };
+
         public ResponseClubDTO ToDTO(Club club)
         {
             return new ResponseClubDTO
@@ -27,7 +34,10 @@ namespace API_PI_Clubes.Application.Mappers
                     .Where(co => co.IsActive)
                     .Select(co => co.Type)
                     .Distinct()
-                    .ToList()
+                    .ToList(),
+                Images = club.Images
+                .Select(ToImageDTO)
+                .ToList()
             };
         }
 
@@ -51,7 +61,10 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
-                ImagesUrls = club.Images.Select(i => i.Url).ToList(),
+                Images = club.Images
+                    .Select(ToImageDTO)
+                    .ToList(),
+
                 Courts = club.Courts
                     .Where(co => co.IsActive)
                     .Select(q => new ResponseCourtDTO
@@ -62,7 +75,10 @@ namespace API_PI_Clubes.Application.Mappers
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
                         PricePerHour = q.PricePerHour,
-                        ImagesUrls = q.Images.Select(i => i.Url).ToList()
+                        Images = q.Images
+                            .Select(ToImageDTO)
+                            .ToList()
+
                     }).ToList()
 
             };

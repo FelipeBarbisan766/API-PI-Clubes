@@ -30,7 +30,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
-                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                    Images      = c.Images
+                        .Select(i => new ImageDTO
+                        {
+                            ThumbUrl  = i.ThumbUrl,
+                            MediumUrl = i.MediumUrl,
+                            FullUrl   = i.FullUrl
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
         }
@@ -57,7 +64,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
-                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                    Images      = c.Images
+                        .Select(i => new ImageDTO
+                        {
+                            ThumbUrl  = i.ThumbUrl,
+                            MediumUrl = i.MediumUrl,
+                            FullUrl   = i.FullUrl
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
         }

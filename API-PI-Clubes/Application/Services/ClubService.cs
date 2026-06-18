@@ -5,6 +5,7 @@ using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,15 +17,22 @@ namespace API_PI_Clubes.Application.Services
         private readonly IClubMapper _mapper;
         private readonly IStorageService _storageService;
         private readonly IImageRepository _imageRepository;
+        private readonly IImageProcessingService _imageProcessor;
 
-        public ClubService(IClubMapper mapper, IClubRepository repository, IStorageService storageService, IImageRepository imageRepository)
+        public ClubService(IClubMapper mapper, 
+            IClubRepository repository, 
+            IStorageService storageService, 
+            IImageRepository imageRepository,
+            IImageProcessingService imageProcessor
+        )
         {
             _mapper = mapper;
             _repository = repository;
             _storageService = storageService;
             _imageRepository = imageRepository;
+            _imageProcessor  = imageProcessor;
         }
-
+        
         public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query)
         {
             var (items, total) = await _repository.GetAllAsync(query);
@@ -67,9 +75,20 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateClubDTO(dto);
 
+            var clubId = Guid.NewGuid();
             
+            var imageEntities = new List<Image>();
+            if (dto.Images != null && dto.Images.Count > 0)
+            {
+                var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, clubId));
+                var uploaded    = await Task.WhenAll(uploadTasks);
+                imageEntities.AddRange(uploaded);
+            }
+
+
             var entity = new Club
             {
+                Id = clubId,
                 Name = dto.Name,
                 PhoneNumber = dto.PhoneNumber,
                 Address = new AddressVO(
@@ -83,34 +102,12 @@ namespace API_PI_Clubes.Application.Services
                     dto.Country
                 ),
                 Description = dto.Description,
-                Images = new List<Image>() 
+                Images = imageEntities 
             };
-            if (dto.Images != null && dto.Images.Count > 0)
-            {
-                var uploadTasks = dto.Images.Select(async file =>
-                {
-                    var extension = Path.GetExtension(file.FileName);
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    
-                    using var stream = file.OpenReadStream();
-                    var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
+            
 
-                    return new Image { Url = imageUrl, Name = uniqueFileName };
-                }).ToList();
-
-                var uploadedImages = await Task.WhenAll(uploadTasks);
-                entity.Images.AddRange(uploadedImages);
-            }
-
+            var clubAdmin = new ClubAdmin { ClubId = entity.Id, AdminId = dto.adminId };
             await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
-
-            var clubAdmin = new ClubAdmin
-            {
-                ClubId = entity.Id,
-                AdminId = dto.adminId
-            };
-
             await _repository.AddClubAdminAsync(clubAdmin);
             await _repository.SaveChangesAsync();
 
@@ -161,35 +158,15 @@ namespace API_PI_Clubes.Application.Services
 
         public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
         { 
-            ValidateId(id);
-            
             var entity = await _repository.GetByIdWithImagesAsync(id);
-            if (entity == null) throw new Exception("Entity Not Found");
+            if (entity == null) throw new InvalidOperationException("Club not found");
+
+            var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
+            var uploaded    = await Task.WhenAll(uploadTasks);
 
 
-            var uploadTasks = dto.Images.Select(async file =>
-            {
-                var extension = Path.GetExtension(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-
-                using var stream = file.OpenReadStream();
-                var imageUrl = await _storageService.UploadFileAsync(stream, uniqueFileName);
-
-                return new Image
-                {
-                    Name = uniqueFileName,
-                    Url = imageUrl,
-                    ClubId = id
-                };
-            }).ToList();
-
-            var uploadedImages = await Task.WhenAll(uploadTasks);
-
-            
-            foreach (var img in uploadedImages)
-            {
+            foreach (var img in uploaded)
                 _imageRepository.Add(img);
-            }
 
             await _repository.SaveChangesAsync();
         }
@@ -211,6 +188,28 @@ namespace API_PI_Clubes.Application.Services
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
         }
-        
+        private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid clubId)
+        {
+            using var inputStream = file.OpenReadStream();
+            using var result      = await _imageProcessor.ProcessAsync(inputStream);
+ 
+            var urls = new Dictionary<ImageVariantType, string>();
+            foreach (var variant in result.Variants)
+            {
+                urls[variant.Variant] = await _storageService.UploadFileAsync(
+                    variant.Stream,
+                    variant.FileName);
+            }
+ 
+            return new Image
+            {
+                Name      = result.BaseName,
+                ThumbUrl  = urls[ImageVariantType.Thumb],
+                MediumUrl = urls[ImageVariantType.Medium],
+                FullUrl   = urls[ImageVariantType.Full],
+                ClubId    = clubId
+            };
+
+        }   
     }
 }

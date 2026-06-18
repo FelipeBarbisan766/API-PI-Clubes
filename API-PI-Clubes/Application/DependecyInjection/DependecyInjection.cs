@@ -58,7 +58,6 @@ namespace API_PI_Clubes.Application.DependencyInjection
             
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IPlanRepository, PlanRepository>();
-
             
             services.AddScoped<IAuthService, AuthService>();
 
@@ -67,6 +66,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
 
             services.AddScoped<IAuthorizationHandler, ClubAuthorizationHandler>();
             
+            services.AddScoped<IImageProcessingService, ImageProcessingService>();
             services.AddScoped<IStorageService, LocalStorageService>();
 
             services.AddScoped<ITokenService, TokenService>();

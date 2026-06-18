@@ -35,8 +35,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             var totalCount = await q.CountAsync();
 
             var items = await q
-                .Include(c => c.Courts.Where(co => co.IsActive))
-                .Include(c => c.Images)
                 .Select(c => new ResponseClubDTO
                 {
                     Id = c.Id,
@@ -53,7 +51,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     CourtCount = c.Courts.Count(co => co.IsActive),
                     Types = c.Courts.Where(co => co.IsActive)
                         .Select(co => co.Type).Distinct().ToList(),
-                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                    Images = c.Images
+                        .Select(i => new ImageDTO
+                        {
+                            ThumbUrl  = i.ThumbUrl,
+                            MediumUrl = i.MediumUrl,
+                            FullUrl   = i.FullUrl
+                        })
+                        .ToList()
                 })
                 .OrderBy(c => c.Name)
                 .Skip((query.Page - 1) * query.PageSize)
@@ -101,7 +106,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Distinct()
                         .ToList(),
 
-                    ImagesUrls = c.Images.Select(i => i.Url).ToList()
+                    Images      = c.Images
+                        .Select(i => new ImageDTO
+                        {
+                            ThumbUrl  = i.ThumbUrl,
+                            MediumUrl = i.MediumUrl,
+                            FullUrl   = i.FullUrl
+                        })
+                        .ToList()
+
                 })
                 .ToListAsync();
         }

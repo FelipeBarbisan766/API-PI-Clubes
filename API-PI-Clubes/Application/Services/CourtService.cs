@@ -82,7 +82,7 @@ namespace API_PI_Clubes.Application.Services
                 Description = dto.Description,
                 ClubId = dto.ClubId,
                 CreatedAt = DateTime.UtcNow,
-                Images = new List<Image>()
+                Images = imageEntities
             };
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();

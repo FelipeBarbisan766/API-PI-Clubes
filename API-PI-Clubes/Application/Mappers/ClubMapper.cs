@@ -70,15 +70,16 @@ namespace API_PI_Clubes.Application.Mappers
                     .Select(q => new ResponseCourtDTO
                     {
                         Id = q.Id,
+                        ClubId = q.ClubId,
                         Name = q.Name,
                         Type = q.Type,
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
                         PricePerHour = q.PricePerHour,
+                        Description = q.Description, 
                         Images = q.Images
                             .Select(ToImageDTO)
                             .ToList()
-
                     }).ToList()
 
             };

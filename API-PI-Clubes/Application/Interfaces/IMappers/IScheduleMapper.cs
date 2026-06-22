@@ -7,5 +7,6 @@ namespace API_PI_Clubes.Application.Interfaces.IMappers
     {
         ResponseScheduleDTO ToDTO(Schedule schedule);
         IEnumerable<ResponseScheduleDTO> ToDTO(IEnumerable<Schedule> schedules);
+        IEnumerable<ResponseScheduleAvailabilityDTO> ToAvailabilityDTO(IEnumerable<Schedule> schedules);
     }
 }

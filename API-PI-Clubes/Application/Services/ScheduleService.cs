@@ -42,6 +42,18 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByCourtIdAsync(courtId);
             return _mapper.ToDTO(data);
         }
+        public async Task<IEnumerable<ResponseScheduleAvailabilityDTO>> GetAvailabilityByCourtAndDate(
+            Guid courtId, DateOnly date)
+        {
+            ValidateId(courtId);
+ 
+            if (date == DateOnly.MinValue)
+                throw new ArgumentException("Invalid date", nameof(date));
+ 
+            var schedules = await _repository.GetByCourtAndDateAsync(courtId, date);
+ 
+            return _mapper.ToAvailabilityDTO(schedules);
+        }
 
         public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto)
         {
@@ -63,6 +75,8 @@ namespace API_PI_Clubes.Application.Services
 
             return new ResponseIdDTO { Id = entity.Id };
         }
+        
+
 
         public async Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto)
         {

@@ -7,6 +7,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<IEnumerable<ResponseScheduleDTO>> GetAll();
         Task<ResponseScheduleDTO> GetById(Guid id);
         Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId);
+        Task<IEnumerable<ResponseScheduleAvailabilityDTO>> GetAvailabilityByCourtAndDate(Guid courtId, DateOnly date);
         Task<ResponseIdDTO> Create(CreatScheduleDTO dto);
         Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto);
         Task Delete(Guid id);

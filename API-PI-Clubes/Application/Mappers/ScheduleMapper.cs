@@ -25,5 +25,36 @@ namespace API_PI_Clubes.Application.Mappers
         {
             return schedules.Select(ToDTO);
         }
+        public IEnumerable<ResponseScheduleAvailabilityDTO> ToAvailabilityDTO(IEnumerable<Schedule> schedules)
+        {
+            return schedules.Select(s =>
+            {
+                // O Include já filtrou as Reserves pela data e pelo IsActive,
+                // então qualquer item aqui é uma reserva real para aquele dia.
+                var reserve = s.Reserves?.FirstOrDefault();
+ 
+                return new ResponseScheduleAvailabilityDTO
+                {
+                    Id         = s.Id,
+                    StartTime  = s.StartTime,
+                    EndTime    = s.EndTime,
+                    IsBlocked  = s.IsBlocked,
+                    IsFixed    = s.IsFixed,
+                    DayOfWeek  = s.DayOfWeek,
+ 
+                    // Disponível = não bloqueado E sem reserva ativa na data
+                    IsAvailable = !s.IsBlocked && reserve == null,
+ 
+                    Reserve = reserve == null ? null : new ResponseReserveInfoDTO
+                    {
+                        Id       = reserve.Id,
+                        Date     = reserve.Date,
+                        Status   = reserve.Status,
+                        PlayerId = reserve.PlayerId
+                    }
+                };
+            });
+        }
+
     }
 }

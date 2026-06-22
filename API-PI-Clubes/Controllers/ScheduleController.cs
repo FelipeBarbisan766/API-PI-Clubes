@@ -1,10 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
-using API_PI_Clubes.Infrastructure.Data;
-using API_PI_Clubes.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Controllers
 {
@@ -13,6 +10,7 @@ namespace API_PI_Clubes.Controllers
     public class ScheduleController : ControllerBase
     {
         private readonly IScheduleService _service;
+
         public ScheduleController(IScheduleService service)
         {
             _service = service;
@@ -22,7 +20,6 @@ namespace API_PI_Clubes.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAll();
-
             return Ok(result);
         }
 
@@ -35,10 +32,18 @@ namespace API_PI_Clubes.Controllers
 
         [HttpGet("court/{courtId}")]
         public async Task<IActionResult> GetByCourtId(Guid courtId)
-        {     
+        {
             var result = await _service.GetByCourtId(courtId);
             return Ok(result);
         }
+        
+        [HttpGet("court/{courtId}/availability")]
+        public async Task<IActionResult> GetAvailabilityByCourtAndDate(Guid courtId, [FromQuery] DateOnly date)
+        {
+            var result = await _service.GetAvailabilityByCourtAndDate(courtId, date);
+            return Ok(result);
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(CreatScheduleDTO dto)
@@ -46,6 +51,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
             return Ok(result);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateScheduleDTO dto)
@@ -53,6 +59,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)

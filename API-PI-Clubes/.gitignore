@@ -370,3 +370,6 @@ Dockerfile
 Docker-compose.yml
 docker-compose.yml
 Configuration.json
+
+/uploads/
+uploads/

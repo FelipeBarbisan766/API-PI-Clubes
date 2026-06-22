@@ -33,6 +33,20 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Schedules
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
+        public async Task<IEnumerable<Schedule>> GetByCourtAndDateAsync(Guid courtId, DateOnly date)
+        {
+            // Intervalo da data para filtrar as reservas pelo dia exato
+            var dateStart = date.ToDateTime(TimeOnly.MinValue);
+            var dateEnd   = date.AddDays(1).ToDateTime(TimeOnly.MinValue);
+ 
+            return await _context.Schedules
+                .Where(s => s.CourtId == courtId
+                            && s.DayOfWeek == dateStart.DayOfWeek
+                            && s.IsActive)
+                .Include(s => s.Reserves
+                    .Where(r => r.Date >= dateStart && r.Date < dateEnd && r.IsActive))
+                .ToListAsync();
+        }
 
         public async Task<bool> ExistsAsync(Guid id)
         {

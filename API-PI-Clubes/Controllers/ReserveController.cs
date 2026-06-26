@@ -1,15 +1,16 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReserveController: ControllerBase
+    public class ReserveController : ControllerBase
     {
         private readonly IReserveService _service;
+
         public ReserveController(IReserveService service)
         {
             _service = service;
@@ -19,7 +20,6 @@ namespace API_PI_Clubes.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAll();
-
             return Ok(result);
         }
 
@@ -29,11 +29,19 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id);
             return Ok(result);
         }
-        
+
         [HttpGet("club/{id}")]
         public async Task<IActionResult> GetByClubId(Guid id)
         {
             var result = await _service.GetByClubId(id);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("club/{id}/details")]
+        public async Task<IActionResult> GetDetailedByClubId(Guid id)
+        {
+            var result = await _service.GetDetailedByClubId(id);
             return Ok(result);
         }
 
@@ -44,6 +52,7 @@ namespace API_PI_Clubes.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateReserveDTO dto)
         {
@@ -51,6 +60,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

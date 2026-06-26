@@ -24,4 +24,9 @@ namespace API_PI_Clubes.Application.DTOs
         public RankCategoryEnum RankCategory { get; set; }
         public Guid UserId { get; set; }
     }
+    public class PlayerReserveDTO
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
 }

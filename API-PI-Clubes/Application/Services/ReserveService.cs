@@ -2,12 +2,8 @@
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
-using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
-using Microsoft.EntityFrameworkCore;
-using System.Net.NetworkInformation;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -39,6 +35,7 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
+
         public async Task<IEnumerable<ResponseReserveDTO>> GetByClubId(Guid id)
         {
             ValidateId(id);
@@ -50,6 +47,36 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
+
+        public async Task<IEnumerable<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId)
+        {
+            ValidateId(clubId);
+
+            var data = await _repository.GetAllDetailedByClubIdAsync(clubId);
+
+            return data.Select(r => new ResponseReserveDetailDTO
+            {
+                Id = r.Id,
+                Date = r.Date,
+                Status = r.Status,
+                Player = new PlayerReserveDTO
+                {
+                    Name = r.Player.User.Name
+                },
+                Schedule = new ScheduleReserveDTO
+                {
+                    StartTime = r.Schedule.StartTime,
+                    EndTime = r.Schedule.EndTime,
+                    Court = new CourtReserveDTO
+                    {
+                        Name = r.Schedule.Court.Name,
+                        PricePerHour = r.Schedule.Court.PricePerHour,
+                        Type = r.Schedule.Court.Type
+                    }
+                }
+            });
+        }
+
         public async Task<ResponseIdDTO> Create(CreatReserveDTO dto)
         {
             ValidateReserveDTO(dto);
@@ -67,9 +94,7 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync();
 
             return new ResponseIdDTO { Id = entity.Id };
-
         }
-
 
         public async Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto)
         {

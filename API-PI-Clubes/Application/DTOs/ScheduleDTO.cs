@@ -63,5 +63,13 @@ namespace API_PI_Clubes.Application.DTOs
         public StatusEnum Status { get; set; }
         public Guid PlayerId { get; set; }
     }
+    
+    public class ScheduleReserveDTO
+    {
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
+        public CourtReserveDTO Court { get; set; } = null!;
+    }
+
 
 }

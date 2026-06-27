@@ -32,7 +32,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         
-        [Authorize(Roles = "Player")]
+        [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -40,7 +40,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         
-        [Authorize(Roles = "Player")]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
         {
@@ -48,7 +48,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Player")]
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

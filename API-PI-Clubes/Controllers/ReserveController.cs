@@ -1,5 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Model.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,7 +52,15 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
-
+        
+        [Authorize(Roles = "Admin")]
+        [HttpPut("status/{id}")]
+        public async Task<IActionResult> UpdateStatus(Guid id, StatusEnum status)
+        {
+            await _service.ChangeStatus(id, status);
+            return Ok();
+        }
+        
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateReserveDTO dto)

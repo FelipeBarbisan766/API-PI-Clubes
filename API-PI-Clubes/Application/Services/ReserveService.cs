@@ -96,6 +96,22 @@ namespace API_PI_Clubes.Application.Services
             return new ResponseIdDTO { Id = entity.Id };
         }
 
+        public async Task ChangeStatus(Guid id, StatusEnum status)
+        {
+            ValidateId(id);
+            
+            var entity = await _repository.GetByIdAsync(id);
+            
+            if (entity == null)
+                throw new InvalidOperationException("Reserve not found");
+            
+            entity.Status = status;
+            
+            _repository.Update(entity);
+            await _repository.SaveChangesAsync();
+            
+        }
+        
         public async Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto)
         {
             ValidateId(id);

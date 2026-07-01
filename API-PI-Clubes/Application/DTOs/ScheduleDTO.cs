@@ -7,9 +7,6 @@ namespace API_PI_Clubes.Application.DTOs
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
 
-        public bool IsBlocked { get; set; }
-        public bool IsReserved { get; set; }
-        public bool IsFixed { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
         public Guid CourtId { get; set; }
     }
@@ -18,9 +15,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
-        public bool IsBlocked { get; set; }
-        public bool IsReserved { get; set; }
-        public bool IsFixed { get; set; }
+        public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
     }
@@ -30,9 +25,7 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
-        public bool IsBlocked { get; set; }
-        public bool IsReserved { get; set; }
-        public bool IsFixed { get; set; }
+        public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
         public Guid CourtId { get; set; }
@@ -42,18 +35,11 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
-        public bool IsBlocked { get; set; }
-        public bool IsFixed { get; set; }
+        public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
  
-        /// <summary>
-        /// Verdadeiro quando o horário não está bloqueado e não há reserva ativa para a data consultada.
-        /// </summary>
         public bool IsAvailable { get; set; }
  
-        /// <summary>
-        /// Nulo quando não há reserva para a data consultada.
-        /// </summary>
         public ResponseReserveInfoDTO? Reserve { get; set; }
     }
     public class ResponseReserveInfoDTO

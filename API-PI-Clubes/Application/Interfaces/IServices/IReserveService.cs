@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Model.Enums;
 
 namespace API_PI_Clubes.Application.Interfaces.IServices
 {
@@ -9,6 +10,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<IEnumerable<ResponseReserveDTO>> GetByClubId(Guid id);
         Task<IEnumerable<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId);
         Task<ResponseIdDTO> Create(CreatReserveDTO dto);
+        Task ChangeStatus(Guid id, StatusEnum status);
         Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto);
         Task Delete(Guid id);
     }

@@ -3,6 +3,7 @@ using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 
 namespace API_PI_Clubes.Application.Services
 {
@@ -63,9 +64,7 @@ namespace API_PI_Clubes.Application.Services
             {
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
-                IsBlocked = dto.IsBlocked,
-                IsReserved = dto.IsReserved,
-                IsFixed = dto.IsFixed,
+                State = StateEnum.Actived,
                 DayOfWeek = dto.DayOfWeek,
                 CourtId = dto.CourtId
             };
@@ -90,9 +89,7 @@ namespace API_PI_Clubes.Application.Services
 
             data.StartTime = dto.StartTime;
             data.EndTime = dto.EndTime;
-            data.IsBlocked = dto.IsBlocked;
-            data.IsReserved = dto.IsReserved;
-            data.IsFixed = dto.IsFixed;
+            data.State = dto.State;
             data.DayOfWeek = dto.DayOfWeek;
             data.UpdatedAt = DateTime.UtcNow;
 

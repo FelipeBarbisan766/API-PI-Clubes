@@ -13,9 +13,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Id = schedule.Id,
                 StartTime = schedule.StartTime,
                 EndTime = schedule.EndTime,
-                IsBlocked = schedule.IsBlocked,
-                IsReserved = schedule.IsReserved,
-                IsFixed = schedule.IsFixed,
+                State =  schedule.State,
                 DayOfWeek = schedule.DayOfWeek,
                 CourtId = schedule.CourtId
             };
@@ -38,12 +36,8 @@ namespace API_PI_Clubes.Application.Mappers
                     Id         = s.Id,
                     StartTime  = s.StartTime,
                     EndTime    = s.EndTime,
-                    IsBlocked  = s.IsBlocked,
-                    IsFixed    = s.IsFixed,
+                    State      = s.State,
                     DayOfWeek  = s.DayOfWeek,
- 
-                    // Disponível = não bloqueado E sem reserva ativa na data
-                    IsAvailable = !s.IsBlocked && reserve == null,
  
                     Reserve = reserve == null ? null : new ResponseReserveInfoDTO
                     {

@@ -51,6 +51,15 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
             return Ok(result);
         }
+        
+        [Authorize(Roles = "Admin")]
+        [HttpPost("court/{courtId}/bulk")]
+        public async Task<IActionResult> CreateBulk(Guid courtId, CreateBulkScheduleDTO dto)
+        {
+            dto.CourtId = courtId;
+            var result = await _service.CreateBulk(dto);
+            return Ok(result);
+        }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]

@@ -53,7 +53,19 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Schedules
                 .AnyAsync(s => s.Id == id && s.IsActive);
         }
+        public async Task<IEnumerable<Schedule>> GetByCourtAndDaysOfWeekAsync(Guid courtId, List<DayOfWeek> daysOfWeek)
+        {
+            return await _context.Schedules
+                .Where(s => s.CourtId == courtId
+                            && daysOfWeek.Contains(s.DayOfWeek)
+                            && s.IsActive)
+                .ToListAsync();
+        }
 
+        public async Task AddRangeAsync(IEnumerable<Schedule> schedules)
+        {
+            await _context.Schedules.AddRangeAsync(schedules);
+        }
         public async Task AddAsync(Schedule schedule)
         {
             await _context.Schedules.AddAsync(schedule);

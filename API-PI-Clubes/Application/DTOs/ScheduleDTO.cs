@@ -57,5 +57,27 @@ namespace API_PI_Clubes.Application.DTOs
         public CourtReserveDTO Court { get; set; } = null!;
     }
 
+    public class CreateBulkScheduleDTO
+    {
+        public Guid CourtId { get; set; }
+        public List<DayOfWeek> DaysOfWeek { get; set; } = [];
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
+        public int SlotDurationMinutes { get; set; }
+    }
+
+    public class ResponseBulkScheduleDTO
+    {
+        public List<ResponseScheduleDTO> Created { get; set; } = [];
+        public List<ScheduleConflictDTO> Conflicts { get; set; } = [];
+    }
+
+    public class ScheduleConflictDTO
+    {
+        public DayOfWeek DayOfWeek { get; set; }
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
 
 }

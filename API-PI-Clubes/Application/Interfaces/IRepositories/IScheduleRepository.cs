@@ -10,6 +10,8 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<IEnumerable<Schedule>> GetByCourtAndDateAsync(Guid courtId, DateOnly date);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Schedule schedule);
+        Task<IEnumerable<Schedule>> GetByCourtAndDaysOfWeekAsync(Guid courtId, List<DayOfWeek> daysOfWeek);
+        Task AddRangeAsync(IEnumerable<Schedule> schedules);
         Task SaveChangesAsync();
         void Update(Schedule schedule);
         Task DeleteAsync(Guid id);

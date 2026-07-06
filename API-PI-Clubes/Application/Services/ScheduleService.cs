@@ -75,7 +75,71 @@ namespace API_PI_Clubes.Application.Services
             return new ResponseIdDTO { Id = entity.Id };
         }
         
+public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
+{
+    ValidateBulkScheduleDTO(dto);
 
+    var existing = await _repository.GetByCourtAndDaysOfWeekAsync(dto.CourtId, dto.DaysOfWeek);
+
+    var toCreate = new List<Schedule>();
+    var conflicts = new List<ScheduleConflictDTO>();
+
+    foreach (var day in dto.DaysOfWeek)
+    {
+        var current = dto.StartTime;
+
+        while (current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes)) <= dto.EndTime)
+        {
+            var slotEnd = current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes));
+
+            var hasOverlap = existing.Any(s =>
+                s.DayOfWeek == day &&
+                current < s.EndTime &&
+                slotEnd > s.StartTime);
+
+            var hasOverlapWithBatch = toCreate.Any(s =>
+                s.DayOfWeek == day &&
+                current < s.EndTime &&
+                slotEnd > s.StartTime);
+
+            if (hasOverlap || hasOverlapWithBatch)
+            {
+                conflicts.Add(new ScheduleConflictDTO
+                {
+                    DayOfWeek = day,
+                    StartTime = current,
+                    EndTime = slotEnd,
+                    Reason = "Conflito com horário já existente"
+                });
+            }
+            else
+            {
+                toCreate.Add(new Schedule
+                {
+                    StartTime = current,
+                    EndTime = slotEnd,
+                    State = StateEnum.Actived,
+                    DayOfWeek = day,
+                    CourtId = dto.CourtId
+                });
+            }
+
+            current = slotEnd;
+        }
+    }
+
+    if (toCreate.Count > 0)
+    {
+        await _repository.AddRangeAsync(toCreate);
+        await _repository.SaveChangesAsync(); 
+    }
+
+    return new ResponseBulkScheduleDTO
+    {
+        Created = _mapper.ToDTO(toCreate).ToList(),
+        Conflicts = conflicts
+    };
+}
 
         public async Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto)
         {
@@ -137,6 +201,24 @@ namespace API_PI_Clubes.Application.Services
 
             if (dto.StartTime >= dto.EndTime)
                 throw new ArgumentException("StartTime must be before EndTime");
+        }
+
+        private static void ValidateBulkScheduleDTO(CreateBulkScheduleDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (dto.CourtId == Guid.Empty)
+                throw new ArgumentException("Invalid CourtId", nameof(dto.CourtId));
+
+            if (dto.DaysOfWeek == null || dto.DaysOfWeek.Count == 0)
+                throw new ArgumentException("Informe ao menos um dia da semana");
+
+            if (dto.StartTime >= dto.EndTime)
+                throw new ArgumentException("StartTime must be before EndTime");
+
+            if (dto.SlotDurationMinutes <= 0)
+                throw new ArgumentException("SlotDurationMinutes deve ser maior que zero");
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 
 namespace API_PI_Clubes.Application.Mappers
 {
@@ -27,10 +28,8 @@ namespace API_PI_Clubes.Application.Mappers
         {
             return schedules.Select(s =>
             {
-                // O Include já filtrou as Reserves pela data e pelo IsActive,
-                // então qualquer item aqui é uma reserva real para aquele dia.
-                var reserve = s.Reserves?.FirstOrDefault();
- 
+                var reserve = s.Reserves?.FirstOrDefault(r => r.Status != StatusEnum.Recusada);
+
                 return new ResponseScheduleAvailabilityDTO
                 {
                     Id         = s.Id,
@@ -38,7 +37,9 @@ namespace API_PI_Clubes.Application.Mappers
                     EndTime    = s.EndTime,
                     State      = s.State,
                     DayOfWeek  = s.DayOfWeek,
- 
+
+                    IsAvailable = reserve == null,
+
                     Reserve = reserve == null ? null : new ResponseReserveInfoDTO
                     {
                         Id       = reserve.Id,
@@ -48,6 +49,7 @@ namespace API_PI_Clubes.Application.Mappers
                     }
                 };
             });
+        
         }
 
     }

@@ -45,6 +45,14 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetDetailedByClubId(id);
             return Ok(result);
         }
+        
+        [Authorize]
+        [HttpGet("player/{id}/details")]
+        public async Task<IActionResult> GetDetailedByPlayerId(Guid id)
+        {
+            var result = await _service.GetDetailedByPlayerId(id);
+            return Ok(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreatReserveDTO dto)

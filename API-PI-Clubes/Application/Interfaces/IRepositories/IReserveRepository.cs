@@ -8,6 +8,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<Reserve?> GetByIdAsync(Guid id);
         Task<IEnumerable<Reserve>> GetAllByClubIdAsync(Guid clubId);
         Task<IEnumerable<Reserve>> GetAllDetailedByClubIdAsync(Guid clubId);
+        Task<IEnumerable<Reserve>> GetAllDetailedByPlayerIdAsync(Guid playerId);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Reserve Reserve);
         Task SaveChangesAsync();

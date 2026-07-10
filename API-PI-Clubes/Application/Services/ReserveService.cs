@@ -77,20 +77,21 @@ namespace API_PI_Clubes.Application.Services
             });
         }
 
-        public async Task<IEnumerable<ResponseReserveDetailDTO>> GetDetailedByPlayerId(Guid playerId)
+        public async Task<IEnumerable<ResponseReserveDetailToPlayerDTO>> GetDetailedByPlayerId(Guid playerId)
         {
             ValidateId(playerId);
 
             var data = await _repository.GetAllDetailedByPlayerIdAsync(playerId);
 
-            return data.Select(r => new ResponseReserveDetailDTO
+            return data.Select(r => new ResponseReserveDetailToPlayerDTO
             {
                 Id = r.Id,
                 Date = r.Date,
                 Status = r.Status,
-                Player = new PlayerReserveDTO
+                Club = new ClubReserveDTO()
                 {
-                    Name = r.Player.User.Name
+                    Name = r.Schedule.Court.Club.Name,
+                    PhoneNumber = r.Schedule.Court.Club.PhoneNumber
                 },
                 Schedule = new ScheduleReserveDTO
                 {

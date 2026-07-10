@@ -77,4 +77,10 @@ namespace API_PI_Clubes.Application.DTOs
         public List<ImageDTO> Images { get; set; }
         public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
+
+    public class ClubReserveDTO
+    {
+        public string Name { get; set; }
+        public string PhoneNumber { get; set; }
+    }
 }

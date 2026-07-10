@@ -53,10 +53,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Reserves
                 .Where(r => r.IsActive && r.PlayerId == playerId)
-                .Include(r => r.Player)
-                .ThenInclude(p => p.User)
                 .Include(r => r.Schedule)
                 .ThenInclude(s => s.Court)
+                .ThenInclude(s => s.Club)
                 .OrderByDescending(r => r.Date)
                 .ToListAsync();
         }

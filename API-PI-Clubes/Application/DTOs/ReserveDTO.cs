@@ -29,5 +29,13 @@ namespace API_PI_Clubes.Application.DTOs
         public PlayerReserveDTO Player { get; set; } = null!;
         public ScheduleReserveDTO Schedule { get; set; } = null!;
     }
+    public class ResponseReserveDetailToPlayerDTO
+    {
+        public Guid Id { get; set; }
+        public DateTime Date { get; set; }
+        public StatusEnum Status { get; set; }
+        public ScheduleReserveDTO Schedule { get; set; } = null!;
+        public ClubReserveDTO Club { get; set; } = null!;
+    }
 
 }

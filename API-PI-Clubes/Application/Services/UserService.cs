@@ -40,9 +40,10 @@ namespace API_PI_Clubes.Application.Services
             if (user == null)
                 throw new Exception("User not found");
 
-            user.Name = dto.Name;
-            user.Email = dto.Email;
-            user.PhoneNumber = dto.PhoneNumber;
+            if(dto.Name != null)
+                user.Name = dto.Name;
+            if (dto.PhoneNumber != null)
+                user.PhoneNumber = dto.PhoneNumber;
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);

@@ -32,9 +32,17 @@ namespace API_PI_Clubes.Application.Services
             _imageProcessor = imageProcessor;
         }
 
-        public async Task<IEnumerable<ResponseCourtDTO>> GetAll()
+        public async Task<PagedResultDTO<ResponseCourtDTO>> GetAll(CourtQueryDTO query)
         {
-            return await _repository.GetAllAsync();
+            var (items, total) = await _repository.GetAllAsync(query);
+
+            return new PagedResultDTO<ResponseCourtDTO>
+            {
+                Data = items,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
 
         public async Task<ResponseCourtDTO> GetById(Guid id)

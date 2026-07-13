@@ -4,7 +4,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface ICourtService
     {
-        Task<IEnumerable<ResponseCourtDTO>> GetAll();
+        Task<PagedResultDTO<ResponseCourtDTO>> GetAll(CourtQueryDTO query);
         Task<ResponseCourtDTO> GetById(Guid id);
         Task<List<ResponseCourtDTO>> GetByClubId(Guid id);
         Task<ResponseIdDTO> Create(CreatCourtDTO dto);

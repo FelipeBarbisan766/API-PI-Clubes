@@ -5,7 +5,7 @@
         public Guid Id { get; set; }
     }
 
-    public class PagedResultDTO<T>
+    public class PagedResultDTO<T> 
     {
         public IEnumerable<T> Data { get; set; } = [];
         public int TotalCount { get; set; }

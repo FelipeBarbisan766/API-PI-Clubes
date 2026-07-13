@@ -14,12 +14,25 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             _context = context;
         }
-
-        public async Task<IEnumerable<ResponseCourtDTO>> GetAllAsync()
+        public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query)
         {
-            return await _context.Courts
+            var q = _context.Courts
                 .Where(c => c.IsActive)
-                .Include(c => c.Images)
+                .AsQueryable();
+
+            // Filtros
+            if (!string.IsNullOrWhiteSpace(query.Name))
+                q = q.Where(c => c.Name.Contains(query.Name));
+
+            if (!string.IsNullOrWhiteSpace(query.City))
+                q = q.Where(c => c.Club.Address.City.Contains(query.City));
+
+            if (query.Types != null && query.Types.Count > 0)
+                q = q.Where(c => c.IsActive && query.Types.Contains(c.Type));
+
+            var totalCount = await q.CountAsync();
+
+            var items = await q
                 .Select(c => new ResponseCourtDTO
                 {
                     Id = c.Id,
@@ -34,13 +47,17 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Select(i => new ImageDTO
                         {
                             ThumbUrl  = i.ThumbUrl,
-                            MediumUrl = i.MediumUrl,
-                            FullUrl   = i.FullUrl
                         })
                         .ToList()
                 })
+                .OrderBy(c => c.Name)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
+       
 
         public async Task<Court?> GetByIdAsync(Guid id)
         {

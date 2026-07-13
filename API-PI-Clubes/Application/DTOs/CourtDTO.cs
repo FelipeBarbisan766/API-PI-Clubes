@@ -43,5 +43,15 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal PricePerHour { get; set; }
         public TypeEnum Type { get; set; } // ajuste para CourtTypeEnum se usar enum
     }
+    
+    public class CourtQueryDTO
+    {
+        public string? Name { get; set; }
+        public string? City { get; set; }
+        public List<TypeEnum>? Types { get; set; } 
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
 
 }

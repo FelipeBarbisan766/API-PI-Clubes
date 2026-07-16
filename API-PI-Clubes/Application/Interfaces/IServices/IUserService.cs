@@ -12,5 +12,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task UpdateAvatar(Guid id, UpdateAvatarDTO dto);
         Task UpdateRole(Guid id, RoleEnum role);
         Task Delete(Guid id);
+        Task<string> ProcessAvatarFromUrlAsync(string imageUrl);
     }
 }

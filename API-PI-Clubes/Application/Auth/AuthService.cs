@@ -20,12 +20,14 @@ namespace API_PI_Clubes.Application.Auth
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUserRepository _repository;
+        private readonly IUserService _userService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
         private readonly IPlayerService _playerService;
 
         public AuthService(
             IUserRepository repository,
+            IUserService userService,
             ITokenService tokenService,
             IPasswordHasher passwordHasher,
             IEmailService emailService,
@@ -34,6 +36,7 @@ namespace API_PI_Clubes.Application.Auth
             )
         {
             _repository = repository;
+            _userService = userService;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
             _emailService = emailService;
@@ -182,12 +185,14 @@ namespace API_PI_Clubes.Application.Auth
             var entity = await _repository.GetByIdAsync(Guid.Parse(userId));
             if (entity == null)
                 throw new Exception("User not found");
+            
             return new UserDTO
             {
                 Id = entity.Id,
                 Name = entity.Name,
                 Email = entity.Email,
-                Role = entity.Role
+                Role = entity.Role,
+                AvatarUrl = entity.AvatarUrl
             };
         }
         public async Task GoogleSignUp(string idToken)
@@ -198,7 +203,6 @@ namespace API_PI_Clubes.Application.Auth
             };
 
             GoogleJsonWebSignature.Payload payload;
-
             try
             {
                 payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
@@ -208,12 +212,25 @@ namespace API_PI_Clubes.Application.Auth
                 throw new Exception("Token do Google inválido ou expirado.");
             }
 
+            if (!payload.EmailVerified)
+                throw new Exception("E-mail do Google não verificado.");
+
             var userExists = await _repository.GetByEmailAsync(payload.Email);
             if (userExists != null)
                 throw new Exception("User already exists");
 
-            if (!payload.EmailVerified)
-                throw new Exception("E-mail do Google não verificado.");
+            string? avatarUrl = null;
+            if (!string.IsNullOrEmpty(payload.Picture))
+            {
+                try
+                {
+                    avatarUrl = await _userService.ProcessAvatarFromUrlAsync(payload.Picture);
+                }
+                catch
+                {
+                    avatarUrl = null;
+                }
+            }
 
             var entity = new User
             {
@@ -221,13 +238,14 @@ namespace API_PI_Clubes.Application.Auth
                 Email = payload.Email,
                 Provider = "google",
                 Role = RoleEnum.Player,
+                AvatarUrl = avatarUrl,
+                EmailVerification = EmailVerificationVO.Confirm()
             };
-            entity.EmailVerification = EmailVerificationVO.Confirm();
+
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
-            
-            await _playerService.Create(entity.Id);
 
+            await _playerService.Create(entity.Id);
         }
         public async Task<string> GoogleLogin(string idToken)
         {
@@ -254,5 +272,6 @@ namespace API_PI_Clubes.Application.Auth
             var token = _tokenService.GenerateToken(user);
             return token;
         }
+        
     }
 }

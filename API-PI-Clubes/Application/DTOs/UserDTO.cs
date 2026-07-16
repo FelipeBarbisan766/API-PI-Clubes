@@ -14,6 +14,10 @@ namespace API_PI_Clubes.Application.DTOs
         public string? Name { get; set; }
         public string? PhoneNumber { get; set; }
     }
+    public class UpdateAvatarDTO
+    {
+        public IFormFile? AvatarImage { get; set; }
+    }
 
     public class ResponseUserDTO
     {

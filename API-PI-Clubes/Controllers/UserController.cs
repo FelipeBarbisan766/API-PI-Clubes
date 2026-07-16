@@ -31,6 +31,13 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Update(id, dto);
             return Ok(result);
         }
+        [Authorize]
+        [HttpPut("{id}/avatar")]
+        public async Task<IActionResult> UpdateAvatar(Guid id, UpdateAvatarDTO dto)
+        {
+            await _service.UpdateAvatar(id, dto);
+            return Ok();
+        }
 
         [Authorize]
         [HttpDelete("{id}")]

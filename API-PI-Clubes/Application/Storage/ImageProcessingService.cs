@@ -19,6 +19,7 @@ public class ImageProcessingService : IImageProcessingService
         new VariantConfig(ImageVariantType.Thumb,  200,  200,  "thumb",  CenterCrop: true),
         new VariantConfig(ImageVariantType.Medium, 800,  600,  "medium", CenterCrop: false),
         new VariantConfig(ImageVariantType.Full, 1920, 1080,  "full",   CenterCrop: false),
+        new VariantConfig(ImageVariantType.Avatar,  200,  200,  "avatar",  CenterCrop: true )
     };
 
     private const int WebpQuality = 82;
@@ -57,6 +58,37 @@ public class ImageProcessingService : IImageProcessingService
         }
 
         return new ProcessedImageResult(baseName, processed);
+    }
+    
+    public async Task<ProcessedImageVariant> ProcessAsync(Stream inputStream, ImageVariantType type)
+    {
+        var baseName = Guid.NewGuid().ToString();
+
+        using var buffer = new MemoryStream();
+        await inputStream.CopyToAsync(buffer);
+        var imageBytes = buffer.ToArray();
+
+        using var original = SKBitmap.Decode(imageBytes)
+                             ?? throw new InvalidOperationException("Não foi possível decodificar a imagem.");
+
+        var cfg = Variants.FirstOrDefault(v => v.Type == type)
+                  ?? throw new InvalidOperationException($"Configuração não encontrada para variante {type}.");
+
+        using var resized = cfg.CenterCrop
+            ? CenterCropAndResize(original, cfg.MaxWidth, cfg.MaxHeight)
+            : ResizeMax(original, cfg.MaxWidth, cfg.MaxHeight);
+
+        var outputStream = new MemoryStream();
+        using var skImage = SKImage.FromBitmap(resized);
+        using var encoded = skImage.Encode(SKEncodedImageFormat.Webp, WebpQuality);
+        encoded.SaveTo(outputStream);
+        outputStream.Seek(0, SeekOrigin.Begin);
+
+        return new ProcessedImageVariant(
+            stream:   outputStream,
+            fileName: $"{baseName}_{cfg.Suffix}.webp",
+            variant:  cfg.Type
+        );
     }
 
     // ─── Resize proporcional, sem upscale ────────────────────────────────────

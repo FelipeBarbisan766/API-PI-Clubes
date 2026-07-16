@@ -4,5 +4,6 @@ public enum ImageVariantType
 {
     Thumb,
     Medium,
-    Full
+    Full,
+    Avatar
 }

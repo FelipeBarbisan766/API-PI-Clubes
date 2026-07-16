@@ -3,6 +3,7 @@ using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
@@ -14,12 +15,22 @@ namespace API_PI_Clubes.Application.Services
         private readonly IUserRepository _repository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUserMapper _mapper;
+        private readonly IImageProcessingService _imageProcessor;
+        private readonly IStorageService _storageService;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IUserMapper mapper)
+        public UserService(
+            IUserRepository userRepository, 
+            IPasswordHasher passwordHasher, 
+            IUserMapper mapper,
+            IImageProcessingService imageProcessor,
+            IStorageService storageService
+            )
         {
             _repository = userRepository;
             _passwordHasher = passwordHasher;
             _mapper = mapper;
+            _imageProcessor = imageProcessor;
+            _storageService = storageService;
         }
 
         public async Task<ResponseUserDTO> GetById(Guid id)
@@ -65,6 +76,30 @@ namespace API_PI_Clubes.Application.Services
             _repository.Update(user);
             await _repository.SaveChangesAsync();
         }
+        
+        public async Task UpdateAvatar(Guid id, UpdateAvatarDTO dto)
+        {
+            var user = await _repository.GetByIdAsync(id);
+            if (user == null)
+                throw new Exception("User not found");
+
+            if (dto.AvatarImage != null)
+            {
+                var oldAvatarUrl = user.AvatarUrl;
+
+                user.AvatarUrl = await ProcessAndUploadImage(dto.AvatarImage);
+                user.UpdatedAt = DateTime.UtcNow;
+
+                _repository.Update(user);
+                await _repository.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(oldAvatarUrl))
+                {
+                    var oldFileName = Path.GetFileName(new Uri(oldAvatarUrl).LocalPath);
+                    await _storageService.DeleteFileAsync(oldFileName);
+                }
+            }
+        }
 
         public async Task Delete(Guid id)
         {
@@ -78,6 +113,16 @@ namespace API_PI_Clubes.Application.Services
 
             _repository.Update(user);
             await _repository.SaveChangesAsync();
+        }
+        
+        
+        
+        private async Task<string> ProcessAndUploadImage(IFormFile file)
+        {
+            using var inputStream = file.OpenReadStream();
+            using var variant = await _imageProcessor.ProcessAsync(inputStream, ImageVariantType.Avatar);
+
+            return await _storageService.UploadFileAsync(variant.Stream, variant.FileName);
         }
     }
 }

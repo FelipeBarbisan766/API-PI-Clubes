@@ -14,6 +14,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Name = user.Name,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
+                AvatarUrl =  user.AvatarUrl
             };
         }
 

@@ -40,17 +40,17 @@ namespace API_PI_Clubes.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("club/{id}/details")]
-        public async Task<IActionResult> GetDetailedByClubId(Guid id)
+        public async Task<IActionResult> GetDetailedByClubId(Guid id, [FromQuery] ReserveQueryDTO query)
         {
-            var result = await _service.GetDetailedByClubId(id);
+            var result = await _service.GetDetailedByClubId(id, query);
             return Ok(result);
         }
         
         [Authorize]
         [HttpGet("player/{id}/details")]
-        public async Task<IActionResult> GetDetailedByPlayerId(Guid id)
+        public async Task<IActionResult> GetDetailedByPlayerId(Guid id, [FromQuery] ReserveQueryDTO query)
         {
-            var result = await _service.GetDetailedByPlayerId(id);
+            var result = await _service.GetDetailedByPlayerId(id, query);
             return Ok(result);
         }
 

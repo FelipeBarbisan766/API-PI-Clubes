@@ -48,13 +48,13 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<IEnumerable<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId)
+        public async Task<PagedResultDTO<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId, ReserveQueryDTO query)
         {
             ValidateId(clubId);
 
-            var data = await _repository.GetAllDetailedByClubIdAsync(clubId);
+            var (items, total) = await _repository.GetAllDetailedByClubIdAsync(clubId, query);
 
-            return data.Select(r => new ResponseReserveDetailDTO
+            var itemsDto = items.Select(r => new ResponseReserveDetailDTO
             {
                 Id = r.Id,
                 Date = r.Date,
@@ -75,15 +75,23 @@ namespace API_PI_Clubes.Application.Services
                     }
                 }
             });
+            return new PagedResultDTO<ResponseReserveDetailDTO>
+            {
+                Data = itemsDto,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+                
         }
 
-        public async Task<IEnumerable<ResponseReserveDetailToPlayerDTO>> GetDetailedByPlayerId(Guid playerId)
+        public async Task<PagedResultDTO<ResponseReserveDetailToPlayerDTO>> GetDetailedByPlayerId(Guid playerId, ReserveQueryDTO query)
         {
             ValidateId(playerId);
 
-            var data = await _repository.GetAllDetailedByPlayerIdAsync(playerId);
+            var (items, total) = await _repository.GetAllDetailedByPlayerIdAsync(playerId,query);
 
-            return data.Select(r => new ResponseReserveDetailToPlayerDTO
+            var itemsDto = items.Select(r => new ResponseReserveDetailToPlayerDTO
             {
                 Id = r.Id,
                 Date = r.Date,
@@ -105,6 +113,13 @@ namespace API_PI_Clubes.Application.Services
                     }
                 }
             });
+            return new PagedResultDTO<ResponseReserveDetailToPlayerDTO>
+            {
+                Data = itemsDto,
+                TotalCount = total,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
         }
         
         public async Task<ResponseIdDTO> Create(CreatReserveDTO dto)

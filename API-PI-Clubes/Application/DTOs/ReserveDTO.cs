@@ -2,6 +2,14 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
+    public class ReserveQueryDTO
+    {
+        public string? Name { get; set; }
+        public StatusEnum Status { get; set; }
+
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
     public class CreatReserveDTO
     {
         public DateTime Date { get; set; }

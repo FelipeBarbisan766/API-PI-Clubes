@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Model;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Model;
 
 namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
@@ -7,8 +8,10 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<IEnumerable<Reserve>> GetAllAsync();
         Task<Reserve?> GetByIdAsync(Guid id);
         Task<IEnumerable<Reserve>> GetAllByClubIdAsync(Guid clubId);
-        Task<IEnumerable<Reserve>> GetAllDetailedByClubIdAsync(Guid clubId);
-        Task<IEnumerable<Reserve>> GetAllDetailedByPlayerIdAsync(Guid playerId);
+        Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByClubIdAsync(Guid clubId,
+            ReserveQueryDTO query);
+        Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId,
+            ReserveQueryDTO query);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Reserve Reserve);
         Task SaveChangesAsync();

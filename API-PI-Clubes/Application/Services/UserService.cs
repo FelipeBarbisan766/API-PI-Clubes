@@ -17,13 +17,15 @@ namespace API_PI_Clubes.Application.Services
         private readonly IUserMapper _mapper;
         private readonly IImageProcessingService _imageProcessor;
         private readonly IStorageService _storageService;
+        private readonly IHttpClientFactory  _httpClientFactory;
 
         public UserService(
             IUserRepository userRepository, 
             IPasswordHasher passwordHasher, 
             IUserMapper mapper,
             IImageProcessingService imageProcessor,
-            IStorageService storageService
+            IStorageService storageService,
+            IHttpClientFactory  httpClientFactory
             )
         {
             _repository = userRepository;
@@ -31,6 +33,7 @@ namespace API_PI_Clubes.Application.Services
             _mapper = mapper;
             _imageProcessor = imageProcessor;
             _storageService = storageService;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<ResponseUserDTO> GetById(Guid id)
@@ -115,14 +118,21 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync();
         }
         
-        
-        
         private async Task<string> ProcessAndUploadImage(IFormFile file)
         {
             using var inputStream = file.OpenReadStream();
+            return await ProcessAndUploadImageStream(inputStream);
+        }
+        private async Task<string> ProcessAndUploadImageStream(Stream inputStream)
+        {
             using var variant = await _imageProcessor.ProcessAsync(inputStream, ImageVariantType.Avatar);
-
             return await _storageService.UploadFileAsync(variant.Stream, variant.FileName);
+        }
+        public async Task<string> ProcessAvatarFromUrlAsync(string imageUrl)
+        {
+            using var httpClient = _httpClientFactory.CreateClient();
+            await using var inputStream = await httpClient.GetStreamAsync(imageUrl);
+            return await ProcessAndUploadImageStream(inputStream);
         }
     }
 }

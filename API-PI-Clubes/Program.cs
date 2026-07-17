@@ -90,6 +90,7 @@ builder.Services
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
 
 // --- 5. Configuração de CORS ---
 builder.Services.AddCors(options =>

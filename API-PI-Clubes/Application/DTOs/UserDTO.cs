@@ -33,5 +33,6 @@ namespace API_PI_Clubes.Application.DTOs
         public string Name { get; set; }
         public string Email { get; set; }
         public RoleEnum Role { get; set; }
+        public string AvatarUrl { get; set; }
     }
 }

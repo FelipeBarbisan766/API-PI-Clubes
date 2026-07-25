@@ -41,7 +41,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByClubIdAsync(Guid clubId, ReserveQueryDTO query)
         {
             var q = _context.Reserves
-                .Where(c => c.IsActive)
+                .Where(c => c.IsActive && c.Schedule.Court.ClubId == clubId)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -53,7 +53,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             var totalCount = await q.CountAsync();
 
             var items =  await q
-                .Where(r => r.IsActive && r.Schedule.Court.ClubId == clubId)
                 .Include(r => r.Player)
                     .ThenInclude(p => p.User)
                 .Include(r => r.Schedule)
@@ -68,7 +67,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId, ReserveQueryDTO query)
         {
             var q = _context.Reserves
-                .Where(c => c.IsActive)
+                .Where(c => c.IsActive  && c.Player.Id == playerId)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -80,7 +79,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             var totalCount = await q.CountAsync();
             
             var items =  await q
-                .Where(r => r.IsActive && r.PlayerId == playerId)
                 .Include(r => r.Schedule)
                     .ThenInclude(s => s.Court)
                     .ThenInclude(s => s.Club)

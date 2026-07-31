@@ -38,7 +38,15 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetAllByAdminId(id);
             return Ok(result);
         }
-
+        
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}/dashboard")]
+        public async Task<IActionResult> GetDashboard(Guid id)
+        {
+            var result = await _service.GetDashboard(id);
+            return Ok(result);
+        }
+        
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateClubDTO dto)

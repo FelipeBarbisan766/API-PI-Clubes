@@ -9,6 +9,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<Club> GetByIdAsync(Guid id);
         Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id);
         Task<Club?> GetByIdWithImagesAsync(Guid id);
+        Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId);
         Task AddAsync(Club entity);
         Task AddClubAdminAsync(ClubAdmin clubAdmin);
         void Update(Club entity);

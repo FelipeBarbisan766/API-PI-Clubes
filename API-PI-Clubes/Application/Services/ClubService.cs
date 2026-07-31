@@ -69,7 +69,18 @@ namespace API_PI_Clubes.Application.Services
 
             return data;
         }
-        
+
+        public async Task<ResponseDashboardDTO> GetDashboard(Guid id)
+        {
+            ValidateId(id);
+
+            var data = await _repository.GetDashboardAsync(id);
+
+            if (data == null)
+                throw new InvalidOperationException("Club not found");
+
+            return data;
+        }
 
         public async Task<ResponseIdDTO> Create(CreateClubDTO dto)
         {

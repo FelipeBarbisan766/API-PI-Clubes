@@ -83,4 +83,12 @@ namespace API_PI_Clubes.Application.DTOs
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
     }
+    
+    public class ResponseDashboardDTO
+    {
+        public int QuantCourt { get; set; }
+        public int QuantReserveToday { get; set; }
+        public int CountPlayers { get; set; }
+        public List<ResponseReserveDetailDTO>  ClubReserve { get; set; }
+    }
 }

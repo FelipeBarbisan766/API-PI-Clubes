@@ -126,6 +126,69 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId)
+        {
+            var stats = await _context.Clubs
+                .AsNoTracking()
+                .Where(c => c.Id == clubId && c.IsActive)
+                .Select(c => new
+                {
+                    QuantCourt = c.Courts.Count(co => co.IsActive),
+                    QuantReserveToday = c.Courts
+                        .SelectMany(co => co.Schedules)
+                        .SelectMany(s => s.Reserves)
+                        .Count(r => r.IsActive && r.Date.Date == DateTime.Today),
+                    CountPlayers = c.Courts
+                        .SelectMany(co => co.Schedules)
+                        .SelectMany(s => s.Reserves)
+                        .Where(r => r.IsActive)
+                        .Select(r => r.PlayerId)
+                        .Distinct()
+                        .Count()
+                })
+                .FirstOrDefaultAsync();
+
+            if (stats == null)
+                return null;
+
+            var recentReserves = await _context.Reserves
+                .AsNoTracking()
+                .Where(r => r.IsActive && r.Schedule.Court.ClubId == clubId)
+                .OrderByDescending(r => r.Date)
+                .Take(4)
+                .Select(r => new ResponseReserveDetailDTO
+                {
+                    Id = r.Id,
+                    Date = r.Date,
+                    Status = r.Status,
+                    Player = new PlayerReserveDTO
+                    {
+                        Name = r.Player.User.Name
+                    },
+                    Schedule = new ScheduleReserveDTO
+                    {
+                        StartTime = r.Schedule.StartTime,
+                        EndTime = r.Schedule.EndTime,
+                        Court = new CourtReserveDTO
+                        {
+                            Name = r.Schedule.Court.Name,
+                            PricePerHour = r.Schedule.Court.PricePerHour,
+                            Type = r.Schedule.Court.Type
+                        }
+                    }
+                })
+                .ToListAsync();
+
+            return new ResponseDashboardDTO
+            {
+                QuantCourt = stats.QuantCourt,
+                QuantReserveToday = stats.QuantReserveToday,
+                CountPlayers = stats.CountPlayers,
+                ClubReserve = recentReserves
+            };
+        }
+        
+
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Clubs

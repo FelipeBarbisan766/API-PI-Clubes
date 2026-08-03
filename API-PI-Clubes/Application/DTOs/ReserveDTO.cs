@@ -34,7 +34,9 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public DateTime Date { get; set; }
         public StatusEnum Status { get; set; }
-        public PlayerReserveDTO Player { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
+        public string Email { get; set; } = null!;
         public ScheduleReserveDTO Schedule { get; set; } = null!;
     }
     public class ResponseReserveDetailToPlayerDTO

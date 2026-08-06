@@ -97,7 +97,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CluberaPolicy", policy =>
     {
-        policy.WithOrigins("https://www.clubera.dev", "https://clubera.dev", "http://localhost:4200")
+        policy.WithOrigins("https://www.clubera.dev", "https://clubera.dev", "https://api.clubera.dev", "http://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

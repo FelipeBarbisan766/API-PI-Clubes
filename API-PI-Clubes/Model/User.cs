@@ -12,7 +12,7 @@ namespace API_PI_Clubes.Model
         public string? PhoneNumber { get; set; }
         public string? Description { get; set; }
         
-        public string AvatarUrl  { get; set; } = string.Empty;
+        public string? AvatarUrl  { get; set; } = string.Empty;
         
         public EmailVerificationVO EmailVerification { get; set; }
         public ResetPasswordVO ResetPassword { get; set; }

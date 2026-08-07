@@ -47,5 +47,13 @@ namespace API_PI_Clubes.Application.DTOs
         public ScheduleReserveDTO Schedule { get; set; } = null!;
         public ClubReserveDTO Club { get; set; } = null!;
     }
+    public class ReserveAvailabilityChangedDTO
+    {
+        public Guid ReserveId { get; set; }
+        public Guid ScheduleId { get; set; }
+        public Guid CourtId { get; set; }
+        public DateTime Date { get; set; }
+        public StatusEnum Status { get; set; }
+    }
 
 }

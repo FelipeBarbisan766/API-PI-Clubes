@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Hubs;
 using API_PI_Clubes.Infrastructure.Jobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -142,6 +143,7 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(wwwrootPath),
     RequestPath = ""
 });
+app.MapHub<CourtAvailabilityHub>("/hubs/court-availability");
 app.UseCors("CluberaPolicy");
 app.UseRouting();
 app.UseAuthentication();

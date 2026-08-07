@@ -12,6 +12,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
             ReserveQueryDTO query);
         Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId,
             ReserveQueryDTO query);
+        Task<Reserve?> GetByIdWithClubAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
         Task AddAsync(Reserve Reserve);
         Task SaveChangesAsync();

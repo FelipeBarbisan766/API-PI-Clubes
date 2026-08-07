@@ -65,7 +65,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IAuthorizationHandler, ClubAuthorizationHandler>();
-            
+            services.AddScoped<IReserveNotificationService, ReserveNotificationService>();;
             services.AddScoped<ICookieAuthService, CookieAuthService>();
             
             services.AddScoped<IImageProcessingService, ImageProcessingService>();

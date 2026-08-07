@@ -137,6 +137,8 @@ namespace API_PI_Clubes.Application.Services
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
 
+           
+            
             return new ResponseIdDTO { Id = entity.Id };
         }
 

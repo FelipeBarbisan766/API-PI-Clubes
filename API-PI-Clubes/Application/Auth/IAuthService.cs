@@ -1,11 +1,12 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using System.Security.Claims;
+using API_PI_Clubes.Model;
 
 namespace API_PI_Clubes.Application.Auth
 {
     public interface IAuthService
     {
-        Task<string> LoginAsync(LoginDTO dto);
+        Task<User> LoginAsync(LoginDTO dto);       
         Task Register(CreatUserDTO dto);
         Task<bool> ValidateEmailToken(string token);
         Task<bool> ResendEmailToken(string email);
@@ -13,7 +14,6 @@ namespace API_PI_Clubes.Application.Auth
         Task<bool> ResetPassword(string token, string password);
         Task<UserDTO> GetCurrentUserInfo(ClaimsPrincipal user);
         Task GoogleSignUp(string idToken);
-        Task<string> GoogleLogin(string idToken);
-
+        Task<User> GoogleLogin(string idToken); 
     }
 }

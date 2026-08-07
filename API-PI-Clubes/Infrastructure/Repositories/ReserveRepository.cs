@@ -88,7 +88,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .ToListAsync();
             return (items, totalCount);
         }
-        
+        public async Task<Reserve?> GetByIdWithClubAsync(Guid id)
+        {
+            return await _context.Reserves
+                .Include(r => r.Schedule)
+                .ThenInclude(s => s.Court)
+                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
+        }
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Reserves

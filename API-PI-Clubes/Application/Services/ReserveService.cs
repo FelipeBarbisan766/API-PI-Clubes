@@ -11,11 +11,16 @@ namespace API_PI_Clubes.Application.Services
     {
         private readonly IReserveRepository _repository;
         private readonly IReserveMapper _mapper;
+        private readonly IReserveNotificationService _notificationService;
 
-        public ReserveService(IReserveMapper mapper, IReserveRepository repository)
+        public ReserveService(
+            IReserveMapper mapper,
+            IReserveRepository repository,
+            IReserveNotificationService notificationService)
         {
             _mapper = mapper;
             _repository = repository;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<ResponseReserveDTO>> GetAll()
@@ -137,25 +142,50 @@ namespace API_PI_Clubes.Application.Services
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
 
-           
-            
+            // busca com Schedule.Court já carregado pra pegar o ClubId
+            var withClub = await _repository.GetByIdWithClubAsync(entity.Id);
+
+            if (withClub != null)
+            {
+                await _notificationService.NotifyStatusChangedAsync(
+                    withClub.Schedule.Court.ClubId,
+                    new ReserveAvailabilityChangedDTO
+                    {
+                        ReserveId = withClub.Id,
+                        ScheduleId = withClub.ScheduleId,
+                        CourtId = withClub.Schedule.CourtId,
+                        Date = withClub.Date,
+                        Status = withClub.Status
+                    });
+            }
+
             return new ResponseIdDTO { Id = entity.Id };
         }
 
         public async Task ChangeStatus(Guid id, StatusEnum status)
         {
             ValidateId(id);
-            
-            var entity = await _repository.GetByIdAsync(id);
-            
+
+            var entity = await _repository.GetByIdWithClubAsync(id);
+
             if (entity == null)
                 throw new InvalidOperationException("Reserve not found");
-            
+
             entity.Status = status;
-            
+
             _repository.Update(entity);
             await _repository.SaveChangesAsync();
-            
+
+            await _notificationService.NotifyStatusChangedAsync(
+                entity.Schedule.Court.ClubId,
+                new ReserveAvailabilityChangedDTO
+                {
+                    ReserveId = entity.Id,
+                    ScheduleId = entity.ScheduleId,
+                    CourtId = entity.Schedule.CourtId,
+                    Date = entity.Date,
+                    Status = entity.Status
+                });
         }
         
         public async Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto)

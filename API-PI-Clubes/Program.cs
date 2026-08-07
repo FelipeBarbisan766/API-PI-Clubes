@@ -83,7 +83,11 @@ builder.Services
         };
     });;
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 
@@ -143,7 +147,7 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(wwwrootPath),
     RequestPath = ""
 });
-app.MapHub<CourtAvailabilityHub>("/hubs/court-availability");
+app.MapHub<CourtAvailabilityHub>("api/hubs/court-availability");
 app.UseCors("CluberaPolicy");
 app.UseRouting();
 app.UseAuthentication();

@@ -44,7 +44,7 @@ namespace API_PI_Clubes.Application.Auth
             _playerService =  playerService;
         }
 
-        public async Task<string> LoginAsync(LoginDTO dto)
+        public async Task<User> LoginAsync(LoginDTO dto)
         {
             var user = await _repository.GetByEmailAsync(dto.Email);
 
@@ -62,9 +62,7 @@ namespace API_PI_Clubes.Application.Auth
             if (!validPassword)
                 throw new Exception("Invalid password");
 
-            var token = _tokenService.GenerateToken(user);
-
-            return token;
+            return user;
         }
         public async Task Register(CreatUserDTO dto)
         {
@@ -248,7 +246,7 @@ namespace API_PI_Clubes.Application.Auth
 
             await _playerService.Create(entity.Id);
         }
-        public async Task<string> GoogleLogin(string idToken)
+        public async Task<User> GoogleLogin(string idToken)
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
@@ -269,9 +267,8 @@ namespace API_PI_Clubes.Application.Auth
             var user = await _repository.GetByEmailAsync(payload.Email);
             if (user is null)
                 throw new Exception("Nenhuma conta encontrada com esse e-mail. Faça o cadastro primeiro.");
-            
-            var token = _tokenService.GenerateToken(user);
-            return token;
+
+            return user; 
         }
         
     }

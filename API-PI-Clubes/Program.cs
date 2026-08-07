@@ -13,7 +13,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Infrastructure.Jobs;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.FileProviders;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,45 +53,36 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // --- 4. Configurações de Segurança (JWT & Cookies) ---
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
-    ?? throw new InvalidOperationException("Jwt settings not configured.");
-
+                  ?? throw new InvalidOperationException("Jwt settings not configured.");
 builder.Services
-    .AddAuthentication(options =>
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-            ClockSkew = TimeSpan.Zero
-        };
+        options.Cookie.Name = "clubera_auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 
-        options.Events = new JwtBearerEvents
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        options.ExpireTimeSpan = TimeSpan.FromHours(jwtSettings.Expiration);
+        options.SlidingExpiration = true;
+
+        options.Events = new CookieAuthenticationEvents
         {
-            OnMessageReceived = context =>
+            OnRedirectToLogin = context =>
             {
-                var accessToken = context.Request.Cookies["jwt"];
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    context.Token = accessToken;
-                }
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            },
+            OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
         };
-    });
+    });;
 
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+builder.Services.AddSignalR();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 
@@ -120,6 +114,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminClubPolicy", policy =>
         policy.Requirements.Add(new ManageClubRequirement()));
 });
+
 
 builder.Services.AddHostedService<SubscriptionExpiryJob>();
 

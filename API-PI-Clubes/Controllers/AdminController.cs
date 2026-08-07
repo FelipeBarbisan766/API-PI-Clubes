@@ -15,14 +15,14 @@ namespace API_PI_Clubes.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _service;
-        private readonly JwtSettings _jwtSettings;
+        private readonly ICookieAuthService _cookieAuthService;
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
 
-        public AdminController(IAdminService service, IOptions<JwtSettings> options, ITokenService tokenService, IUserRepository userRepository)
+        public AdminController(IAdminService service,ICookieAuthService cookieAuthService, ITokenService tokenService, IUserRepository userRepository)
         {
             _service = service;
-            _jwtSettings = options.Value;
+            _cookieAuthService = cookieAuthService;
             _tokenService = tokenService;
             _userRepository = userRepository;
         }
@@ -42,7 +42,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetCurrentUserInfo(User);
             return Ok(result);
         }
-
+    
         [Authorize(Roles = "Player")]
         [HttpPost]
         public async Task<IActionResult> Create(CreatAdminDTO dto)
@@ -50,19 +50,11 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Create(dto);
 
             var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null) 
+            if (user == null)
                 return NotFound("User not found.");
-            var token = _tokenService.GenerateToken(user);
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddHours(_jwtSettings.Expiration)
-            };
+            await _cookieAuthService.SignInAsync(HttpContext, user);
 
-            Response.Cookies.Append("jwt", token, cookieOptions);
             return Ok(result);
         }
 

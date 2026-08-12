@@ -2,9 +2,7 @@
 {
     public enum StatusEnum
     {
-        None = 0,
-        Confirmada = 1,
-        Recusada = 2,
-        AguardandoConfirmacao = 3,
+        Confirmada = 0,
+        Recusada = 1,
     }
 }

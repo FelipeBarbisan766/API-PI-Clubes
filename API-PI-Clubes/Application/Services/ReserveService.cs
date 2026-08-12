@@ -66,7 +66,8 @@ namespace API_PI_Clubes.Application.Services
                 Status = r.Status,
                 Name = r.Player.User.Name,
                 PhoneNumber = r.Player.User.PhoneNumber,
-                Email = r.Player.User.Email,
+                UserId = r.Player.UserId,
+                DateOfReservation = r.CreatedAt,
                 Schedule = new ScheduleReserveDTO
                 {
                     StartTime = r.Schedule.StartTime,
@@ -133,7 +134,7 @@ namespace API_PI_Clubes.Application.Services
             var entity = new Reserve
             {
                 Date = dto.Date,
-                Status = StatusEnum.AguardandoConfirmacao,
+                Status = StatusEnum.Confirmada,
                 PlayerId = dto.PlayerId,
                 ScheduleId = dto.ScheduleId,
                 CreatedAt = DateTime.UtcNow

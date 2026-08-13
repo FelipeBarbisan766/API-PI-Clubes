@@ -163,7 +163,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Status = r.Status,
                     Name = r.Player.User.Name,
                     PhoneNumber = r.Player.User.PhoneNumber,
-                    Email = r.Player.User.Email,
+                    UserId = r.Player.UserId,
+                    DateOfReservation = r.CreatedAt,
                     Schedule = new ScheduleReserveDTO
                     {
                         StartTime = r.Schedule.StartTime,

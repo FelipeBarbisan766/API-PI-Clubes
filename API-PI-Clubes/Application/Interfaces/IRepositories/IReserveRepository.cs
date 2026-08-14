@@ -18,5 +18,6 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task SaveChangesAsync();
         void Update(Reserve Reserve);
         Task DeleteAsync(Guid id);
+        Task<int> DeleteOldReservesAsync(DateTime cutoffDate);
     }
 }

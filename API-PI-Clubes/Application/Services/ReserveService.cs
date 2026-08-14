@@ -174,6 +174,9 @@ namespace API_PI_Clubes.Application.Services
 
             entity.Status = status;
 
+            if (status == StatusEnum.Recusada)
+                entity.Schedule.State = StateEnum.Actived;
+
             _repository.Update(entity);
             await _repository.SaveChangesAsync();
 

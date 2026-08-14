@@ -28,23 +28,15 @@ public class AzureStorageService : IStorageService
         return blobClient.Uri.ToString(); // Retorna a URL para salvar no seu banco SQL
     }
 
-    public async Task<bool> DeleteFileAsync(string blobName)
+    public async Task<bool> DeleteFileAsync(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(blobName))
-            throw new InvalidOperationException("blobName is null or empty");
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new ArgumentException("fileName não pode ser nulo ou vazio.", nameof(fileName));
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        var blobClient = containerClient.GetBlobClient(blobName);
+        var blobClient = containerClient.GetBlobClient(fileName);
 
         var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
         return result.Value;
     }
-    public async Task<bool> DeleteBlobAsync(string blobName)
-    {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        var blobClient = containerClient.GetBlobClient(blobName);
-
-        return await blobClient.DeleteIfExistsAsync();
-    }
-
 }

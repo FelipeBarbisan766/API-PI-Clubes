@@ -17,9 +17,9 @@ namespace API_PI_Imagees.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpDelete]
-        public async Task<IActionResult> Delete(string blobName)
+        public async Task<IActionResult> Delete(string fileName)
         {
-            var result = await _service.DeleteImageAsync(blobName);
+            var result = await _service.DeleteImageAsync(fileName);
             if (!result) return NotFound();
             return Ok();
         }

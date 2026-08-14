@@ -5,7 +5,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
     public interface IImageRepository
     {
-        Task<Image> GetByBlobNameAsync(string blobName);
+        Task<Image> GetByNameAsync(string fileName);
         void Remove(Image image);
         void Add(Image image);
         Task<bool> SaveChangesAsync();

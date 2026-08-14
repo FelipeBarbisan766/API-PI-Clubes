@@ -17,7 +17,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services,IConfiguration configuration)
         {
             services.AddScoped<IClubService, ClubService>();
             services.AddScoped<IClubRepository, ClubRepository>();
@@ -71,9 +71,15 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IReserveNotificationService, ReserveNotificationService>();;
             services.AddScoped<ICookieAuthService, CookieAuthService>();
             
-            services.AddScoped<IImageProcessingService, ImageProcessingService>();
-            services.AddScoped<IStorageService, LocalStorageService>();
+            var provider = configuration.GetValue<string>("Storage:Provider");
 
+            if (provider == "Azure")
+                services.AddScoped<IStorageService, AzureStorageService>();
+            else
+                services.AddScoped<IStorageService, LocalStorageService>();
+            
+            services.AddScoped<IImageProcessingService, ImageProcessingService>();
+            
             services.AddScoped<ITokenService, TokenService>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();

@@ -7,14 +7,17 @@ public class ReserveCleanupService : IReserveCleanupService
 {
     private readonly IReserveRepository _reserveRepository;
     private readonly ILogger<ReserveCleanupService> _logger;
-    private const int RetentionMonths = 6;
 
+    private readonly int RetentionMonths;
+    
     public ReserveCleanupService(
         IReserveRepository reserveRepository,
-        ILogger<ReserveCleanupService> logger)
+        ILogger<ReserveCleanupService> logger,
+        IConfiguration configuration)
     {
         _reserveRepository = reserveRepository;
         _logger = logger;
+        RetentionMonths = configuration.GetValue<int>("ReserveCleanup:RetentionMonths");
     }
 
     public async Task<int> CleanupOldReservesAsync()

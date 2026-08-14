@@ -2,6 +2,6 @@
 {
     public interface IImageService
     {
-        Task<bool> DeleteImageAsync(string blobName);
+        Task<bool> DeleteImageAsync(string fileName);
     }
 }

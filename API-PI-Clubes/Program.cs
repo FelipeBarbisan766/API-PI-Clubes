@@ -43,7 +43,7 @@ builder.Services.AddAzureClients(clientBuilder =>
 });
 
 // --- 3. Injeção de Dependência da Camada Application ---
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddTransient<TokenService>();
 
 // Configurações de E-mail

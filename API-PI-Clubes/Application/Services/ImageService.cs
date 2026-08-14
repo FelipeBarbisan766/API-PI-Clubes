@@ -15,12 +15,12 @@ namespace API_PI_Clubes.Application.Services
             _repository = repository;
             _storageService = storageService;
         }
-        public async Task<bool> DeleteImageAsync(string blobName)
+        public async Task<bool> DeleteImageAsync(string fileName)
         {
-            var imageEntity = await _repository.GetByBlobNameAsync(blobName);
+            var imageEntity = await _repository.GetByNameAsync(fileName);
             if (imageEntity == null) return false;
 
-            var storageDeleted = await _storageService.DeleteBlobAsync(blobName);
+            var storageDeleted = await _storageService.DeleteFileAsync(fileName);
 
             if (storageDeleted)
             {

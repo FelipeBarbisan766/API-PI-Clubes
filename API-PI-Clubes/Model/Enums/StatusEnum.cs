@@ -3,6 +3,6 @@
     public enum StatusEnum
     {
         Confirmada = 0,
-        Recusada = 1,
+        Cancelada = 1,
     }
 }

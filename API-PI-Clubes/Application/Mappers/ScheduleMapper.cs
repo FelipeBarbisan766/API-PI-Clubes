@@ -28,7 +28,7 @@ namespace API_PI_Clubes.Application.Mappers
         {
             return schedules.Select(s =>
             {
-                var reserve = s.Reserves?.FirstOrDefault(r => r.Status != StatusEnum.Recusada);
+                var reserve = s.Reserves?.FirstOrDefault(r => r.Status != StatusEnum.Cancelada);
 
                 return new ResponseScheduleAvailabilityDTO
                 {

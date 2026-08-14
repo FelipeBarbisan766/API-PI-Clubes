@@ -14,10 +14,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
     }
 
-        public async Task<Image?> GetByBlobNameAsync(string blobName)
+        public async Task<Image?> GetByNameAsync(string fileName)
         {
             return await _context.Images
-                .FirstOrDefaultAsync(x => x.Name == blobName);
+                .FirstOrDefaultAsync(x => x.Name == fileName);
         }
 
         public void Remove(Image image)

@@ -9,6 +9,7 @@ using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
+using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +18,10 @@ namespace API_PI_Clubes.Application.DependencyInjection
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services,IConfiguration configuration)
         {
+            services.Configure<StorageSettings>(configuration.GetSection("Storage"));
+            
             services.AddScoped<IClubService, ClubService>();
             services.AddScoped<IClubRepository, ClubRepository>();
             services.AddScoped<IClubMapper, ClubMapper>();
@@ -71,9 +74,15 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IReserveNotificationService, ReserveNotificationService>();;
             services.AddScoped<ICookieAuthService, CookieAuthService>();
             
-            services.AddScoped<IImageProcessingService, ImageProcessingService>();
-            services.AddScoped<IStorageService, LocalStorageService>();
+            var provider = configuration.GetSection("Storage")["Provider"];
 
+            if (string.Equals(provider, "Azure", StringComparison.OrdinalIgnoreCase))
+                services.AddScoped<IStorageService, AzureStorageService>();
+            else
+                services.AddScoped<IStorageService, LocalStorageService>();
+            
+            services.AddScoped<IImageProcessingService, ImageProcessingService>();
+            
             services.AddScoped<ITokenService, TokenService>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();

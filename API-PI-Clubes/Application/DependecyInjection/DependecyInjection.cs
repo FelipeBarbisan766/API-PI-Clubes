@@ -31,6 +31,9 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IReserveRepository, ReserveRepository>();
             services.AddScoped<IReserveMapper, ReserveMapper>();
             
+            services.AddScoped<IReserveCleanupService, ReserveCleanupService>();
+            services.AddHostedService<ReserveCleanupHostedService>();
+            
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
             services.AddScoped<IScheduleMapper, ScheduleMapper>();

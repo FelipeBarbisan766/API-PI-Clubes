@@ -121,7 +121,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 _context.Reserves.Update(Reserve);
             }
         }
-
+        public async Task<int> DeleteOldReservesAsync(DateTime cutoffDate)
+        {
+            return await _context.Reserves
+                .IgnoreQueryFilters() 
+                .Where(r => r.Date < cutoffDate)
+                .ExecuteDeleteAsync();
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

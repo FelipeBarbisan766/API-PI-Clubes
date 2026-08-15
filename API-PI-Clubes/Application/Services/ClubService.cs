@@ -124,58 +124,53 @@ namespace API_PI_Clubes.Application.Services
 
             return new ResponseIdDTO { Id = entity.Id };
         }
-        public async Task<ResponseClubDTO> Update(Guid id, UpdateClubDTO dto)
+        public async Task<ResponseClubDTO> Update(Guid userId, Guid id, UpdateClubDTO dto)
         {
             ValidateId(id);
             ValidateUpdateClubDTO(dto);
+            await AuthorizeOwnership(userId, id);
 
             var data = await _repository.GetByIdAsync(id);
-
             if (data == null)
-                throw new InvalidOperationException("Club not found");
+                throw new Exception("Club not found");
 
             data.Name = dto.Name;
             data.PhoneNumber = dto.PhoneNumber;
             data.Address = new AddressVO(
-                dto.ZipCode,
-                dto.Street,
-                dto.Number,
-                dto.Neighborhood,
-                dto.Complement,
-                dto.City,
-                dto.State,
-                dto.Country
+                dto.ZipCode, dto.Street, dto.Number, dto.Neighborhood,
+                dto.Complement, dto.City, dto.State, dto.Country
             );
             data.Description = dto.Description;
             data.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(data);
             await _repository.SaveChangesAsync();
-
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid userId, Guid id)
         {
             ValidateId(id);
+            await AuthorizeOwnership(userId, id);
 
             var exists = await _repository.ExistsAsync(id);
-
             if (!exists)
-                throw new InvalidOperationException("Club not found");
+                throw new Exception("Club not found");
 
             await _repository.DeleteAsync(id);
         }
 
-        public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
-        { 
+        public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto)
+        {
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id);
+
             var entity = await _repository.GetByIdWithImagesAsync(id);
-            if (entity == null) throw new InvalidOperationException("Club not found");
+            if (entity == null)
+                throw new Exception("Club not found");
 
             var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
-            var uploaded    = await Task.WhenAll(uploadTasks);
-
-
+            var uploaded = await Task.WhenAll(uploadTasks);
             foreach (var img in uploaded)
                 _imageRepository.Add(img);
 
@@ -186,6 +181,13 @@ namespace API_PI_Clubes.Application.Services
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Invalid ID", nameof(id));
+        }
+
+        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        {
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            if (!isOwner)
+                throw new Exception("Você não tem permissão para gerenciar este clube.");
         }
 
         private static void ValidateClubDTO(CreateClubDTO dto)

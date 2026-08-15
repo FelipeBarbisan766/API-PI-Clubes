@@ -2,6 +2,7 @@
 using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using API_PI_Clubes.Model;
@@ -88,7 +89,8 @@ namespace API_PI_Clubes.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var result = await _authService.GetCurrentUserInfo(User);
+            var userId = User.GetUserId(); 
+            var result = await _authService.GetCurrentUserInfo(userId);
             return Ok(result);
         }
 

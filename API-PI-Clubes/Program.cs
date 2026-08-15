@@ -114,12 +114,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 errorNumbersToAdd: null);      
         }));
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminClubPolicy", policy =>
-        policy.Requirements.Add(new ManageClubRequirement()));
-});
-
 
 builder.Services.AddHostedService<SubscriptionExpiryJob>();
 

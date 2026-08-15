@@ -35,16 +35,13 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
-        public async Task<ResponseAdminDTO> GetCurrentUserInfo(ClaimsPrincipal user)
+        public async Task<ResponseAdminDTO> GetCurrentUserInfo(Guid id)
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                throw new Exception("User ID not found in token");
-            var entity = await _repository.GetByUserIdAsync(Guid.Parse(userId));
+            var entity = await _repository.GetByUserIdAsync(id);
             if (entity == null)
                 throw new Exception("User not found");
-
             return _mapper.ToDTO(entity);
+            
         }
         public async Task<ResponseIdDTO> Create(CreatAdminDTO dto)
         {

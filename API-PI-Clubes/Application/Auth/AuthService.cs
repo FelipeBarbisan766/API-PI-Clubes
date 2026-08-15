@@ -175,12 +175,9 @@ namespace API_PI_Clubes.Application.Auth
 
             return true;
         }
-        public async Task<UserDTO> GetCurrentUserInfo(ClaimsPrincipal user)
+        public async Task<UserDTO> GetCurrentUserInfo(Guid id)
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                throw new Exception("User ID not found in token");
-            var entity = await _repository.GetByIdAsync(Guid.Parse(userId));
+            var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
                 throw new Exception("User not found");
             

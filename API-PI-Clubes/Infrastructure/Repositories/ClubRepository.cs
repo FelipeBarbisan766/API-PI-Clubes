@@ -225,6 +225,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
-
+        public async Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId)
+        {
+            return await _context.Clubs
+                .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId));
+        }
     }
 }

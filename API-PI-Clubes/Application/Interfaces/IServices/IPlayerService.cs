@@ -6,7 +6,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     public interface IPlayerService
     {
         Task<ResponsePlayerDTO> GetById(Guid id);
-        Task<ResponsePlayerDTO> GetCurrentUserInfo(ClaimsPrincipal user);
+        Task<ResponsePlayerDTO> GetCurrentUserInfo(Guid id);
         Task<ResponseIdDTO> Create(Guid id);
         Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto);
         Task Delete(Guid id);

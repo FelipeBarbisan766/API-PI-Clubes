@@ -1,5 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,13 +59,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, id, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            await _service.AddMoreImagesAsync(id, dto);
+            var userId = User.GetUserId(); 
+            await _service.AddMoreImagesAsync(userId,id, dto);
             return Ok();
         }
 
@@ -72,13 +68,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto)
         {
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, id, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            var result = await _service.Update(id, dto);
+            var userId = User.GetUserId(); 
+            var result = await _service.Update(userId,id, dto);
             return Ok(result);
         }
 
@@ -86,13 +77,8 @@ namespace API_PI_Clubes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, id, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            await _service.Delete(id);
+            var userId = User.GetUserId();
+            await _service.Delete(userId,id);
             return NoContent();
         }
         

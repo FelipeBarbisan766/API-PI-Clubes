@@ -1,5 +1,6 @@
 ﻿ using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -25,25 +26,28 @@ namespace API_PI_Clubes.Controllers
         }
 
         [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateUserDTO dto)
+        [HttpPut]
+        public async Task<IActionResult> Update(UpdateUserDTO dto)
         {
-            var result = await _service.Update(id, dto);
+            var userId = User.GetUserId(); 
+            var result = await _service.Update(userId, dto);
             return Ok(result);
         }
         [Authorize]
-        [HttpPut("{id}/avatar")]
-        public async Task<IActionResult> UpdateAvatar(Guid id, UpdateAvatarDTO dto)
+        [HttpPut("/avatar")]
+        public async Task<IActionResult> UpdateAvatar( UpdateAvatarDTO dto)
         {
-            await _service.UpdateAvatar(id, dto);
+            var userId = User.GetUserId();
+            await _service.UpdateAvatar(userId, dto);
             return Ok();
         }
 
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
         {
-            await _service.Delete(id);
+            var userId = User.GetUserId();
+            await _service.Delete(userId);
             return NoContent();
         }
     }

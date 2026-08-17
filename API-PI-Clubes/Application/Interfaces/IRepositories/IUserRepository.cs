@@ -7,6 +7,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<User?> GetByIdAsync(Guid id);
         Task<User?> GetByEmailAsync(string email);
         Task AddAsync(User user);
+        Task<bool> ExistsByCpfHashAsync(string cpfHash);
         void Update(User user);
         Task SaveChangesAsync();
     }

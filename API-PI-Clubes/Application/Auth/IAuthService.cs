@@ -15,5 +15,6 @@ namespace API_PI_Clubes.Application.Auth
         Task<UserDTO> GetCurrentUserInfo(Guid id);
         Task GoogleSignUp(string idToken);
         Task<User> GoogleLogin(string idToken); 
+        Task CompleteProfile(Guid userId, CompleteProfileDTO dto);
     }
 }

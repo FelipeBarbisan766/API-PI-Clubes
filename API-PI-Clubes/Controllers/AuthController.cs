@@ -117,5 +117,14 @@ namespace API_PI_Clubes.Controllers
                 return Unauthorized(ex.Message);
             }
         }
+        
+        [Authorize]
+        [HttpPatch("complete-profile")]
+        public async Task<IActionResult> CompleteProfile(CompleteProfileDTO dto)
+        {
+            var userId = User.GetUserId();
+            await _authService.CompleteProfile(userId, dto);
+            return Ok("Perfil completado com sucesso! Você já pode reservar quadras.");
+        }
     }
 }

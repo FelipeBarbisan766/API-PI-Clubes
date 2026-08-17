@@ -86,6 +86,8 @@ namespace API_PI_Clubes.Application.DependencyInjection
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+            services.AddScoped<ICpfEncryptionService, AesCpfEncryptionService>();
+            
             return services;
         }
     }

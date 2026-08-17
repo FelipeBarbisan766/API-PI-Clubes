@@ -35,7 +35,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             _context.Users.Update(user);
         }
-
+        public async Task<bool> ExistsByCpfHashAsync(string cpfHash)
+        {
+            return await _context.Users.AnyAsync(u => u.CpfHash == cpfHash);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

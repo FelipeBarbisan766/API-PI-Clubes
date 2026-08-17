@@ -9,6 +9,7 @@ using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
 using System.Security.Claims;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Application.Validators;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 
@@ -24,6 +25,7 @@ namespace API_PI_Clubes.Application.Auth
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
         private readonly IPlayerService _playerService;
+        private readonly ICpfEncryptionService _cpfEncryptionService;
 
         public AuthService(
             IUserRepository repository,
@@ -32,7 +34,8 @@ namespace API_PI_Clubes.Application.Auth
             IPasswordHasher passwordHasher,
             IEmailService emailService,
             IConfiguration config,
-            IPlayerService playerService
+            IPlayerService playerService,
+            ICpfEncryptionService cpfEncryptionService
             )
         {
             _repository = repository;
@@ -42,6 +45,7 @@ namespace API_PI_Clubes.Application.Auth
             _emailService = emailService;
             _config = config;
             _playerService =  playerService;
+            _cpfEncryptionService = cpfEncryptionService;
         }
 
         public async Task<User> LoginAsync(LoginDTO dto)
@@ -78,7 +82,7 @@ namespace API_PI_Clubes.Application.Auth
                 Email = dto.Email,
                 PasswordHash = _passwordHasher.Hash(dto.Password),
                 Provider = "local",
-                Role = RoleEnum.Player,
+                Role = RoleEnum.None,
 
                 EmailVerification = EmailVerificationVO.Create()
             };
@@ -96,24 +100,17 @@ namespace API_PI_Clubes.Application.Auth
         public async Task<bool> ValidateEmailToken(string token)
         {
             var principal = _tokenService.ValidateEmailVerificationToken(token);
-
             if (principal == null) return false;
 
             var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (string.IsNullOrEmpty(id)) return false;
 
             var user = await _repository.GetByIdAsync(Guid.Parse(id));
-
             if (user == null) return false;
 
             if (user.EmailVerification.IsConfirmed) return true;
 
-
             user.EmailVerification = EmailVerificationVO.Confirm();
-            
-            await _playerService.Create(user.Id);
-            
             _repository.Update(user);
             await _repository.SaveChangesAsync();
 
@@ -233,7 +230,7 @@ namespace API_PI_Clubes.Application.Auth
                 Name = payload.Name,
                 Email = payload.Email,
                 Provider = "google",
-                Role = RoleEnum.Player,
+                Role = RoleEnum.None,
                 AvatarUrl = avatarUrl,
                 EmailVerification = EmailVerificationVO.Confirm()
             };
@@ -241,7 +238,6 @@ namespace API_PI_Clubes.Application.Auth
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
 
-            await _playerService.Create(entity.Id);
         }
         public async Task<User> GoogleLogin(string idToken)
         {
@@ -267,6 +263,43 @@ namespace API_PI_Clubes.Application.Auth
 
             return user; 
         }
-        
+        public async Task CompleteProfile(Guid userId, CompleteProfileDTO dto)
+        {
+            var user = await _repository.GetByIdAsync(userId);
+            if (user == null)
+                throw new Exception("Usuário não encontrado");
+
+            if (user.Role != RoleEnum.None)
+                throw new Exception("Perfil já foi completado anteriormente");
+
+            if (!user.EmailVerification.IsConfirmed)
+                throw new Exception("Confirme seu e-mail antes de completar o perfil");
+
+            var cpfDigits = CpfValidator.Normalize(dto.Cpf);
+            if (!CpfValidator.IsValid(cpfDigits))
+                throw new Exception("CPF inválido");
+
+            // var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            // var age = today.Year - dto.BirthDate.Year;
+            // if (dto.BirthDate > today.AddYears(-age)) age--;
+            // if (age < 16) 
+            //     throw new Exception("Idade mínima não atendida");
+
+            var cpfHash = _cpfEncryptionService.Hash(cpfDigits);
+            var cpfInUse = await _repository.ExistsByCpfHashAsync(cpfHash);
+            if (cpfInUse)
+                throw new Exception("CPF já cadastrado em outra conta");
+
+            user.PhoneNumber = dto.PhoneNumber;
+            user.BirthDate = dto.BirthDate;
+            user.CpfEncrypted = _cpfEncryptionService.Encrypt(cpfDigits);
+            user.CpfHash = cpfHash;
+            user.Role = RoleEnum.Player;
+
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
+
+            await _playerService.Create(user.Id);
+        }
     }
 }

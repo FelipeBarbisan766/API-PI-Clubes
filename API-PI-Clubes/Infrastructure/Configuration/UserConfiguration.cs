@@ -12,6 +12,11 @@ namespace API_PI_Clubes.Infrastructure.Configuration
 
             builder.OwnsOne(x => x.EmailVerification);
             builder.OwnsOne(x => x.ResetPassword);
+            
+            builder.Property(u => u.CpfEncrypted).HasMaxLength(256);
+            builder.Property(u => u.CpfHash).HasMaxLength(64);
+
+            builder.HasIndex(u => u.CpfHash).IsUnique().HasFilter("[CpfHash] IS NOT NULL");
         }
     }
 }

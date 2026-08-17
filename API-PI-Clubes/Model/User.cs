@@ -9,7 +9,13 @@ namespace API_PI_Clubes.Model
         public string Name { get; set; }
         public string Email { get; set; }
         public string? PasswordHash { get; set; }
+        
         public string? PhoneNumber { get; set; }
+        public DateOnly? BirthDate { get; set; }
+        public string? CpfEncrypted { get; set; }
+        public string? CpfHash { get; set; }
+
+        
         public string? Description { get; set; }
         
         public string? AvatarUrl  { get; set; } = string.Empty;

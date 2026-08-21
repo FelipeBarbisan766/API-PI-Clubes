@@ -9,5 +9,6 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         void Remove(Image image);
         void Add(Image image);
         Task<bool> SaveChangesAsync();
+        Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId);
     }
 }

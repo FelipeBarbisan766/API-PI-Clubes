@@ -46,7 +46,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
         {
-            var result = await _service.Update(id, dto);
+            var userId = User.GetUserId();
+            var result = await _service.Update(userId, id, dto);
             return Ok(result);
         }
 
@@ -54,7 +55,8 @@ namespace API_PI_Clubes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.Delete(id);
+            var userId = User.GetUserId();
+            await _service.Delete(userId, id);
             return NoContent();
         }
     }

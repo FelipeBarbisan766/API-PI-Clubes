@@ -34,7 +34,7 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         [Authorize]
-        [HttpPut("/avatar")]
+        [HttpPut("avatar")]
         public async Task<IActionResult> UpdateAvatar( UpdateAvatarDTO dto)
         {
             var userId = User.GetUserId();

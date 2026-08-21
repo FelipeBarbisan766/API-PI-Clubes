@@ -99,10 +99,11 @@ namespace API_PI_Clubes.Application.Services
         }
 
 
-        public async Task<ResponseCourtDTO> Update(Guid id, UpdateCourtDTO dto)
+        public async Task<ResponseCourtDTO> Update(Guid userId, Guid id, UpdateCourtDTO dto)
         {
             ValidateId(id);
             ValidateUpdateCourtDTO(dto);
+            await AuthorizeOwnership(userId, id);
 
             var data = await _repository.GetByIdAsync(id);
 
@@ -123,9 +124,10 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid userId, Guid id)
         {
             ValidateId(id);
+            await AuthorizeOwnership(userId, id);
 
             var exists = await _repository.ExistsAsync(id);
 
@@ -134,8 +136,9 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.DeleteAsync(id);
         }
-        public async Task AddMoreImagesAsync(Guid id, UploadImageDTO dto)
+        public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto)
         {
+            await AuthorizeOwnership(userId, id);
             var entity = await _repository.GetByIdWithImagesAsync(id);
             if (entity == null) throw new InvalidOperationException("Court not found");
 
@@ -147,6 +150,13 @@ namespace API_PI_Clubes.Application.Services
                 _imageRepository.Add(img);
 
             await _repository.SaveChangesAsync();
+        }
+        
+        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        {
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            if (!isOwner)
+                throw new Exception("Você não tem permissão para gerenciar este clube.");
         }
         private static void ValidateId(Guid id)
         {

@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,8 @@ namespace API_PI_Imagees.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(string fileName)
         {
-            var result = await _service.DeleteImageAsync(fileName);
+            var userId = User.GetUserId();
+            var result = await _service.DeleteImageAsync(userId, fileName);
             if (!result) return NotFound();
             return Ok();
         }

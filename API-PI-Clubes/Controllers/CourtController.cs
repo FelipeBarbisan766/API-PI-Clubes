@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Data;
+using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -53,46 +54,24 @@ namespace API_PI_Clubes.Controllers
         [HttpPost("images/{id}")]
         public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
         {
-            var data = await _service.GetById(id);
-            var clubId = data.ClubId;
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, clubId, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            await _service.AddMoreImagesAsync(id, dto);
+            var userId = User.GetUserId(); 
+            await _service.AddMoreImagesAsync(userId, id, dto);
             return Ok();
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
         {
-            var data = await _service.GetById(id);
-            var clubId = data.ClubId;
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, clubId, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            var result = await _service.Update(id, dto);
+            var userId = User.GetUserId(); 
+            var result = await _service.Update(userId, id, dto);
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var data = await _service.GetById(id);
-            var clubId = data.ClubId;
-            var isAuthorized = await _authorizationService
-                .AuthorizeAsync(User, clubId, "AdminClubPolicy");
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
-            
-            await _service.Delete(id);
+            var userId = User.GetUserId(); 
+            await _service.Delete(userId, id);
             return NoContent();
         }
     }

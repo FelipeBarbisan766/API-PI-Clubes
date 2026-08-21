@@ -82,10 +82,11 @@ namespace API_PI_Clubes.Application.Services
             });
         }
 
-        public async Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto)
+        public async Task<ResponsePlayerDTO> Update(Guid userId, Guid id, UpdatePlayerDTO dto)
         {
             ValidateId(id);
             ValidateUpdatePlayerDTO(dto);
+            await AuthorizeOwnership(userId, id);
 
             var data = await _repository.GetByIdAsync(id);
 
@@ -101,9 +102,10 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid userId, Guid id)
         {
             ValidateId(id);
+            await AuthorizeOwnership(userId, id);
 
             var exists = await _repository.ExistsAsync(id);
 
@@ -112,7 +114,12 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.DeleteAsync(id);
         }
-
+        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        {
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            if (!isOwner)
+                throw new Exception("Você não tem permissão para gerenciar essa conta.");
+        }
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)

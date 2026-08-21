@@ -8,7 +8,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponsePlayerDTO> GetById(Guid id);
         Task<ResponsePlayerDTO> GetCurrentUserInfo(Guid id);
         Task<ResponseIdDTO> Create(Guid id);
-        Task<ResponsePlayerDTO> Update(Guid id, UpdatePlayerDTO dto);
-        Task Delete(Guid id);
+        Task<ResponsePlayerDTO> Update(Guid userId, Guid id, UpdatePlayerDTO dto);
+        Task Delete(Guid userId, Guid id);
     }
 }

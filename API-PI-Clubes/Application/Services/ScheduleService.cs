@@ -141,10 +141,11 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
     };
 }
 
-        public async Task<ResponseScheduleDTO> Update(Guid id, UpdateScheduleDTO dto)
+        public async Task<ResponseScheduleDTO> Update(Guid userId, Guid id, UpdateScheduleDTO dto)
         {
             ValidateId(id);
             ValidateUpdateScheduleDTO(dto);
+            await AuthorizeOwnership(userId, id);
 
             var data = await _repository.GetByIdAsync(id);
 
@@ -163,9 +164,10 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid userId, Guid id)
         {
             ValidateId(id);
+            await AuthorizeOwnership(userId, id);
 
             var exists = await _repository.ExistsAsync(id);
 
@@ -175,7 +177,12 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
             await _repository.DeleteAsync(id);
         }
 
-        
+        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        {
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            if (!isOwner)
+                throw new Exception("Você não tem permissão para gerenciar este clube.");
+        }
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)

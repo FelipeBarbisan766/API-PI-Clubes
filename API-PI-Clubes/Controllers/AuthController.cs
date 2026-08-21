@@ -85,13 +85,15 @@ namespace API_PI_Clubes.Controllers
             return Ok("Logout realizado com sucesso");
         }
 
-        [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = User.GetUserId(); 
+            if (User.Identity?.IsAuthenticated != true)
+                return Ok(new { isAuthenticated = false, user = (UserDTO?)null });
+
+            var userId = User.GetUserId();
             var result = await _authService.GetCurrentUserInfo(userId);
-            return Ok(result);
+            return Ok(new { isAuthenticated = true, user = result });
         }
 
         [HttpPost("google/signup")]

@@ -15,5 +15,6 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task DeleteAsync(Guid id);
         IExecutionStrategy CreateExecutionStrategy();
         Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId);
     }
 }

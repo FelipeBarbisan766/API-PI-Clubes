@@ -14,5 +14,6 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task SaveChangesAsync();
         void Update(Court Court);
         Task DeleteAsync(Guid id);
+        Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId);
     }
 }

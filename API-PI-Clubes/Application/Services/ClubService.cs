@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -53,7 +54,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Club not found");
+                throw new NotFoundException("Clube", id);
 
             return _mapper.ToDTOById(data);
         }
@@ -155,7 +156,7 @@ namespace API_PI_Clubes.Application.Services
 
             var exists = await _repository.ExistsAsync(id);
             if (!exists)
-                throw new Exception("Club not found");
+                throw new NotFoundException("Clube", id);
 
             await _repository.DeleteAsync(id);
         }
@@ -167,7 +168,7 @@ namespace API_PI_Clubes.Application.Services
 
             var entity = await _repository.GetByIdWithImagesAsync(id);
             if (entity == null)
-                throw new Exception("Club not found");
+                throw new NotFoundException("Clube", id);
 
             var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
             var uploaded = await Task.WhenAll(uploadTasks);
@@ -180,26 +181,26 @@ namespace API_PI_Clubes.Application.Services
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
+                throw new ValidationException("O ID informado é inválido.");
         }
 
         private async Task AuthorizeOwnership(Guid userId, Guid id)
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
             if (!isOwner)
-                throw new Exception("Você não tem permissão para gerenciar este clube.");
+                throw new ForbiddenException("Você não tem permissão para gerenciar este clube.");
         }
 
         private static void ValidateClubDTO(CreateClubDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException(nameof(dto));
         }
 
         private static void ValidateUpdateClubDTO(UpdateClubDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException(nameof(dto));
         }
         private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid clubId)
         {

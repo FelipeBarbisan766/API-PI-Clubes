@@ -7,6 +7,7 @@ using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
+using API_PI_Clubes.Application.Exceptions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_PI_Clubes.Application.Services
@@ -14,9 +15,9 @@ namespace API_PI_Clubes.Application.Services
     public class SubscriptionService : ISubscriptionService
     {
         private readonly ISubscriptionRepository _subscriptionRepository;
-        private readonly IPlanRepository _planRepository;   
+        private readonly IPlanRepository _planRepository;
 
-        public SubscriptionService(    
+        public SubscriptionService(
             ISubscriptionRepository subscriptionRepository,
             IPlanRepository planRepository
         )
@@ -28,61 +29,61 @@ namespace API_PI_Clubes.Application.Services
         public async Task<SubscriptionResponseDto?> GetActiveByAdminAsync(Guid adminId)
         {
             var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
-     
+
             if (subscription is null)
                 return null;
-     
+
             return MapToDto(subscription);
         }
-     
+
         public async Task<bool> CheckAccessAsync(Guid adminId)
         {
             var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
-     
+
             if (subscription is null)
                 return false;
-     
+
             return subscription.IsActive && subscription.ExpiresAt > DateTime.UtcNow;
         }
-     
+
         public async Task RenewAsync(Guid adminId, Guid paymentId)
         {
             var current = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
-     
+
             if (current is null)
-                throw new Exception("Nenhuma assinatura ativa encontrada para renovar.");
-     
+                throw new NotFoundException("Assinatura ativa para este admin");
+
             var plan = await _planRepository.GetByIdAsync(current.PlanId)
-                ?? throw new Exception("Plano da assinatura não encontrado.");
-     
+                       ?? throw new NotFoundException("Plano", current.PlanId);
+
             current.PaymentId = paymentId;
             current.StartDate = current.ExpiresAt;
             current.ExpiresAt = current.ExpiresAt.AddDays(plan.DurationDays);
             current.IsActive = true;
-     
+
             await _subscriptionRepository.UpdateAsync(current);
         }
-     
+
         public async Task CancelAsync(Guid subscriptionId)
         {
-            var subscription = await _subscriptionRepository.GetByIdAsync(subscriptionId)
-                ?? throw new Exception("Assinatura não encontrada.");
-     
+            var subscription = await _subscriptionRepository.GetByIdAsync(subscriptionId) 
+                               ?? throw new NotFoundException("Assinatura", subscriptionId);
+ 
             subscription.IsActive = false;
             await _subscriptionRepository.UpdateAsync(subscription);
         }
-     
+
         public async Task ExpireOverdueAsync()
         {
             var expired = await _subscriptionRepository.GetExpiredAsync();
-     
+
             foreach (var subscription in expired)
             {
                 subscription.IsActive = false;
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
         }
-        
+
         private static SubscriptionResponseDto MapToDto(Subscription s) => new(
             Id: s.Id,
             AdminId: s.AdminId,

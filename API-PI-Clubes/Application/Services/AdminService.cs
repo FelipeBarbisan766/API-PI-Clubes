@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -31,7 +32,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Admin not found");
+                throw new NotFoundException("Admin", id); 
 
             return _mapper.ToDTO(data);
         }
@@ -39,7 +40,7 @@ namespace API_PI_Clubes.Application.Services
         {
             var entity = await _repository.GetByUserIdAsync(id);
             if (entity == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id);
             return _mapper.ToDTO(entity);
             
         }
@@ -56,7 +57,7 @@ namespace API_PI_Clubes.Application.Services
                 try
                 {
                     var user = await _userService.GetById(dto.UserId)
-                               ?? throw new KeyNotFoundException("Usuário não encontrado");
+                               ?? throw new NotFoundException("Usuário", dto.UserId);
 
                     var entity = new Admin
                     {
@@ -92,7 +93,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Admin not found");
+                throw new NotFoundException("Admin", id); 
 
             data.UpdatedAt = DateTime.UtcNow;
 
@@ -110,7 +111,7 @@ namespace API_PI_Clubes.Application.Services
             var exists = await _repository.ExistsAsync(id);
 
             if (!exists)
-                throw new InvalidOperationException("Admin not found");
+                throw new NotFoundException("Admin", id); 
 
             await _repository.DeleteAsync(id);
         }
@@ -118,24 +119,24 @@ namespace API_PI_Clubes.Application.Services
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
             if (!isOwner)
-                throw new Exception("Você não tem permissão para gerenciar este clube.");
+                throw new ForbiddenException("Você não tem permissão para gerenciar este admin.");
         }
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
+                throw new ValidationException("O ID informado é inválido.");
         }
 
         private static void ValidateAdminDTO(CreatAdminDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados do admin são obrigatórios.");
         }
 
         private static void ValidateUpdateAdminDTO(UpdateAdminDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados de atualização são obrigatórios.");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -52,7 +53,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Court not found");
+                throw new NotFoundException("Quadra", id);  
 
             return _mapper.ToDTO(data);
         }
@@ -61,7 +62,7 @@ namespace API_PI_Clubes.Application.Services
             ValidateId(id);
             var data = await _repository.GetAllByClubIdAsync(id);
             if (data == null)
-                throw new InvalidOperationException("Court not found");
+                throw new NotFoundException("Clube", id);  
 
             return data;
         }
@@ -108,7 +109,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Court not found");
+                throw new NotFoundException("Quadra", id);
 
             data.Name = dto.Name;
             data.Type = dto.Type;
@@ -132,7 +133,7 @@ namespace API_PI_Clubes.Application.Services
             var exists = await _repository.ExistsAsync(id);
 
             if (!exists)
-                throw new InvalidOperationException("Court not found");
+                throw new NotFoundException("Quadra", id);
 
             await _repository.DeleteAsync(id);
         }
@@ -140,7 +141,7 @@ namespace API_PI_Clubes.Application.Services
         {
             await AuthorizeOwnership(userId, id);
             var entity = await _repository.GetByIdWithImagesAsync(id);
-            if (entity == null) throw new InvalidOperationException("Court not found");
+            if (entity == null) throw new NotFoundException("Quadra", id);
 
             var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
             var uploaded    = await Task.WhenAll(uploadTasks);
@@ -156,24 +157,25 @@ namespace API_PI_Clubes.Application.Services
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
             if (!isOwner)
-                throw new Exception("Você não tem permissão para gerenciar este clube.");
+                throw new ForbiddenException("Você não tem permissão para gerenciar esta quadra.");
         }
+
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
+                throw new ValidationException("O ID informado é inválido.");
         }
 
         private static void ValidateCourtDTO(CreatCourtDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados da quadra são obrigatórios.");
         }
 
         private static void ValidateUpdateCourtDTO(UpdateCourtDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados de atualização são obrigatórios.");
         }
         
         private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid courtId)

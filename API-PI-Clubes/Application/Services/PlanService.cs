@@ -7,6 +7,7 @@ using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
+using API_PI_Clubes.Application.Exceptions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_PI_Clubes.Application.Services
@@ -48,7 +49,7 @@ namespace API_PI_Clubes.Application.Services
         public async Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto)
         {
             var plan = await _planRepository.GetByIdAsync(id)
-                       ?? throw new Exception("Plano não encontrado.");
+                       ?? throw new NotFoundException("Plano", id);
  
             // Só atualiza os campos que foram enviados
             if (dto.Name is not null) plan.Name = dto.Name;
@@ -65,7 +66,7 @@ namespace API_PI_Clubes.Application.Services
         public async Task SetActiveAsync(Guid id, bool isActive)
         {
             var plan = await _planRepository.GetByIdAsync(id)
-                       ?? throw new Exception("Plano não encontrado.");
+                       ?? throw new NotFoundException("Plano", id);
  
             plan.IsActive = isActive;
             await _planRepository.UpdateAsync(plan);

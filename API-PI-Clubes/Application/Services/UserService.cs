@@ -1,5 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Email;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -41,7 +42,7 @@ namespace API_PI_Clubes.Application.Services
             var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id); 
 
             return _mapper.ToDTO(user);
         }
@@ -52,7 +53,7 @@ namespace API_PI_Clubes.Application.Services
             var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id);
 
             if(dto.Name != null)
                 user.Name = dto.Name;
@@ -71,9 +72,9 @@ namespace API_PI_Clubes.Application.Services
             var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id);
 
-            user.Role = RoleEnum.Admin;
+            user.Role = role;
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);
@@ -84,7 +85,7 @@ namespace API_PI_Clubes.Application.Services
         {
             var user = await _repository.GetByIdAsync(id);
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id);
 
             if (dto.AvatarImage != null)
             {
@@ -109,7 +110,7 @@ namespace API_PI_Clubes.Application.Services
             var user = await _repository.GetByIdAsync(id);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuário", id);
 
             user.IsActive = false;
             user.UpdatedAt = DateTime.UtcNow;

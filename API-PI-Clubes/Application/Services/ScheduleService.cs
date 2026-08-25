@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -31,7 +32,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Schedule not found");
+                throw new NotFoundException("Horário", id); 
 
             return _mapper.ToDTO(data);
         }
@@ -49,7 +50,7 @@ namespace API_PI_Clubes.Application.Services
             ValidateId(courtId);
  
             if (date == DateOnly.MinValue)
-                throw new ArgumentException("Invalid date", nameof(date));
+                throw new ValidationException("Data inválida.");
  
             var schedules = await _repository.GetByCourtAndDateAsync(courtId, date);
  
@@ -150,7 +151,7 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Schedule not found");
+                throw new NotFoundException("Horário", id);
 
             data.StartTime = dto.StartTime;
             data.EndTime = dto.EndTime;
@@ -172,7 +173,7 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
             var exists = await _repository.ExistsAsync(id);
 
             if (!exists)
-                throw new InvalidOperationException("Schedule not found");
+                throw new NotFoundException("Horário", id);
 
             await _repository.DeleteAsync(id);
         }
@@ -181,51 +182,45 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
             if (!isOwner)
-                throw new Exception("Você não tem permissão para gerenciar este clube.");
+                throw new ForbiddenException("Você não tem permissão para gerenciar este horário.");
         }
+
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
+                throw new ValidationException("O ID informado é inválido.");
         }
 
         private static void ValidateScheduleDTO(CreatScheduleDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
+                throw new ValidationException("Os dados do horário são obrigatórios.");
             if (dto.StartTime >= dto.EndTime)
-                throw new ArgumentException("StartTime must be before EndTime");
-
+                throw new ValidationException("O horário de início deve ser antes do de término.");
             if (dto.CourtId == Guid.Empty)
-                throw new ArgumentException("Invalid CourtId", nameof(dto.CourtId));
+                throw new ValidationException("Quadra inválida.");
         }
 
         private static void ValidateUpdateScheduleDTO(UpdateScheduleDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
+                throw new ValidationException("Os dados de atualização são obrigatórios.");
             if (dto.StartTime >= dto.EndTime)
-                throw new ArgumentException("StartTime must be before EndTime");
+                throw new ValidationException("O horário de início deve ser antes do de término.");
         }
 
         private static void ValidateBulkScheduleDTO(CreateBulkScheduleDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
+                throw new ValidationException("Os dados são obrigatórios.");
             if (dto.CourtId == Guid.Empty)
-                throw new ArgumentException("Invalid CourtId", nameof(dto.CourtId));
-
+                throw new ValidationException("Quadra inválida.");
             if (dto.DaysOfWeek == null || dto.DaysOfWeek.Count == 0)
-                throw new ArgumentException("Informe ao menos um dia da semana");
-
+                throw new ValidationException("Informe ao menos um dia da semana.");
             if (dto.StartTime >= dto.EndTime)
-                throw new ArgumentException("StartTime must be before EndTime");
-
+                throw new ValidationException("O horário de início deve ser antes do de término.");
             if (dto.SlotDurationMinutes <= 0)
-                throw new ArgumentException("SlotDurationMinutes deve ser maior que zero");
+                throw new ValidationException("A duração do slot deve ser maior que zero.");
         }
     }
 }

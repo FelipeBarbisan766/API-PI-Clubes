@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
@@ -36,7 +37,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Reserve not found");
+                throw new NotFoundException("Reserva", id);  
 
             return _mapper.ToDTO(data);
         }
@@ -48,7 +49,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetAllByClubIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Reserve not found");
+                throw new NotFoundException("Reserva", id);
 
             return _mapper.ToDTO(data);
         }
@@ -170,7 +171,7 @@ namespace API_PI_Clubes.Application.Services
             var entity = await _repository.GetByIdWithClubAsync(id);
 
             if (entity == null)
-                throw new InvalidOperationException("Reserve not found");
+                throw new NotFoundException("Reserva", id); 
 
             entity.Status = status;
 
@@ -197,7 +198,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetByIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Reserve not found");
+                throw new NotFoundException("Reserva", id);
 
             data.Date = dto.Date;
             data.Status = dto.Status;
@@ -216,7 +217,7 @@ namespace API_PI_Clubes.Application.Services
             var exists = await _repository.ExistsAsync(id);
 
             if (!exists)
-                throw new InvalidOperationException("Reserve not found");
+                throw new NotFoundException("Reserva", id);
 
             await _repository.DeleteAsync(id);
         }
@@ -224,19 +225,19 @@ namespace API_PI_Clubes.Application.Services
         private static void ValidateId(Guid id)
         {
             if (id == Guid.Empty)
-                throw new ArgumentException("Invalid ID", nameof(id));
+                throw new ValidationException("O ID informado é inválido.");
         }
 
         private static void ValidateReserveDTO(CreatReserveDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados da reserva são obrigatórios.");
         }
 
         private static void ValidateUpdateReserveDTO(UpdateReserveDTO dto)
         {
             if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+                throw new ValidationException("Os dados de atualização são obrigatórios.");
         }
     }
 }

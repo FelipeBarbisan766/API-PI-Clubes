@@ -66,7 +66,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetAllByAdminIdAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Club not found");
+                throw new NotFoundException("Admin", id);
 
             return data;
         }
@@ -78,7 +78,7 @@ namespace API_PI_Clubes.Application.Services
             var data = await _repository.GetDashboardAsync(id);
 
             if (data == null)
-                throw new InvalidOperationException("Club not found");
+                throw new NotFoundException("Clube", id);
 
             return data;
         }

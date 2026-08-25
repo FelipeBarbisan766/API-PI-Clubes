@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Application.Interfaces.IMappers;
+﻿using API_PI_Clubes.Application.Exceptions;
+using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Storage;
@@ -23,7 +24,7 @@ namespace API_PI_Clubes.Application.Services
 
             var isOwner = await _repository.IsOwnedByUserAsync(imageEntity.Id, userId);
             if (!isOwner)
-                throw new Exception("Você não tem permissão para gerenciar este clube.");
+                throw new ForbiddenException("Você não tem permissão para gerenciar esta imagem.");
             
             var storageDeleted = await _storageService.DeleteFileAsync(fileName);
 

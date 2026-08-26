@@ -20,9 +20,9 @@ namespace API_PI_Clubes.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
 
-        public ClubService(IClubMapper mapper, 
-            IClubRepository repository, 
-            IStorageService storageService, 
+        public ClubService(IClubMapper mapper,
+            IClubRepository repository,
+            IStorageService storageService,
             IImageRepository imageRepository,
             IImageProcessingService imageProcessor
         )
@@ -31,9 +31,9 @@ namespace API_PI_Clubes.Application.Services
             _repository = repository;
             _storageService = storageService;
             _imageRepository = imageRepository;
-            _imageProcessor  = imageProcessor;
+            _imageProcessor = imageProcessor;
         }
-        
+
         public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query)
         {
             var (items, total) = await _repository.GetAllAsync(query);
@@ -58,7 +58,7 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTOById(data);
         }
-        
+
         public async Task<List<ResponseClubDTO>> GetAllByAdminId(Guid id)
         {
             ValidateId(id);
@@ -88,12 +88,14 @@ namespace API_PI_Clubes.Application.Services
             ValidateClubDTO(dto);
 
             var clubId = Guid.NewGuid();
-            
+
             var imageEntities = new List<Image>();
             if (dto.Images != null && dto.Images.Count > 0)
             {
                 var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, clubId));
                 var uploaded    = await Task.WhenAll(uploadTasks);
+                for (int i = 0; i < uploaded.Length; i++)
+                    uploaded[i].Order = i;
                 imageEntities.AddRange(uploaded);
             }
 
@@ -114,9 +116,9 @@ namespace API_PI_Clubes.Application.Services
                     dto.Country
                 ),
                 Description = dto.Description,
-                Images = imageEntities 
+                Images = imageEntities
             };
-            
+
 
             var clubAdmin = new ClubAdmin { ClubId = entity.Id, AdminId = dto.adminId };
             await _repository.AddAsync(entity);
@@ -125,6 +127,7 @@ namespace API_PI_Clubes.Application.Services
 
             return new ResponseIdDTO { Id = entity.Id };
         }
+
         public async Task<ResponseClubDTO> Update(Guid userId, Guid id, UpdateClubDTO dto)
         {
             ValidateId(id);
@@ -170,12 +173,84 @@ namespace API_PI_Clubes.Application.Services
             if (entity == null)
                 throw new NotFoundException("Clube", id);
 
+            var currentCount = entity.Images?.Count ?? 0;
+            if (currentCount + dto.Images.Count > 5)
+                throw new ValidationException("O clube pode ter no máximo 5 imagens.");
+
             var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
             var uploaded = await Task.WhenAll(uploadTasks);
+
+            var nextOrder = currentCount == 0 ? 0 : entity.Images.Max(i => i.Order) + 1;
             foreach (var img in uploaded)
+            {
+                img.Order = nextOrder++;
                 _imageRepository.Add(img);
+            }
 
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task DeleteImageAsync(Guid userId, Guid clubId, Guid imageId)
+        {
+            ValidateId(clubId);
+            await AuthorizeOwnership(userId, clubId);
+
+            var entity = await _repository.GetByIdWithImagesAsync(clubId);
+            if (entity == null)
+                throw new NotFoundException("Clube", clubId);
+
+            var image = entity.Images?.FirstOrDefault(i => i.Id == imageId);
+            if (image == null)
+                return;
+
+            await DeleteImageFilesAsync(image);
+
+            _imageRepository.Remove(image);
+            await _repository.SaveChangesAsync();
+        }
+
+        public async Task ReorderImagesAsync(Guid userId, Guid clubId, List<ReorderImageDTO> orders)
+        {
+            ValidateId(clubId);
+            if (orders == null || orders.Count == 0)
+                throw new ValidationException("A lista de ordenação não pode ser vazia.");
+
+            await AuthorizeOwnership(userId, clubId);
+
+            var entity = await _repository.GetByIdWithImagesAsync(clubId);
+            if (entity == null)
+                throw new NotFoundException("Clube", clubId);
+
+            var imagesById = entity.Images?.ToDictionary(i => i.Id) ?? new Dictionary<Guid, Image>();
+
+            foreach (var order in orders)
+            {
+                if (imagesById.TryGetValue(order.Id, out var image))
+                    image.Order = order.Order;
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
+        private static string ExtractFileName(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return string.Empty;
+            return Path.GetFileName(new Uri(url).LocalPath);
+        }
+
+        private async Task DeleteImageFilesAsync(Image image)
+        {
+            try
+            {
+                await Task.WhenAll(
+                    _storageService.DeleteFileAsync(ExtractFileName(image.ThumbUrl)),
+                    _storageService.DeleteFileAsync(ExtractFileName(image.MediumUrl)),
+                    _storageService.DeleteFileAsync(ExtractFileName(image.FullUrl))
+                );
+            }
+            catch
+            {
+            }
         }
 
         private static void ValidateId(Guid id)
@@ -202,11 +277,12 @@ namespace API_PI_Clubes.Application.Services
             if (dto == null)
                 throw new ValidationException(nameof(dto));
         }
+
         private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid clubId)
         {
             using var inputStream = file.OpenReadStream();
-            using var result      = await _imageProcessor.ProcessAsync(inputStream);
- 
+            using var result = await _imageProcessor.ProcessAsync(inputStream);
+
             var urls = new Dictionary<ImageVariantType, string>();
             foreach (var variant in result.Variants)
             {
@@ -214,16 +290,15 @@ namespace API_PI_Clubes.Application.Services
                     variant.Stream,
                     variant.FileName);
             }
- 
+
             return new Image
             {
-                Name      = result.BaseName,
-                ThumbUrl  = urls[ImageVariantType.Thumb],
+                Name = result.BaseName,
+                ThumbUrl = urls[ImageVariantType.Thumb],
                 MediumUrl = urls[ImageVariantType.Medium],
-                FullUrl   = urls[ImageVariantType.Full],
-                ClubId    = clubId
+                FullUrl = urls[ImageVariantType.Full],
+                ClubId = clubId
             };
-
-        }   
+        }
     }
 }

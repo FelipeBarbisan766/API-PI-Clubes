@@ -8,6 +8,8 @@
         public string MediumUrl { get; set; } = string.Empty;
         public string FullUrl   { get; set; } = string.Empty;
         
+        public int Order { get; set; }
+        
         public Guid? ClubId { get; set; }
         public virtual Club Club { get; set; }
 

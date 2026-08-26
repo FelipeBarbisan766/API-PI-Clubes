@@ -52,11 +52,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Types = c.Courts.Where(co => co.IsActive)
                         .Select(co => co.Type).Distinct().ToList(),
                     Images = c.Images
+                        .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
                         {
-                            ThumbUrl  = i.ThumbUrl,
+                            Id = i.Id,
+                            ThumbUrl = i.ThumbUrl,
                             MediumUrl = i.MediumUrl,
-                            FullUrl   = i.FullUrl
+                            FullUrl = i.FullUrl,
+                            Order = i.Order
                         })
                         .ToList()
                 })
@@ -73,11 +76,20 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Clubs
                 .Where(u => u.Id == id && u.IsActive)
                 .AsNoTracking()
-                .Include(c => c.Images)
+                .Include(c => c.Images.OrderBy(i => i.Order))
                 .Include(c => c.Courts.Where(co => co.IsActive))
-                    .ThenInclude(co => co.Images)
+                .ThenInclude(co => co.Images.OrderBy(i => i.Order))
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Club?> GetByIdWithImagesAsync(Guid id)
+        {
+            return await _context.Clubs
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Images.OrderBy(i => i.Order))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id)
         {
             return await _context.Clubs
@@ -106,25 +118,21 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Distinct()
                         .ToList(),
 
-                    Images      = c.Images
+                    Images = c.Images
+                        .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
                         {
-                            ThumbUrl  = i.ThumbUrl,
+                            Id = i.Id,
+                            ThumbUrl = i.ThumbUrl,
                             MediumUrl = i.MediumUrl,
-                            FullUrl   = i.FullUrl
+                            FullUrl = i.FullUrl,
+                            Order = i.Order
                         })
                         .ToList()
-
                 })
                 .ToListAsync();
         }
-        public async Task<Club?> GetByIdWithImagesAsync(Guid id)
-        {
-            return await _context.Clubs
-                .Where(u => u.Id == id && u.IsActive)
-                .Include(c => c.Images)
-                .FirstOrDefaultAsync();
-        }
+
 
         public async Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId)
         {
@@ -187,7 +195,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 ClubReserve = recentReserves
             };
         }
-        
+
 
         public async Task<bool> ExistsAsync(Guid id)
         {
@@ -225,6 +233,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
         public async Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId)
         {
             return await _context.Clubs

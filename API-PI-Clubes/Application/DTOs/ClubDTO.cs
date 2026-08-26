@@ -91,4 +91,14 @@ namespace API_PI_Clubes.Application.DTOs
         public int CountPlayers { get; set; }
         public List<ResponseReserveDetailDTO>  ClubReserve { get; set; }
     }
+    public class ReorderImageDTO
+    {
+        public Guid Id { get; set; }
+        public int Order { get; set; }
+    }
+
+    public class ReorderImagesRequestDTO
+    {
+        public List<ReorderImageDTO> Orders { get; set; }
+    }
 }

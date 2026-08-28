@@ -9,7 +9,9 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<List<ResponseCourtDTO>> GetByClubId(Guid id);
         Task<ResponseIdDTO> Create(CreatCourtDTO dto);
         Task<ResponseCourtDTO> Update(Guid userId, Guid id, UpdateCourtDTO dto);
-        Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto);
         Task Delete(Guid userId, Guid id);
+        Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto);
+        Task DeleteImageAsync(Guid userId, Guid id, Guid imageId);
+        Task ReorderImagesAsync(Guid userId, Guid id, List<ReorderImageDTO> orders);
     }
 }

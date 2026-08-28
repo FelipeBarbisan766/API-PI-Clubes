@@ -43,10 +43,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
-                    Images      = c.Images
+                    Images = c.Images
+                        .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
                         {
-                            ThumbUrl  = i.ThumbUrl,
+                            Id = i.Id,
+                            ThumbUrl = i.ThumbUrl,
+                            MediumUrl = i.MediumUrl,
+                            FullUrl = i.FullUrl,
+                            Order = i.Order
                         })
                         .ToList()
                 })
@@ -62,8 +67,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Court?> GetByIdAsync(Guid id)
         {
             return await _context.Courts
-                .Include(c => c.Images)
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Images.OrderBy(i => i.Order))
+                .FirstOrDefaultAsync();
         }
         public async Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id)
         {
@@ -81,12 +87,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
-                    Images      = c.Images
+                    Images = c.Images
+                        .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
                         {
-                            ThumbUrl  = i.ThumbUrl,
+                            Id = i.Id,
+                            ThumbUrl = i.ThumbUrl,
                             MediumUrl = i.MediumUrl,
-                            FullUrl   = i.FullUrl
+                            FullUrl = i.FullUrl,
+                            Order = i.Order
                         })
                         .ToList()
                 })
@@ -95,8 +104,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Court?> GetByIdWithImagesAsync(Guid id)
         {
             return await _context.Courts
-                .Include(c => c.Images)
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(c => c.Images.OrderBy(i => i.Order))
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> ExistsAsync(Guid id)

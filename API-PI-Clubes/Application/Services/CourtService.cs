@@ -77,6 +77,8 @@ namespace API_PI_Clubes.Application.Services
             {
                 var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, courtId));
                 var uploaded    = await Task.WhenAll(uploadTasks);
+                for (int i = 0; i < uploaded.Length; i++)
+                    uploaded[i].Order = i;
                 imageEntities.AddRange(uploaded);
             }
             
@@ -139,18 +141,91 @@ namespace API_PI_Clubes.Application.Services
         }
         public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto)
         {
+            ValidateId(id);
             await AuthorizeOwnership(userId, id);
+
             var entity = await _repository.GetByIdWithImagesAsync(id);
-            if (entity == null) throw new NotFoundException("Quadra", id);
+            if (entity == null)
+                throw new NotFoundException("Quadra", id);
+
+            var currentCount = entity.Images?.Count ?? 0;
+            if (currentCount + dto.Images.Count > 3)
+                throw new ValidationException("A Quadra pode ter no máximo 3 imagens.");
 
             var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, id));
-            var uploaded    = await Task.WhenAll(uploadTasks);
+            var uploaded = await Task.WhenAll(uploadTasks);
 
-
+            var nextOrder = currentCount == 0 ? 0 : entity.Images.Max(i => i.Order) + 1;
             foreach (var img in uploaded)
+            {
+                img.Order = nextOrder++;
                 _imageRepository.Add(img);
+            }
 
             await _repository.SaveChangesAsync();
+        }
+
+        public async Task DeleteImageAsync(Guid userId, Guid id, Guid imageId)
+        {
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id);
+
+            var entity = await _repository.GetByIdWithImagesAsync(id);
+            if (entity == null)
+                throw new NotFoundException("Quadra", id);
+
+            var image = entity.Images?.FirstOrDefault(i => i.Id == imageId);
+            if (image == null)
+                return;
+
+            await DeleteImageFilesAsync(image);
+
+            _imageRepository.Remove(image);
+            await _repository.SaveChangesAsync();
+        }
+
+        public async Task ReorderImagesAsync(Guid userId, Guid id, List<ReorderImageDTO> orders)
+        {
+            ValidateId(id);
+            if (orders == null || orders.Count == 0)
+                throw new ValidationException("A lista de ordenação não pode ser vazia.");
+
+            await AuthorizeOwnership(userId, id);
+
+            var entity = await _repository.GetByIdWithImagesAsync(id);
+            if (entity == null)
+                throw new NotFoundException("Quadra", id);
+
+            var imagesById = entity.Images?.ToDictionary(i => i.Id) ?? new Dictionary<Guid, Image>();
+
+            foreach (var order in orders)
+            {
+                if (imagesById.TryGetValue(order.Id, out var image))
+                    image.Order = order.Order;
+            }
+
+            await _repository.SaveChangesAsync();
+        }
+
+        private static string ExtractFileName(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return string.Empty;
+            return Path.GetFileName(new Uri(url).LocalPath);
+        }
+
+        private async Task DeleteImageFilesAsync(Image image)
+        {
+            try
+            {
+                await Task.WhenAll(
+                    _storageService.DeleteFileAsync(ExtractFileName(image.ThumbUrl)),
+                    _storageService.DeleteFileAsync(ExtractFileName(image.MediumUrl)),
+                    _storageService.DeleteFileAsync(ExtractFileName(image.FullUrl))
+                );
+            }
+            catch
+            {
+            }
         }
         
         private async Task AuthorizeOwnership(Guid userId, Guid id)
@@ -185,7 +260,6 @@ namespace API_PI_Clubes.Application.Services
 
             var urls = new Dictionary<ImageVariantType, string>();
 
-            // Upload de cada variante (podem ser paralelos se quiser velocidade extra)
             foreach (var variant in result.Variants)
             {
                 urls[variant.Variant] = await _storageService.UploadFileAsync(

@@ -51,12 +51,28 @@ namespace API_PI_Clubes.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         [Authorize(Roles = "Admin")]
-        [HttpPost("images/{id}")]
-        public async Task<IActionResult> AddMoreImages(Guid id, [FromForm] UploadImageDTO dto)
+        [HttpPost("{Id}/images/")]
+        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto)
         {
             var userId = User.GetUserId(); 
-            await _service.AddMoreImagesAsync(userId, id, dto);
+            await _service.AddMoreImagesAsync(userId, Id, dto);
             return Ok();
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{Id}/images/reorder")]
+        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto)
+        {
+            var userId = User.GetUserId();
+            await _service.ReorderImagesAsync(userId, Id, dto.Orders);
+            return NoContent();
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{Id}/images/{imageId}")]
+        public async Task<IActionResult> DeleteImage(Guid Id, Guid imageId)
+        {
+            var userId = User.GetUserId();
+            await _service.DeleteImageAsync(userId, Id, imageId);
+            return NoContent();
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]

@@ -190,14 +190,14 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task DeleteImageAsync(Guid userId, Guid clubId, Guid imageId)
+        public async Task DeleteImageAsync(Guid userId, Guid id, Guid imageId)
         {
-            ValidateId(clubId);
-            await AuthorizeOwnership(userId, clubId);
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id);
 
-            var entity = await _repository.GetByIdWithImagesAsync(clubId);
+            var entity = await _repository.GetByIdWithImagesAsync(id);
             if (entity == null)
-                throw new NotFoundException("Clube", clubId);
+                throw new NotFoundException("Clube", id);
 
             var image = entity.Images?.FirstOrDefault(i => i.Id == imageId);
             if (image == null)
@@ -209,17 +209,17 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync();
         }
 
-        public async Task ReorderImagesAsync(Guid userId, Guid clubId, List<ReorderImageDTO> orders)
+        public async Task ReorderImagesAsync(Guid userId, Guid id, List<ReorderImageDTO> orders)
         {
-            ValidateId(clubId);
+            ValidateId(id);
             if (orders == null || orders.Count == 0)
                 throw new ValidationException("A lista de ordenação não pode ser vazia.");
 
-            await AuthorizeOwnership(userId, clubId);
+            await AuthorizeOwnership(userId, id);
 
-            var entity = await _repository.GetByIdWithImagesAsync(clubId);
+            var entity = await _repository.GetByIdWithImagesAsync(id);
             if (entity == null)
-                throw new NotFoundException("Clube", clubId);
+                throw new NotFoundException("Clube", id);
 
             var imagesById = entity.Images?.ToDictionary(i => i.Id) ?? new Dictionary<Guid, Image>();
 

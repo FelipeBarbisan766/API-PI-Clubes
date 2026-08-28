@@ -16,4 +16,14 @@
     {
         public List<Guid> ImageIds { get; set; }
     }
+    public class ReorderImageDTO
+    {
+        public Guid Id { get; set; }
+        public int Order { get; set; }
+    }
+
+    public class ReorderImagesRequestDTO
+    {
+        public List<ReorderImageDTO> Orders { get; set; }
+    }
 }

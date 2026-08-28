@@ -56,28 +56,27 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
-        [HttpPost("{clubId}/images/")]
-        public async Task<IActionResult> AddMoreImages(Guid clubId, [FromForm] UploadImageDTO dto)
+        [HttpPost("{Id}/images/")]
+        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto)
         {
             var userId = User.GetUserId(); 
-            await _service.AddMoreImagesAsync(userId, clubId, dto);
+            await _service.AddMoreImagesAsync(userId, Id, dto);
             return Ok();
         }
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{clubId}/images/{imageId}")]
-        public async Task<IActionResult> DeleteImage(Guid clubId, Guid imageId)
+        [HttpPut("{Id}/images/reorder")]
+        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto)
         {
             var userId = User.GetUserId();
-            await _service.DeleteImageAsync(userId, clubId, imageId);
+            await _service.ReorderImagesAsync(userId, Id, dto.Orders);
             return NoContent();
         }
-
         [Authorize(Roles = "Admin")]
-        [HttpPut("{clubId}/images/reorder")]
-        public async Task<IActionResult> ReorderImages(Guid clubId, [FromBody] ReorderImagesRequestDTO dto)
+        [HttpDelete("{Id}/images/{imageId}")]
+        public async Task<IActionResult> DeleteImage(Guid Id, Guid imageId)
         {
             var userId = User.GetUserId();
-            await _service.ReorderImagesAsync(userId, clubId, dto.Orders);
+            await _service.DeleteImageAsync(userId, Id, imageId);
             return NoContent();
         }
 

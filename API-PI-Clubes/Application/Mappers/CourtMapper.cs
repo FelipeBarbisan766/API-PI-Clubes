@@ -8,9 +8,11 @@ namespace API_PI_Clubes.Application.Mappers
     {
         private static ImageDTO ToImageDTO(Image i) => new()
         {
+            Id        = i.Id,
             ThumbUrl  = i.ThumbUrl,
             MediumUrl = i.MediumUrl,
-            FullUrl   = i.FullUrl
+            FullUrl   = i.FullUrl,
+            Order     = i.Order
         };
 
         public ResponseCourtDTO ToDTO(Court court)

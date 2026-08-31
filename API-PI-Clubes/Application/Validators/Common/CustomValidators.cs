@@ -22,8 +22,8 @@ namespace API_PI_Clubes.Application.Validators.Common
         public static IRuleBuilderOptions<T, string> IsValidBrazilianPhone<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             return ruleBuilder
-                .Matches(@"^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$")
-                .WithMessage("Telefone inválido. Use o formato (00) 00000-0000.");
+                .Matches(@"^\d{10,11}$")
+                .WithMessage("Telefone inválido. Use apenas números com DDD (ex: 11999999999 ou 1188888888).");
         }
 
         public static IRuleBuilderOptions<T, string> IsValidUF<T>(this IRuleBuilder<T, string> ruleBuilder)

@@ -46,7 +46,7 @@ namespace API_PI_Clubes.Controllers
             return Ok("Usuário registrado! Verifique seu e-mail.");
         }
 
-        [HttpGet("verify")]
+        [HttpPost("verify")]
         public async Task<IActionResult> VerifyEmail(string token)
         {
             var result = await _authService.ValidateEmailToken(token);
@@ -55,7 +55,7 @@ namespace API_PI_Clubes.Controllers
             return Ok("E-mail verificado com sucesso!");
         }
 
-        [HttpGet("resend")]
+        [HttpPost("resend")]
         public async Task<IActionResult> ResendEmail(string email)
         {
             await _authService.ResendEmailToken(email);
@@ -69,7 +69,7 @@ namespace API_PI_Clubes.Controllers
             return Ok("Requisisao realizada! Verifique seu e-mail.");
         }
 
-        [HttpGet("resetPassword")]
+        [HttpPost("resetPassword")]
         public async Task<IActionResult> ResetPassword(string token, string password)
         {
             var result = await _authService.ResetPassword(token, password);
@@ -78,7 +78,7 @@ namespace API_PI_Clubes.Controllers
             return Ok("Senha recuperada com sucesso!");
         }
 
-        [HttpGet("logout")]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             await _cookieAuthService.SignOutAsync(HttpContext);

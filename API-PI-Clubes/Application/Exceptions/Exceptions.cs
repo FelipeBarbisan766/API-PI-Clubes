@@ -42,13 +42,6 @@ namespace API_PI_Clubes.Application.Exceptions
             : base("VALIDATION_ERROR", message, 400)
         {
         }
-
-        public ValidationException(IDictionary<string, string[]> errors)
-            : base("VALIDATION_ERROR", "Um ou mais campos são inválidos.", 400)
-        {
-            Errors = errors;
-        }
-
         public ValidationException(string message, IDictionary<string, string[]> errors)
             : base("VALIDATION_ERROR", message, 400)
         {

@@ -8,6 +8,7 @@ using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using API_PI_Clubes.Model.ValueObjects;
 using System.Security.Claims;
+using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Validators;
 using Google.Apis.Auth;
@@ -53,18 +54,18 @@ namespace API_PI_Clubes.Application.Auth
             var user = await _repository.GetByEmailAsync(dto.Email);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuario Não Encontrado");
 
             if (!user.EmailVerification.IsConfirmed)
-                throw new Exception("Email not verified");
+                throw new ValidationException("Email Não Verificado");
 
             if (dto.Password == null)
-                throw new Exception("Password is required");
+                throw new ValidationException("Senha é Obrigatorio");
 
             var validPassword = _passwordHasher.Verify(dto.Password, user.PasswordHash);
 
             if (!validPassword)
-                throw new Exception("Invalid password");
+                throw new ValidationException("Senha Invalida");
 
             return user;
         }
@@ -74,7 +75,7 @@ namespace API_PI_Clubes.Application.Auth
                 await _repository.GetByEmailAsync(dto.Email);
 
             if (userExists != null)
-                throw new Exception("User already exists");
+                throw new ConflictException("Usuario Já Existente");
 
             var entity = new User
             {
@@ -123,10 +124,10 @@ namespace API_PI_Clubes.Application.Auth
                 await _repository.GetByEmailAsync(email);
 
             if (user == null)
-                throw new Exception("User not exists");
+                throw new NotFoundException("Usuario Não Encontrado");
 
             if (user.EmailVerification.IsConfirmed)
-                throw new Exception("Email already verified");
+                throw new ConflictException("Email Já Foi Verificado");
 
             var token = _tokenService.GenerateEmailVerificationToken(user.Id);
             await _emailService.SendVerificationEmailAsync(user.Email, user.Name, token);
@@ -139,7 +140,7 @@ namespace API_PI_Clubes.Application.Auth
                 await _repository.GetByEmailAsync(email);
 
             if (user == null)
-                throw new Exception("User not exists");
+                throw new NotFoundException("Usuario Não Encontrado");
 
 
             var token = _tokenService.GenerateEmailResetPasswordToken(user.Id);
@@ -176,7 +177,7 @@ namespace API_PI_Clubes.Application.Auth
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null)
-                throw new Exception("User not found");
+                throw new NotFoundException("Usuario Não Encontrado");
             
             return new UserDTO
             {
@@ -202,15 +203,15 @@ namespace API_PI_Clubes.Application.Auth
             }
             catch (InvalidJwtException)
             {
-                throw new Exception("Token do Google inválido ou expirado.");
+                throw new ValidationException("Token do Google inválido ou expirado.");
             }
 
             if (!payload.EmailVerified)
-                throw new Exception("E-mail do Google não verificado.");
+                throw new ValidationException("E-mail do Google não verificado.");
 
             var userExists = await _repository.GetByEmailAsync(payload.Email);
             if (userExists != null)
-                throw new Exception("User already exists");
+                throw new ConflictException("Usuario Já Existente");
 
             string? avatarUrl = null;
             if (!string.IsNullOrEmpty(payload.Picture))
@@ -254,12 +255,12 @@ namespace API_PI_Clubes.Application.Auth
             }
             catch (InvalidJwtException)
             {
-                throw new Exception("Token do Google inválido ou expirado.");
+                throw new ValidationException("Token do Google inválido ou expirado.");
             }
 
             var user = await _repository.GetByEmailAsync(payload.Email);
             if (user is null)
-                throw new Exception("Nenhuma conta encontrada com esse e-mail. Faça o cadastro primeiro.");
+                throw new ValidationException("Nenhuma conta encontrada com esse e-mail. Faça o cadastro primeiro.");
 
             return user; 
         }
@@ -267,17 +268,17 @@ namespace API_PI_Clubes.Application.Auth
         {
             var user = await _repository.GetByIdAsync(userId);
             if (user == null)
-                throw new Exception("Usuário não encontrado");
+                throw new NotFoundException("Usuário não encontrado");
 
             if (user.Role != RoleEnum.None)
-                throw new Exception("Perfil já foi completado anteriormente");
+                throw new ConflictException("Perfil já foi completado anteriormente");
 
             if (!user.EmailVerification.IsConfirmed)
-                throw new Exception("Confirme seu e-mail antes de completar o perfil");
+                throw new ValidationException("Confirme seu e-mail antes de completar o perfil");
 
             var cpfDigits = CpfValidator.Normalize(dto.Cpf);
             if (!CpfValidator.IsValid(cpfDigits))
-                throw new Exception("CPF inválido");
+                throw new ValidationException("CPF inválido");
 
             // var today = DateOnly.FromDateTime(DateTime.UtcNow);
             // var age = today.Year - dto.BirthDate.Year;
@@ -288,7 +289,7 @@ namespace API_PI_Clubes.Application.Auth
             var cpfHash = _cpfEncryptionService.Hash(cpfDigits);
             var cpfInUse = await _repository.ExistsByCpfHashAsync(cpfHash);
             if (cpfInUse)
-                throw new Exception("CPF já cadastrado em outra conta");
+                throw new ConflictException("CPF já cadastrado em outra conta");
 
             user.PhoneNumber = dto.PhoneNumber;
             user.BirthDate = dto.BirthDate;

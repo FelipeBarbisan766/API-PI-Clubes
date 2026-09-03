@@ -12,7 +12,10 @@ namespace API_PI_Clubes.Application.Mappers
             {
                 Id = player.Id,
                 RankCategory = player.RankCategory,
-                UserId = player.UserId
+                UserId = player.UserId,
+                FavoriteSports = player.FavoriteSports?
+                    .Select(fs => new SportDTO { Id = fs.Sport.Id, Name = fs.Sport.Name })
+                    .ToList() ?? new List<SportDTO>()
             };
         }
 

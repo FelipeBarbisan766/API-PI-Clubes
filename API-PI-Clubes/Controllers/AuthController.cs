@@ -25,7 +25,7 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO dto)
+        public async Task<IActionResult> Login(AuthDTO dto)
         {
             try
             {
@@ -47,11 +47,13 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("verify")]
-        public async Task<IActionResult> VerifyEmail(string token)
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyToken request)
         {
-            var result = await _authService.ValidateEmailToken(token);
+            var result = await _authService.ValidateEmailToken(request.Token);
+    
             if (!result)
                 return BadRequest("O link de verificação é inválido ou expirou.");
+        
             return Ok("E-mail verificado com sucesso!");
         }
 
@@ -70,9 +72,9 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResetPassword(string token, string password)
+        public async Task<IActionResult> ResetPassword([FromBody]ResetPassword request)
         {
-            var result = await _authService.ResetPassword(token, password);
+            var result = await _authService.ResetPassword(request);
             if (!result)
                 return BadRequest("O link de verificação é inválido ou expirou.");
             return Ok("Senha recuperada com sucesso!");

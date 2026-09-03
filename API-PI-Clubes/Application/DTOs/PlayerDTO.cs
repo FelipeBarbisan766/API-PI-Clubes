@@ -9,7 +9,7 @@ namespace API_PI_Clubes.Application.DTOs
 
     public class UpdatePlayerDTO
     {
-
+        public List<Guid> FavoriteSportIds { get; set; } = new();
     }
 
     public class ResponsePlayerDTO
@@ -17,6 +17,7 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public RankCategoryEnum RankCategory { get; set; }
         public Guid UserId { get; set; }
+        public List<SportDTO> FavoriteSports { get; set; } = new();
     }
     
 

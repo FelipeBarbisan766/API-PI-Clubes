@@ -49,7 +49,7 @@ namespace API_PI_Clubes.Application.Auth
             _cpfEncryptionService = cpfEncryptionService;
         }
 
-        public async Task<User> LoginAsync(LoginDTO dto)
+        public async Task<User> LoginAsync(AuthDTO dto)
         {
             var user = await _repository.GetByEmailAsync(dto.Email);
 
@@ -152,9 +152,9 @@ namespace API_PI_Clubes.Application.Auth
 
         }
 
-        public async Task<bool> ResetPassword(string token, string password)
+        public async Task<bool> ResetPassword(ResetPassword request)
         {
-            var principal = _tokenService.ValidateEmailResetPasswordToken(token);
+            var principal = _tokenService.ValidateEmailResetPasswordToken(request.Token);
             if (principal == null) return false;
 
             var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -163,11 +163,11 @@ namespace API_PI_Clubes.Application.Auth
             var user = await _repository.GetByIdAsync(Guid.Parse(id));
             if (user == null) return false;
 
-            if (user.ResetPassword.PasswordResetToken != token) return false;
+            if (user.ResetPassword.PasswordResetToken != request.Token) return false;
 
             if (user.ResetPassword.ResetTokenExpires < DateTime.UtcNow) return false;
 
-            user.PasswordHash = _passwordHasher.Hash(password);
+            user.PasswordHash = _passwordHasher.Hash(request.Password);
             _repository.Update(user);
             await _repository.SaveChangesAsync();
 

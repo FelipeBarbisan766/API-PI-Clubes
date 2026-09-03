@@ -38,7 +38,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByClubIdAsync(Guid clubId, ReserveQueryDTO query)
+        public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByClubIdAsync(Guid clubId,
+            ReserveQueryDTO query)
         {
             var q = _context.Reserves
                 .Where(c => c.IsActive && c.Schedule.Court.ClubId == clubId)
@@ -52,11 +53,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
             var totalCount = await q.CountAsync();
 
-            var items =  await q
+            var items = await q
                 .Include(r => r.Player)
-                    .ThenInclude(p => p.User)
+                .ThenInclude(p => p.User)
                 .Include(r => r.Schedule)
-                    .ThenInclude(s => s.Court)
+                .ThenInclude(s => s.Court)
+                .ThenInclude(c => c.CourtSports)
+                .ThenInclude(cs => cs.Sport)
                 .OrderByDescending(r => r.Date)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
@@ -64,10 +67,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return (items, totalCount);
         }
 
-        public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId, ReserveQueryDTO query)
+        public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId,
+            ReserveQueryDTO query)
         {
             var q = _context.Reserves
-                .Where(c => c.IsActive  && c.Player.Id == playerId)
+                .Where(c => c.IsActive && c.Player.Id == playerId)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -77,17 +81,22 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 q = q.Where(c => c.Status == query.Status);
 
             var totalCount = await q.CountAsync();
-            
-            var items =  await q
+
+            var items = await q
                 .Include(r => r.Schedule)
-                    .ThenInclude(s => s.Court)
-                    .ThenInclude(s => s.Club)
+                .ThenInclude(s => s.Court)
+                .ThenInclude(c => c.Club)
+                .Include(r => r.Schedule)
+                .ThenInclude(s => s.Court)
+                .ThenInclude(c => c.CourtSports)
+                .ThenInclude(cs => cs.Sport)
                 .OrderByDescending(r => r.Date)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
             return (items, totalCount);
         }
+
         public async Task<Reserve?> GetByIdWithClubAsync(Guid id)
         {
             return await _context.Reserves
@@ -95,6 +104,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .ThenInclude(s => s.Court)
                 .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
         }
+
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Reserves
@@ -121,13 +131,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 _context.Reserves.Update(Reserve);
             }
         }
+
         public async Task<int> DeleteOldReservesAsync(DateTime cutoffDate)
         {
             return await _context.Reserves
-                .IgnoreQueryFilters() 
+                .IgnoreQueryFilters()
                 .Where(r => r.Date < cutoffDate)
                 .ExecuteDeleteAsync();
         }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

@@ -34,6 +34,23 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.UserId == id && u.IsActive);
         }
 
+        public async Task<Player?> GetByIdWithFavoriteSportsAsync(Guid id)
+        {
+            return await _context.Players
+                .Where(u => u.Id == id && u.IsActive)
+                .Include(p => p.FavoriteSports)
+                .ThenInclude(fs => fs.Sport)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Player?> GetByUserIdWithFavoriteSportsAsync(Guid userId)
+        {
+            return await _context.Players
+                .Where(u => u.UserId == userId && u.IsActive)
+                .Include(p => p.FavoriteSports)
+                .ThenInclude(fs => fs.Sport)
+                .FirstOrDefaultAsync();
+        }
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Players

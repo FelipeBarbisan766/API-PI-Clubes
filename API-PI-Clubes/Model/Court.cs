@@ -4,10 +4,7 @@ namespace API_PI_Clubes.Model
 {
     public class Court : BaseEntity
     {
-        //public Quadra() { }
-
         public string Name { get; set; }
-        public TypeEnum Type { get; set; }
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
         public decimal PricePerHour { get; set; }
@@ -18,5 +15,6 @@ namespace API_PI_Clubes.Model
 
         public virtual ICollection<Schedule> Schedules { get; set; }
         public virtual ICollection<Image>? Images { get; set; }
+        public virtual ICollection<CourtSport> CourtSports { get; set; }
     }
 }

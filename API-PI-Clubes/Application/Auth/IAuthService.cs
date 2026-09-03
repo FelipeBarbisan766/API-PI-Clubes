@@ -6,12 +6,12 @@ namespace API_PI_Clubes.Application.Auth
 {
     public interface IAuthService
     {
-        Task<User> LoginAsync(LoginDTO dto);       
+        Task<User> LoginAsync(AuthDTO dto);       
         Task Register(CreatUserDTO dto);
         Task<bool> ValidateEmailToken(string token);
         Task<bool> ResendEmailToken(string email);
         Task RequestResetPassword(string email);
-        Task<bool> ResetPassword(string token, string password);
+        Task<bool> ResetPassword(ResetPassword request);
         Task<UserDTO> GetCurrentUserInfo(Guid id);
         Task GoogleSignUp(string idToken);
         Task<User> GoogleLogin(string idToken); 

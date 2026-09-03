@@ -77,7 +77,9 @@ namespace API_PI_Clubes.Application.Services
                     {
                         Name = r.Schedule.Court.Name,
                         PricePerHour = r.Schedule.Court.PricePerHour,
-                        Type = r.Schedule.Court.Type
+                        Sports = r.Schedule.Court.CourtSports
+                            .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                            .ToList()
                     }
                 }
             });
@@ -115,7 +117,9 @@ namespace API_PI_Clubes.Application.Services
                     {
                         Name = r.Schedule.Court.Name,
                         PricePerHour = r.Schedule.Court.PricePerHour,
-                        Type = r.Schedule.Court.Type
+                        Sports = r.Schedule.Court.CourtSports
+                            .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                            .ToList()
                     }
                 }
             });

@@ -12,7 +12,8 @@ namespace API_PI_Clubes.Application.Validators
                 .NotEmpty().WithMessage("O nome da quadra é obrigatório.")
                 .Length(ValidationConstants.NameMinLength, ValidationConstants.NameMaxLength);
 
-            RuleFor(x => x.Type).IsInEnum();
+            RuleFor(x => x.SportIds)
+                .NotEmpty().WithMessage("A quadra deve ter ao menos um esporte.");
             RuleFor(x => x.Surface).IsInEnum();
 
             RuleFor(x => x.PricePerHour)
@@ -40,7 +41,8 @@ namespace API_PI_Clubes.Application.Validators
                 .NotEmpty()
                 .Length(ValidationConstants.NameMinLength, ValidationConstants.NameMaxLength);
 
-            RuleFor(x => x.Type).IsInEnum();
+            RuleFor(x => x.SportIds)
+                .NotEmpty().WithMessage("A quadra deve ter ao menos um esporte.");
             RuleFor(x => x.Surface).IsInEnum();
 
             RuleFor(x => x.PricePerHour)
@@ -64,9 +66,9 @@ namespace API_PI_Clubes.Application.Validators
                 .MaximumLength(ValidationConstants.AddressFieldMaxLength)
                 .When(x => x.City is not null);
 
-            RuleForEach(x => x.Types)
-                .IsInEnum()
-                .When(x => x.Types is not null);
+            RuleForEach(x => x.SportIds)
+                .NotEmpty()
+                .When(x => x.SportIds is not null);
 
             RuleFor(x => x.Page)
                 .GreaterThanOrEqualTo(ValidationConstants.MinPageSize);

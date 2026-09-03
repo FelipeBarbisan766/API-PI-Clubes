@@ -28,9 +28,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             if (!string.IsNullOrWhiteSpace(query.City))
                 q = q.Where(c => c.Address.City.Contains(query.City));
 
-            if (query.Types != null && query.Types.Count > 0)
+            if (query.SportIds != null && query.SportIds.Count > 0)
                 q = q.Where(c => c.Courts
-                    .Any(co => co.IsActive && query.Types.Contains(co.Type)));
+                    .Any(co => co.IsActive && co.CourtSports.Any(cs => query.SportIds.Contains(cs.SportId))));
+
 
             var totalCount = await q.CountAsync();
 
@@ -49,8 +50,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
                         : 0,
                     CourtCount = c.Courts.Count(co => co.IsActive),
-                    Types = c.Courts.Where(co => co.IsActive)
-                        .Select(co => co.Type).Distinct().ToList(),
+                    Sports = c.Courts.Where(co => co.IsActive)
+                        .SelectMany(co => co.CourtSports)
+                        .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
+                        .Distinct()
+                        .Select(x => new SportDTO { Id = x.Id, Name = x.Name })
+                        .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
@@ -79,6 +84,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Images.OrderBy(i => i.Order))
                 .Include(c => c.Courts.Where(co => co.IsActive))
                 .ThenInclude(co => co.Images.OrderBy(i => i.Order))
+                .Include(c => c.Courts.Where(co => co.IsActive))
+                .ThenInclude(co => co.CourtSports)
+                .ThenInclude(cs => cs.Sport)
                 .FirstOrDefaultAsync();
         }
 
@@ -112,10 +120,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
                     CourtCount = c.Courts.Count(co => co.IsActive),
 
-                    Types = c.Courts
-                        .Where(co => co.IsActive)
-                        .Select(co => co.Type)
+                    Sports = c.Courts.Where(co => co.IsActive)
+                        .SelectMany(co => co.CourtSports)
+                        .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
                         .Distinct()
+                        .Select(x => new SportDTO { Id = x.Id, Name = x.Name })
                         .ToList(),
 
                     Images = c.Images
@@ -181,7 +190,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         {
                             Name = r.Schedule.Court.Name,
                             PricePerHour = r.Schedule.Court.PricePerHour,
-                            Type = r.Schedule.Court.Type
+                            Sports = r.Schedule.Court.CourtSports
+                                .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                                .ToList()
                         }
                     }
                 })

@@ -32,14 +32,15 @@ namespace API_PI_Clubes.Application.Mappers
                     .Min(co => (decimal?)co.PricePerHour) ?? 0,
                 CourtCount = club.Courts
                     .Count(co => co.IsActive),
-                Types = club.Courts
+                Sports = club.Courts
                     .Where(co => co.IsActive)
-                    .Select(co => co.Type)
-                    .Distinct()
+                    .SelectMany(co => co.CourtSports.Select(cs => cs.Sport))
+                    .GroupBy(s => s.Id)
+                    .Select(g => new SportDTO { Id = g.Key, Name = g.First().Name })
                     .ToList(),
                 Images = club.Images
-                .Select(ToImageDTO)
-                .ToList()
+                    .Select(ToImageDTO)
+                    .ToList()
             };
         }
 
@@ -74,11 +75,13 @@ namespace API_PI_Clubes.Application.Mappers
                         Id = q.Id,
                         ClubId = q.ClubId,
                         Name = q.Name,
-                        Type = q.Type,
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
                         PricePerHour = q.PricePerHour,
-                        Description = q.Description, 
+                        Description = q.Description,
+                        Sports = q.CourtSports
+                            .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                            .ToList(),
                         Images = q.Images
                             .Select(ToImageDTO)
                             .ToList()

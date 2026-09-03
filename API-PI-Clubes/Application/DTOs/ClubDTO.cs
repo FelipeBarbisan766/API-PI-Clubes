@@ -7,7 +7,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public string? Name { get; set; }
         public string? City { get; set; }
-        public List<TypeEnum>? Types { get; set; } 
+        public List<Guid>? SportIds { get; set; }
 
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
@@ -55,10 +55,10 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
-        
+
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
-        public List<TypeEnum> Types { get; set; }
+        public List<SportDTO> Sports { get; set; } = new();
         public List<ImageDTO> Images { get; set; }
     }
     public class ResponseClubByIdDTO

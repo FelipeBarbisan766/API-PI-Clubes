@@ -30,6 +30,8 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<ICourtRepository, CourtRepository>();
             services.AddScoped<ICourtMapper, CourtMapper>();
             
+            services.AddScoped<ISportRepository, SportRepository>();
+            
             services.AddScoped<IReserveService, ReserveService>();
             services.AddScoped<IReserveRepository, ReserveRepository>();
             services.AddScoped<IReserveMapper, ReserveMapper>();

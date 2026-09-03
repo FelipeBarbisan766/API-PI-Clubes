@@ -21,12 +21,14 @@ namespace API_PI_Clubes.Application.Mappers
             {
                 Id = court.Id,
                 Name = court.Name,
-                Type = court.Type,
                 Surface = court.Surface,
                 IsCovered = court.IsCovered,
                 PricePerHour = court.PricePerHour,
                 Description = court.Description,
                 ClubId = court.ClubId,
+                Sports = court.CourtSports?
+                    .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                    .ToList() ?? new List<SportDTO>(),
                 Images = court.Images
                     .Select(ToImageDTO)
                     .ToList()

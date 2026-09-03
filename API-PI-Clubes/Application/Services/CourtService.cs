@@ -20,17 +20,21 @@ namespace API_PI_Clubes.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
 
-        public CourtService(ICourtMapper mapper, 
-            ICourtRepository repository, 
-            IStorageService storageService, 
+        private readonly ISportRepository _sportRepository;
+
+        public CourtService(ICourtMapper mapper,
+            ICourtRepository repository,
+            IStorageService storageService,
             IImageRepository imageRepository,
-            IImageProcessingService imageProcessor)
+            IImageProcessingService imageProcessor,
+            ISportRepository sportRepository)
         {
             _mapper = mapper;
             _repository = repository;
             _storageService = storageService;
             _imageRepository = imageRepository;
             _imageProcessor = imageProcessor;
+            _sportRepository = sportRepository;
         }
 
         public async Task<PagedResultDTO<ResponseCourtDTO>> GetAll(CourtQueryDTO query)
@@ -69,9 +73,10 @@ namespace API_PI_Clubes.Application.Services
         public async Task<ResponseIdDTO> Create(CreatCourtDTO dto)
         {
             ValidateCourtDTO(dto);
+            await ValidateSportIdsAsync(dto.SportIds);
 
             var courtId = Guid.NewGuid();
-            
+
             var imageEntities = new List<Image>();
             if (dto.Images != null && dto.Images.Count > 0)
             {
@@ -81,23 +86,27 @@ namespace API_PI_Clubes.Application.Services
                     uploaded[i].Order = i;
                 imageEntities.AddRange(uploaded);
             }
-            
+
             var entity = new Court
             {
                 Id = courtId,
                 Name = dto.Name,
-                Type = dto.Type,
                 Surface = dto.Surface,
                 IsCovered = dto.IsCovered,
                 PricePerHour = dto.PricePerHour,
                 Description = dto.Description,
                 ClubId = dto.ClubId,
                 CreatedAt = DateTime.UtcNow,
-                Images = imageEntities
+                Images = imageEntities,
+                CourtSports = dto.SportIds
+                    .Distinct()
+                    .Select(sportId => new CourtSport { CourtId = courtId, SportId = sportId })
+                    .ToList()
             };
+
             await _repository.AddAsync(entity);
             await _repository.SaveChangesAsync();
-            
+
             return new ResponseIdDTO { Id = entity.Id };
         }
 
@@ -106,25 +115,41 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateId(id);
             ValidateUpdateCourtDTO(dto);
+            await ValidateSportIdsAsync(dto.SportIds);
             await AuthorizeOwnership(userId, id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id); // já traz CourtSports.Sport incluído
 
             if (data == null)
                 throw new NotFoundException("Quadra", id);
 
             data.Name = dto.Name;
-            data.Type = dto.Type;
             data.Surface = dto.Surface;
             data.IsCovered = dto.IsCovered;
             data.PricePerHour = dto.PricePerHour;
             data.Description = dto.Description;
             data.UpdatedAt = DateTime.UtcNow;
 
+            SyncCourtSports(data, dto.SportIds);
+
             _repository.Update(data);
             await _repository.SaveChangesAsync();
 
             return _mapper.ToDTO(data);
+        }
+
+        private static void SyncCourtSports(Court court, List<Guid> newSportIds)
+        {
+            var newIds = newSportIds.Distinct().ToHashSet();
+            var currentIds = court.CourtSports.Select(cs => cs.SportId).ToHashSet();
+
+            var toRemove = court.CourtSports.Where(cs => !newIds.Contains(cs.SportId)).ToList();
+            foreach (var cs in toRemove)
+                court.CourtSports.Remove(cs);
+
+            var toAdd = newIds.Where(sid => !currentIds.Contains(sid));
+            foreach (var sportId in toAdd)
+                court.CourtSports.Add(new CourtSport { CourtId = court.Id, SportId = sportId });
         }
 
         public async Task Delete(Guid userId, Guid id)
@@ -251,6 +276,17 @@ namespace API_PI_Clubes.Application.Services
         {
             if (dto == null)
                 throw new ValidationException("Os dados de atualização são obrigatórios.");
+        }
+        private async Task ValidateSportIdsAsync(List<Guid> sportIds)
+        {
+            if (sportIds == null || sportIds.Count == 0)
+                throw new ValidationException("A quadra deve ter ao menos um esporte.");
+
+            var distinctIds = sportIds.Distinct().ToList();
+            var existingCount = await _sportRepository.CountExistingAsync(distinctIds);
+
+            if (existingCount != distinctIds.Count)
+                throw new ValidationException("Um ou mais esportes informados são inválidos.");
         }
         
         private async Task<Image> ProcessAndUploadImage(IFormFile file, Guid courtId)

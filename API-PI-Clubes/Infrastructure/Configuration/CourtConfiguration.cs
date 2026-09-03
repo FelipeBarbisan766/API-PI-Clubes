@@ -16,6 +16,8 @@ namespace API_PI_Clubes.Infrastructure.Configuration
             builder.HasOne(a => a.Club)
                    .WithMany(b => b.Courts)
                    .HasForeignKey(a => a.ClubId);
+            
+            
         }
        
     }

@@ -14,21 +14,21 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             _context = context;
         }
+
         public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query)
         {
             var q = _context.Courts
                 .Where(c => c.IsActive)
                 .AsQueryable();
 
-            // Filtros
             if (!string.IsNullOrWhiteSpace(query.Name))
                 q = q.Where(c => c.Name.Contains(query.Name));
 
             if (!string.IsNullOrWhiteSpace(query.City))
                 q = q.Where(c => c.Club.Address.City.Contains(query.City));
 
-            if (query.Types != null && query.Types.Count > 0)
-                q = q.Where(c => c.IsActive && query.Types.Contains(c.Type));
+            if (query.SportIds != null && query.SportIds.Count > 0)
+                q = q.Where(c => c.CourtSports.Any(cs => query.SportIds.Contains(cs.SportId)));
 
             var totalCount = await q.CountAsync();
 
@@ -37,12 +37,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Type = c.Type,
                     Surface = c.Surface,
                     IsCovered = c.IsCovered,
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
+                    Sports = c.CourtSports
+                        .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                        .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
@@ -62,31 +64,34 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
             return (items, totalCount);
         }
-       
 
         public async Task<Court?> GetByIdAsync(Guid id)
         {
             return await _context.Courts
                 .Where(u => u.Id == id && u.IsActive)
                 .Include(c => c.Images.OrderBy(i => i.Order))
+                .Include(c => c.CourtSports)
+                .ThenInclude(cs => cs.Sport)
                 .FirstOrDefaultAsync();
         }
+
+
         public async Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id)
         {
             return await _context.Courts
-                .AsQueryable()
                 .Where(c => c.ClubId == id && c.IsActive)
-                .Include(c => c.Images)
                 .Select(c => new ResponseCourtDTO
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Type = c.Type,
                     Surface = c.Surface,
                     IsCovered = c.IsCovered,
                     PricePerHour = c.PricePerHour,
                     Description = c.Description,
                     ClubId = c.ClubId,
+                    Sports = c.CourtSports
+                        .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                        .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
@@ -101,6 +106,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 })
                 .ToListAsync();
         }
+
         public async Task<Court?> GetByIdWithImagesAsync(Guid id)
         {
             return await _context.Courts
@@ -140,6 +146,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
         public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
         {
             return await _context.Courts

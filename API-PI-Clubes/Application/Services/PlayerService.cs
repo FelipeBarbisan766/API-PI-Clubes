@@ -17,32 +17,34 @@ namespace API_PI_Clubes.Application.Services
         private readonly IPlayerRepository _repository;
         private readonly IPlayerMapper _mapper;
         private readonly IUserService _userService;
+        private readonly ISportRepository _sportRepository;
 
-        public PlayerService(IPlayerMapper mapper, IPlayerRepository repository, IUserService userService)
+        public PlayerService(IPlayerMapper mapper, IPlayerRepository repository,
+            IUserService userService, ISportRepository sportRepository)
         {
             _mapper = mapper;
             _repository = repository;
             _userService = userService;
+            _sportRepository = sportRepository;
         }
-        
 
         public async Task<ResponsePlayerDTO> GetById(Guid id)
         {
             ValidateId(id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
 
             if (data == null)
-                throw new NotFoundException("Jogador", id); 
+                throw new NotFoundException("Jogador", id);
 
             return _mapper.ToDTO(data);
         }
-        
+
         public async Task<ResponsePlayerDTO> GetCurrentUserInfo(Guid id)
         {
-            var entity = await _repository.GetByUserIdAsync(id);
+            var entity = await _repository.GetByUserIdWithFavoriteSportsAsync(id);
             if (entity == null)
-                throw new NotFoundException("Usuário", id); 
+                throw new NotFoundException("Usuário", id);
             return _mapper.ToDTO(entity);
         }
         
@@ -87,9 +89,10 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateId(id);
             ValidateUpdatePlayerDTO(dto);
+            await ValidateSportIdsAsync(dto.FavoriteSportIds);
             await AuthorizeOwnership(userId, id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
 
             if (data == null)
                 throw new NotFoundException("Jogador", id);
@@ -97,10 +100,38 @@ namespace API_PI_Clubes.Application.Services
             data.RankCategory = RankCategoryEnum.none;
             data.UpdatedAt = DateTime.UtcNow;
 
+            SyncFavoriteSports(data, dto.FavoriteSportIds);
+
             _repository.Update(data);
             await _repository.SaveChangesAsync();
 
             return _mapper.ToDTO(data);
+        }
+
+        private static void SyncFavoriteSports(Player player, List<Guid> newSportIds)
+        {
+            var newIds = newSportIds.Distinct().ToHashSet();
+            var currentIds = player.FavoriteSports.Select(fs => fs.SportId).ToHashSet();
+
+            var toRemove = player.FavoriteSports.Where(fs => !newIds.Contains(fs.SportId)).ToList();
+            foreach (var fs in toRemove)
+                player.FavoriteSports.Remove(fs);
+
+            var toAdd = newIds.Where(sid => !currentIds.Contains(sid));
+            foreach (var sportId in toAdd)
+                player.FavoriteSports.Add(new PlayerFavoriteSport { PlayerId = player.Id, SportId = sportId });
+        }
+
+        private async Task ValidateSportIdsAsync(List<Guid> sportIds)
+        {
+            if (sportIds == null) return; // diferente do Court: favoritos podem ser esvaziados (lista vazia é válida)
+
+            var distinctIds = sportIds.Distinct().ToList();
+            if (distinctIds.Count == 0) return;
+
+            var existingCount = await _sportRepository.CountExistingAsync(distinctIds);
+            if (existingCount != distinctIds.Count)
+                throw new ValidationException("Um ou mais esportes informados são inválidos.");
         }
 
         public async Task Delete(Guid userId, Guid id)

@@ -122,9 +122,9 @@ namespace API_PI_Clubes.Application.Validators
                 .MaximumLength(ValidationConstants.AddressFieldMaxLength)
                 .When(x => x.City is not null);
 
-            RuleForEach(x => x.Types)
-                .IsInEnum()
-                .When(x => x.Types is not null);
+            RuleForEach(x => x.SportIds)
+                .NotEmpty()
+                .When(x => x.SportIds is not null);
 
             RuleFor(x => x.Page)
                 .GreaterThanOrEqualTo(ValidationConstants.MinPageSize);

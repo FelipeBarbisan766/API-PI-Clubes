@@ -1,3 +1,4 @@
+using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Sports
                 .Where(s => s.IsActive && ids.Contains(s.Id))
                 .CountAsync();
+        }
+
+        public async Task<List<SportDTO>> GetAllAsync()
+        {
+            return await _context.Sports
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Name)
+                .Select(s => new SportDTO { Id = s.Id, Name = s.Name })
+                .ToListAsync();
         }
     }
 }

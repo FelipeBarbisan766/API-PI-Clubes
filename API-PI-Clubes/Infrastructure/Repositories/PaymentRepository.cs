@@ -17,15 +17,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Payment?> GetByIdAsync(Guid id)
             => await _context.Payments.FindAsync(id);
  
-        public async Task<Payment?> GetByGatewayTransactionIdAsync(string gatewayTransactionId)
-            => await _context.Payments
-                .FirstOrDefaultAsync(p => p.GatewayTransactionId == gatewayTransactionId);
  
         public async Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId)
-            => await _context.Subscriptions
-                .Where(s => s.AdminId == adminId)
-                .Include(s => s.Payment)
-                .Select(s => s.Payment)
+            => await _context.Payments
+                .Where(p => p.AdminId == adminId)
+                .OrderByDescending(p => p.Date)
+                .AsNoTracking()
                 .ToListAsync();
  
         public async Task AddAsync(Payment payment)

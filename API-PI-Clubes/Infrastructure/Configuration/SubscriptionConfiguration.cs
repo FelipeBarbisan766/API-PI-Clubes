@@ -40,5 +40,8 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
             .WithOne(p => p.Subscription)
             .HasForeignKey<Subscription>(s => s.PaymentId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasIndex(s => s.PaymentId)
+            .IsUnique();
     }
 }

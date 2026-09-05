@@ -113,6 +113,10 @@ builder.Services.AddHostedService<SubscriptionExpiryJob>();
 
 var app = builder.Build();
 
+MercadoPago.Config.MercadoPagoConfig.AccessToken = builder.Configuration["MercadoPago:AccessToken"]
+                                                   ?? throw new InvalidOperationException(
+                                                       "MercadoPago:AccessToken não configurado.");
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

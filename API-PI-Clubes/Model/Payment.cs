@@ -9,7 +9,8 @@ namespace API_PI_Clubes.Model
             public PaymentMethod Method { get; set; }
             public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
  
-            public string? GatewayTransactionId { get; set; }
+            public string? MercadoPagoPreferenceId { get; set; }  
+            public string? MercadoPagoPaymentId { get; set; } 
  
             public Guid AdminId { get; set; }
             public Guid PlanId { get; set; }

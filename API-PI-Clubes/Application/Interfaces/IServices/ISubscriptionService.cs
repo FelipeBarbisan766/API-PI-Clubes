@@ -6,9 +6,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     {
         Task<SubscriptionResponseDto?> GetActiveByAdminAsync(Guid adminId);
         Task<bool> CheckAccessAsync(Guid adminId);
-        Task RenewAsync(Guid adminId, Guid paymentId);
-        Task CancelAsync(Guid subscriptionId);
-        Task ExpireOverdueAsync(); // chamado pelo job agendado
-
+        Task CancelAsync(Guid subscriptionId, Guid userId);
+        Task ExpireOverdueAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -7,6 +8,7 @@ namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "admin")]
     public class PlanController: ControllerBase
     {
         private readonly IPlanService _service;
@@ -16,6 +18,7 @@ namespace API_PI_Clubes.Controllers
         }
         
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var plans = await _service.GetAllActiveAsync();

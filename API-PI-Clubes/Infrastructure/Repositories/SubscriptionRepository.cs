@@ -44,7 +44,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Subscriptions.Update(subscription);
             await _context.SaveChangesAsync();
         }
-
+        public async Task<bool> IsOwnedByUserAsync(Guid subscriptionId, Guid userId)
+            => await _context.Subscriptions
+                .AnyAsync(s => s.Id == subscriptionId && s.AdminId == userId);
     
     }
 }

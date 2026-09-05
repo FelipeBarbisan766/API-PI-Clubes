@@ -26,7 +26,7 @@ namespace API_PI_Clubes.Application.DTOs
         DateTime Date,
         string Method,
         string Status,
-        string? GatewayTransactionId
+        string? MercadoPagoPaymentId 
     );
 
 }

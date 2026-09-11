@@ -17,5 +17,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<bool> ExistsAsync(Guid id);
         Task SaveChangesAsync();
         Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId);
+        Task<int> CountByAdminIdAsync(Guid adminId);
+        Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByAdminIdAsync(Guid adminId);
     }
 }

@@ -250,5 +250,23 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Clubs
                 .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId));
         }
+        public async Task<int> CountByAdminIdAsync(Guid adminId)
+        {
+            return await _context.Clubs
+                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.AdminId == adminId));
+        }
+
+        public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByAdminIdAsync(Guid adminId)
+        {
+            return await _context.Clubs
+                .Where(c => c.IsActive && c.ClubAdmin.Any(ca => ca.AdminId == adminId))
+                .Select(c => new ClubCourtUsageDTO
+                {
+                    ClubId = c.Id,
+                    ClubName = c.Name,
+                    Used = c.Courts.Count(co => co.IsActive)
+                })
+                .ToListAsync();
+        }
     }
 }

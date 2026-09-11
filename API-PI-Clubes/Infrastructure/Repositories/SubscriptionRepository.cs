@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Application.Interfaces.IRepositories;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +47,28 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         }
         public async Task<bool> IsOwnedByUserAsync(Guid subscriptionId, Guid userId)
             => await _context.Subscriptions
-                .AnyAsync(s => s.Id == subscriptionId && s.AdminId == userId);
+                .AnyAsync(s => s.Id == subscriptionId && s.Admin.UserId == userId);
     
+        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByAdminIdAsync(Guid adminId)
+            => await _context.Subscriptions
+                .Where(s => s.AdminId == adminId && s.IsActive)
+                .Select(s => new PlanLimitsDTO
+                {
+                    PlanName = s.Plan.Name,
+                    QuantClub = s.Plan.QuantClub,
+                    QuantCourt = s.Plan.QuantCourt
+                })
+                .FirstOrDefaultAsync();
+        
+        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByUserIdAsync(Guid userId)
+            => await _context.Subscriptions
+                .Where(s => s.Admin.UserId == userId && s.IsActive)
+                .Select(s => new PlanLimitsDTO
+                {
+                    PlanName = s.Plan.Name,
+                    QuantClub = s.Plan.QuantClub,
+                    QuantCourt = s.Plan.QuantCourt
+                })
+                .FirstOrDefaultAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Model;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Model;
 
 public interface ISubscriptionRepository
 {
@@ -9,4 +10,7 @@ public interface ISubscriptionRepository
     Task<bool> IsOwnedByUserAsync(Guid subscriptionId, Guid userId);
     Task AddAsync(Subscription subscription);
     Task UpdateAsync(Subscription subscription);
+    Task<PlanLimitsDTO?> GetActivePlanLimitsByAdminIdAsync(Guid adminId);
+    Task<PlanLimitsDTO?> GetActivePlanLimitsByUserIdAsync(Guid userId);
+
 }

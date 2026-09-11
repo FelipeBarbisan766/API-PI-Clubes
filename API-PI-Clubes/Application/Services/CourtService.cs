@@ -19,6 +19,7 @@ namespace API_PI_Clubes.Application.Services
         private readonly IStorageService _storageService;
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
+        private readonly IPlanLimitService _planLimitService;
 
         private readonly ISportRepository _sportRepository;
 
@@ -27,7 +28,9 @@ namespace API_PI_Clubes.Application.Services
             IStorageService storageService,
             IImageRepository imageRepository,
             IImageProcessingService imageProcessor,
-            ISportRepository sportRepository)
+            ISportRepository sportRepository,
+            IPlanLimitService planLimitService
+            )
         {
             _mapper = mapper;
             _repository = repository;
@@ -35,6 +38,7 @@ namespace API_PI_Clubes.Application.Services
             _imageRepository = imageRepository;
             _imageProcessor = imageProcessor;
             _sportRepository = sportRepository;
+            _planLimitService = planLimitService;
         }
 
         public async Task<PagedResultDTO<ResponseCourtDTO>> GetAll(CourtQueryDTO query)
@@ -70,9 +74,10 @@ namespace API_PI_Clubes.Application.Services
 
             return data;
         }
-        public async Task<ResponseIdDTO> Create(CreatCourtDTO dto)
+        public async Task<ResponseIdDTO> Create(Guid userId, CreatCourtDTO dto)
         {
             ValidateCourtDTO(dto);
+            await _planLimitService.EnsureCourtLimitNotReachedAsync(userId, dto.ClubId);
             await ValidateSportIdsAsync(dto.SportIds);
 
             var courtId = Guid.NewGuid();
@@ -118,7 +123,7 @@ namespace API_PI_Clubes.Application.Services
             await ValidateSportIdsAsync(dto.SportIds);
             await AuthorizeOwnership(userId, id);
 
-            var data = await _repository.GetByIdAsync(id); // já traz CourtSports.Sport incluído
+            var data = await _repository.GetByIdAsync(id); 
 
             if (data == null)
                 throw new NotFoundException("Quadra", id);

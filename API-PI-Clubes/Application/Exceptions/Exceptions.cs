@@ -56,4 +56,17 @@ namespace API_PI_Clubes.Application.Exceptions
         {
         }
     }
+    public class PlanLimitExceededException : AppException
+    {
+        public PlanLimitExceededException(string resource, int limit)
+            : base("LIMITS_EXCEEDING",$"Limite de {limit} {resource}(s) do seu plano foi atingido.",403)
+        { }
+    }
+
+    public class NoActiveSubscriptionException : AppException
+    {
+        public NoActiveSubscriptionException()
+            : base("LIMITS_EXCEEDING","Você não possui uma assinatura ativa.",403)
+        { }
+    }
 }

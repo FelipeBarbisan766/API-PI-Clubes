@@ -19,12 +19,14 @@ namespace API_PI_Clubes.Application.Services
         private readonly IStorageService _storageService;
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
+        private readonly IPlanLimitService _planLimitService;
 
         public ClubService(IClubMapper mapper,
             IClubRepository repository,
             IStorageService storageService,
             IImageRepository imageRepository,
-            IImageProcessingService imageProcessor
+            IImageProcessingService imageProcessor,
+            IPlanLimitService planLimitService
         )
         {
             _mapper = mapper;
@@ -32,6 +34,7 @@ namespace API_PI_Clubes.Application.Services
             _storageService = storageService;
             _imageRepository = imageRepository;
             _imageProcessor = imageProcessor;
+            _planLimitService = planLimitService;
         }
 
         public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query)
@@ -86,6 +89,7 @@ namespace API_PI_Clubes.Application.Services
         public async Task<ResponseIdDTO> Create(CreateClubDTO dto)
         {
             ValidateClubDTO(dto);
+            await _planLimitService.EnsureClubLimitNotReachedAsync(dto.adminId);
 
             var clubId = Guid.NewGuid();
 

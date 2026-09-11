@@ -152,5 +152,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Courts
                 .AnyAsync(c => c.Id == Id && c.Club.ClubAdmin.Any(a => a.Admin.UserId == userId));
         }
+        public async Task<int> CountByClubIdAsync(Guid clubId)
+        {
+            return await _context.Courts
+                .CountAsync(c => c.IsActive && c.ClubId == clubId);
+        }
     }
 }

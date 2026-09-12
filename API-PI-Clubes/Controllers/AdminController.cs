@@ -47,13 +47,15 @@ namespace API_PI_Clubes.Controllers
     
         [Authorize(Roles = "Player")]
         [HttpPost]
-        public async Task<IActionResult> Create(CreatAdminDTO dto)
+        public async Task<IActionResult> Create()
         {
-            var result = await _service.Create(dto);
-
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            var userId = User.GetUserId();
+            
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 return NotFound("User not found.");
+
+            var result = await _service.Create(userId);
 
             await _cookieAuthService.SignInAsync(HttpContext, user);
 

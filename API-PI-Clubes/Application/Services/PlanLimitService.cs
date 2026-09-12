@@ -21,10 +21,10 @@ public class PlanLimitService : IPlanLimitService
         _courtRepository = courtRepository;
     }
 
-    public async Task EnsureClubLimitNotReachedAsync(Guid adminId)
+    public async Task EnsureClubLimitNotReachedAsync(Guid userId)
     {
-        var limits = await GetLimitsOrThrowAsync(adminId);
-        var current = await _clubRepository.CountByAdminIdAsync(adminId);
+        var limits = await GetLimitsOrThrowAsync(userId);
+        var current = await _clubRepository.CountByUserIdAsync(userId);
 
         if (current >= limits.QuantClub)
             throw new PlanLimitExceededException("clube", limits.QuantClub);
@@ -32,22 +32,14 @@ public class PlanLimitService : IPlanLimitService
 
     public async Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId)
     {
-        var limits = await GetLimitsOrThrowAsync(userId,clubId);
+        var limits = await GetLimitsOrThrowAsync(userId);
         var current = await _courtRepository.CountByClubIdAsync(clubId);
 
         if (current >= limits.QuantCourt)
             throw new PlanLimitExceededException("quadra", limits.QuantCourt);
     }
 
-    private async Task<PlanLimitsDTO> GetLimitsOrThrowAsync(Guid adminId)
-    {
-        var limits = await _subscriptionRepository.GetActivePlanLimitsByAdminIdAsync(adminId);
-        if (limits == null)
-            throw new NoActiveSubscriptionException();
-
-        return limits;
-    }
-    private async Task<PlanLimitsDTO> GetLimitsOrThrowAsync(Guid userId, Guid clubId)
+    private async Task<PlanLimitsDTO> GetLimitsOrThrowAsync(Guid userId)
     {
         var limits = await _subscriptionRepository.GetActivePlanLimitsByUserIdAsync(userId);
         if (limits == null)
@@ -55,11 +47,12 @@ public class PlanLimitService : IPlanLimitService
 
         return limits;
     }
-    public async Task<PlanUsageDTO> GetUsageSummaryAsync(Guid adminId)
+    
+    public async Task<PlanUsageDTO> GetUsageSummaryAsync(Guid userId)
     {
-        var limits = await GetLimitsOrThrowAsync(adminId);
-        var clubsUsed = await _clubRepository.CountByAdminIdAsync(adminId);
-        var courtUsage = await _clubRepository.GetClubsWithCourtCountByAdminIdAsync(adminId);
+        var limits = await GetLimitsOrThrowAsync(userId);
+        var clubsUsed = await _clubRepository.CountByUserIdAsync(userId);
+        var courtUsage = await _clubRepository.GetClubsWithCourtCountByUserIdAsync(userId);
 
         return new PlanUsageDTO
         {

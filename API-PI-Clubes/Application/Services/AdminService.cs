@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using API_PI_Clubes.Application.Common;
 using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IMappers;
@@ -17,12 +18,21 @@ namespace API_PI_Clubes.Application.Services
         private readonly IAdminRepository _repository;
         private readonly IAdminMapper _mapper;
         private readonly IUserService _userService;
+        private readonly ISubscriptionRepository _subscriptionRepository;
+        private readonly IPlanRepository _planRepository;
 
-        public AdminService(IAdminMapper mapper, IAdminRepository repository, IUserService userService)
+        public AdminService(
+            IAdminMapper mapper,
+            IAdminRepository repository,
+            IUserService userService,
+            ISubscriptionRepository subscriptionRepository,
+            IPlanRepository planRepository)
         {
             _mapper = mapper;
             _repository = repository;
             _userService = userService;
+            _subscriptionRepository = subscriptionRepository;
+            _planRepository = planRepository;
         }
 
         public async Task<ResponseAdminDTO> GetById(Guid id)
@@ -44,9 +54,9 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(entity);
             
         }
-        public async Task<ResponseIdDTO> Create(CreatAdminDTO dto)
+        public async Task<ResponseIdDTO> Create(Guid id)
         {
-            ValidateAdminDTO(dto);
+            ValidateId(id);
 
             var strategy = _repository.CreateExecutionStrategy();
 
@@ -56,19 +66,37 @@ namespace API_PI_Clubes.Application.Services
 
                 try
                 {
-                    var user = await _userService.GetById(dto.UserId)
-                               ?? throw new NotFoundException("Usuário", dto.UserId);
+                    var user = await _userService.GetById(id)
+                               ?? throw new NotFoundException("Usuário", id);
+
+                    var freePlan = await _planRepository.GetByIdAsync(PlanConstants.FreePlanId)
+                                   ?? throw new InvalidOperationException(
+                                       "Plano Free não está configurado no banco de dados.");
 
                     var entity = new Admin
                     {
-                        UserId = dto.UserId,
+                        UserId = id,
                         TypeAccess = TypeAccessEnum.write,
                         CreatedAt = DateTime.UtcNow
                     };
 
                     await _repository.AddAsync(entity);
 
-                    await _userService.UpdateRole(dto.UserId, RoleEnum.Admin);
+                    var freeSubscription = new Subscription
+                    {
+                        Id = Guid.NewGuid(),
+                        AdminId = entity.Id,
+                        PlanId = freePlan.Id,
+                        PaymentId = null,
+                        StartDate = DateTime.UtcNow,
+                        ExpiresAt = DateTime.UtcNow.AddDays(freePlan.DurationDays),
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _subscriptionRepository.AddAsync(freeSubscription);
+
+                    await _userService.UpdateRole(id, RoleEnum.Admin);
 
                     await _repository.SaveChangesAsync();
                     await transaction.CommitAsync();

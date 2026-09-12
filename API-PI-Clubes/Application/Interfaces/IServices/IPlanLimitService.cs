@@ -6,6 +6,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     {
         Task EnsureClubLimitNotReachedAsync(Guid adminId);
         Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId);
-        Task<PlanUsageDTO> GetUsageSummaryAsync(Guid adminId);
+        Task<PlanUsageDTO> GetUsageSummaryAsync(Guid userId);
     }
 }

@@ -86,10 +86,10 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task<ResponseIdDTO> Create(CreateClubDTO dto)
+        public async Task<ResponseIdDTO> Create(Guid userId,CreateClubDTO dto)
         {
             ValidateClubDTO(dto);
-            await _planLimitService.EnsureClubLimitNotReachedAsync(dto.adminId);
+            await _planLimitService.EnsureClubLimitNotReachedAsync(userId);
 
             var clubId = Guid.NewGuid();
 

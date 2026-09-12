@@ -68,6 +68,8 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IPlanRepository, PlanRepository>();
             
+            services.AddScoped<IPlanLimitService, PlanLimitService>();
+            
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<EmailBodyService>();

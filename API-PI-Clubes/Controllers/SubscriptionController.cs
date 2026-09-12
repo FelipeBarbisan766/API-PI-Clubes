@@ -52,8 +52,8 @@ namespace API_PI_Clubes.Controllers
         [HttpGet("me/usage")]
         public async Task<ActionResult<PlanUsageDTO>> GetMyUsage()
         {
-            var adminId = User.GetUserId();
-            var usage = await _planLimitService.GetUsageSummaryAsync(adminId); 
+            var userId = User.GetUserId();
+            var usage = await _planLimitService.GetUsageSummaryAsync(userId); 
             return Ok(usage);
         }
     }

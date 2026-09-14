@@ -69,7 +69,6 @@ namespace API_PI_Clubes.Application.Validators
                 .Length(ValidationConstants.NameMinLength, ValidationConstants.NameMaxLength);
 
             RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("O telefone é obrigatório.")
                 .IsValidBrazilianPhone();
 
             RuleFor(x => x.Description)
@@ -85,7 +84,6 @@ namespace API_PI_Clubes.Application.Validators
                 .MaximumLength(ValidationConstants.AddressFieldMaxLength);
 
             RuleFor(x => x.Number)
-                .NotEmpty()
                 .MaximumLength(10);
 
             RuleFor(x => x.Neighborhood)

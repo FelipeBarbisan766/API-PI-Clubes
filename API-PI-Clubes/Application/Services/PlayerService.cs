@@ -232,7 +232,41 @@ namespace API_PI_Clubes.Application.Services
                     throw new ValidationException("Informe ao menos um esporte.");
             }
         }
+        public async Task<List<ResponseSportDTO>> SetFavoriteSports(Guid userId, Guid id, SetFavoriteSportsDTO dto)
+        {
+            ValidateId(id);
+            ValidateSetFavoriteSportsDTO(dto);
+            await ValidateSportIdsAsync(dto.SportIds);
+            await AuthorizeOwnership(userId, id);
 
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
+            if (data == null)
+                throw new NotFoundException("Jogador", id);
+
+            var newIds = dto.SportIds.Distinct().ToHashSet();
+            var currentIds = data.FavoriteSports.Select(fs => fs.SportId).ToHashSet();
+
+            var toAdd = newIds.Where(sid => !currentIds.Contains(sid));
+            var toRemove = data.FavoriteSports.Where(fs => !newIds.Contains(fs.SportId)).ToList();
+
+            foreach (var sportId in toAdd)
+                data.FavoriteSports.Add(new PlayerFavoriteSport { PlayerId = data.Id, SportId = sportId });
+
+            foreach (var favoriteSport in toRemove)
+                data.FavoriteSports.Remove(favoriteSport);
+
+            _repository.Update(data);
+            await _repository.SaveChangesAsync();
+
+            var sportIds = data.FavoriteSports.Select(fs => fs.SportId).ToList();
+            return await _sportService.GetByIds(sportIds);
+
+            static void ValidateSetFavoriteSportsDTO(SetFavoriteSportsDTO dto)
+            {
+                if (dto?.SportIds == null)
+                    throw new ValidationException("Informe a lista de esportes favoritos.");
+            }
+        }
         // --------------------------------------
         private static void ValidateAddFavoriteSportsDTO(AddFavoriteSportsDTO dto)
         {

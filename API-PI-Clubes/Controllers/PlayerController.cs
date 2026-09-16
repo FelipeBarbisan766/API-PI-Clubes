@@ -42,14 +42,14 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
         
-        [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
-        {
-            var userId = User.GetUserId();
-            var result = await _service.Update(userId, id, dto);
-            return Ok(result);
-        }
+        // [Authorize]
+        // [HttpPut("{id}")]
+        // public async Task<IActionResult> Update(Guid id, UpdatePlayerDTO dto)
+        // {
+        //     var userId = User.GetUserId();
+        //     var result = await _service.Update(userId, id, dto);
+        //     return Ok(result);
+        // }
 
         [Authorize]
         [HttpDelete("{id}")]
@@ -87,6 +87,14 @@ namespace API_PI_Clubes.Controllers
         {
             var userId = User.GetUserId();
             var result = await _service.AddFavoriteSports(userId, id, dto);
+            return Ok(result);
+        }
+        [Authorize]
+        [HttpPut("{id}/favorite-sports")]
+        public async Task<IActionResult> SetFavoriteSports(Guid id, [FromBody] SetFavoriteSportsDTO dto)
+        {
+            var userId = User.GetUserId();
+            var result = await _service.SetFavoriteSports(userId, id, dto);
             return Ok(result);
         }
     }

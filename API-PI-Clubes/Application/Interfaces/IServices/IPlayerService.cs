@@ -14,5 +14,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponsePlayerDTO> SetProfileName(Guid userId, Guid id, SetProfileNameDTO dto);
         Task<List<ResponseSportDTO>> GetFavoriteSports(Guid id);
         Task<List<ResponseSportDTO>> AddFavoriteSports(Guid userId, Guid id, AddFavoriteSportsDTO dto);
+        Task<List<ResponseSportDTO>> SetFavoriteSports(Guid userId, Guid id, SetFavoriteSportsDTO dto);
     }
 }

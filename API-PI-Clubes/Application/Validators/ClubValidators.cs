@@ -133,4 +133,15 @@ namespace API_PI_Clubes.Application.Validators
                     $"PageSize deve estar entre {ValidationConstants.MinPageSize} e {ValidationConstants.MaxPageSize}.");
         }
     }
+    public class CreateClubReviewDTOValidator : AbstractValidator<CreateClubReviewDTO>
+    {
+        public CreateClubReviewDTOValidator()
+        {
+            RuleFor(x => x.Rating)
+                .InclusiveBetween(0, 5)
+                .WithMessage("A nota deve estar entre 0 e 5.")
+                .Must(r => (r * 2) % 1 == 0)
+                .WithMessage("A nota deve ser em incrementos de 0.5 (ex: 4.5).");
+        }
+    }
 }

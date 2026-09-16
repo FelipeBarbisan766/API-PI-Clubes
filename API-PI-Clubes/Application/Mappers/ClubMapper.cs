@@ -38,6 +38,10 @@ namespace API_PI_Clubes.Application.Mappers
                     .GroupBy(s => s.Id)
                     .Select(g => new ResponseSportDTO { Id = g.Key, Name = g.First().Name })
                     .ToList(),
+                AverageRating = club.Reviews.Any()
+                    ? Math.Round(club.Reviews.Average(r => r.Rating), 1)
+                    : 0,
+                TotalReviews = club.Reviews.Count(),
                 Images = club.Images
                     .Select(ToImageDTO)
                     .ToList()
@@ -64,6 +68,10 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
+                AverageRating = club.Reviews.Any()
+                    ? Math.Round(club.Reviews.Average(r => r.Rating), 1)
+                    : 0,
+                TotalReviews = club.Reviews.Count(),
                 Images = club.Images
                     .Select(ToImageDTO)
                     .ToList(),

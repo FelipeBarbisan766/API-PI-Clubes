@@ -27,7 +27,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return await _context.Players
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
         }
-        
+
         public async Task<Player?> GetByUserIdAsync(Guid id)
         {
             return await _context.Players
@@ -51,6 +51,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .ThenInclude(fs => fs.Sport)
                 .FirstOrDefaultAsync();
         }
+
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.Players
@@ -82,6 +83,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
         public IExecutionStrategy CreateExecutionStrategy()
         {
             return _context.Database.CreateExecutionStrategy();
@@ -91,10 +93,26 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Database.BeginTransactionAsync();
         }
+
         public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
         {
             return await _context.Players
                 .AnyAsync(c => c.Id == Id && c.User.Id == userId);
+        }
+
+        public async Task<Player?> GetByProfileNameWithFavoriteSportsAsync(string profileName)
+        {
+            return await _context.Players
+                .Where(p => p.ProfileName == profileName && p.IsActive)
+                .Include(p => p.FavoriteSports)
+                .ThenInclude(fs => fs.Sport)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> ExistsByProfileNameAsync(string profileName, Guid excludeId)
+        {
+            return await _context.Players
+                .AnyAsync(p => p.ProfileName == profileName && p.Id != excludeId && p.IsActive);
         }
     }
 }

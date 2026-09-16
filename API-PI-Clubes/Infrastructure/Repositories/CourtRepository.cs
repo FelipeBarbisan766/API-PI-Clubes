@@ -43,7 +43,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Description = c.Description,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports
-                        .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                        .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                         .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
@@ -90,7 +90,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Description = c.Description,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports
-                        .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                        .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                         .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)

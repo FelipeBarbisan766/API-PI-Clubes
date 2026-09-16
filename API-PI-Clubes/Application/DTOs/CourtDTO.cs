@@ -2,11 +2,7 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
-    public class SportDTO
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
+   
 
     public class CreatCourtDTO
     {
@@ -39,7 +35,7 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal PricePerHour { get; set; }
         public string Description { get; set; }
         public Guid ClubId { get; set; }
-        public List<SportDTO> Sports { get; set; } = new();
+        public List<ResponseSportDTO> Sports { get; set; } = new();
         public List<ImageDTO> Images { get; set; }
     }
 
@@ -47,7 +43,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public string Name { get; set; } = string.Empty;
         public decimal PricePerHour { get; set; }
-        public List<SportDTO> Sports { get; set; } = new();
+        public List<ResponseSportDTO> Sports { get; set; } = new();
     }
 
     public class CourtQueryDTO

@@ -36,7 +36,7 @@ namespace API_PI_Clubes.Application.Mappers
                     .Where(co => co.IsActive)
                     .SelectMany(co => co.CourtSports.Select(cs => cs.Sport))
                     .GroupBy(s => s.Id)
-                    .Select(g => new SportDTO { Id = g.Key, Name = g.First().Name })
+                    .Select(g => new ResponseSportDTO { Id = g.Key, Name = g.First().Name })
                     .ToList(),
                 Images = club.Images
                     .Select(ToImageDTO)
@@ -80,7 +80,7 @@ namespace API_PI_Clubes.Application.Mappers
                         PricePerHour = q.PricePerHour,
                         Description = q.Description,
                         Sports = q.CourtSports
-                            .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                            .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                             .ToList(),
                         Images = q.Images
                             .Select(ToImageDTO)

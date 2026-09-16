@@ -54,7 +54,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .SelectMany(co => co.CourtSports)
                         .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
                         .Distinct()
-                        .Select(x => new SportDTO { Id = x.Id, Name = x.Name })
+                        .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
                         .ToList(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
@@ -124,7 +124,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .SelectMany(co => co.CourtSports)
                         .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
                         .Distinct()
-                        .Select(x => new SportDTO { Id = x.Id, Name = x.Name })
+                        .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
                         .ToList(),
 
                     Images = c.Images
@@ -191,7 +191,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                             Name = r.Schedule.Court.Name,
                             PricePerHour = r.Schedule.Court.PricePerHour,
                             Sports = r.Schedule.Court.CourtSports
-                                .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                                .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                                 .ToList()
                         }
                     }

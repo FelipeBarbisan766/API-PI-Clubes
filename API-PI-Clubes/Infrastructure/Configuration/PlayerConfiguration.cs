@@ -9,6 +9,14 @@ namespace API_PI_Clubes.Infrastructure.Configuration
         public void Configure(EntityTypeBuilder<Player> builder)
         {
             builder.HasKey(a => a.Id);
+            
+            builder.Property(p => p.ProfileName)
+                .HasMaxLength(20);
+
+            builder.HasIndex(p => p.ProfileName)
+                .IsUnique()
+                .HasFilter("[ProfileName] IS NOT NULL")
+                .HasDatabaseName("IX_Players_ProfileName");
 
             builder.HasOne(a => a.User)
                 .WithMany(b => b.Players)

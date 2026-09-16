@@ -27,5 +27,9 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public List<Guid> SportIds { get; set; }
     }
+    public class SetFavoriteSportsDTO
+    {
+        public List<Guid> SportIds { get; set; }
+    }
 
 }

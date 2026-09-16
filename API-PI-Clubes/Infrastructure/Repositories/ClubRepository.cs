@@ -56,6 +56,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Distinct()
                         .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
                         .ToList(),
+                    AverageRating = c.Reviews.Any()
+                        ? Math.Round(c.Reviews.Average(r => r.Rating), 1)
+                        : 0,
+                    TotalReviews = c.Reviews.Count(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO
@@ -87,6 +91,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Courts.Where(co => co.IsActive))
                 .ThenInclude(co => co.CourtSports)
                 .ThenInclude(cs => cs.Sport)
+                .Include(c => c.Reviews) 
                 .FirstOrDefaultAsync();
         }
 
@@ -126,7 +131,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Distinct()
                         .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
                         .ToList(),
-
+                    AverageRating = c.Reviews.Any()
+                        ? Math.Round(c.Reviews.Average(r => r.Rating), 1)
+                        : 0,
+                    TotalReviews = c.Reviews.Count(),
                     Images = c.Images
                         .OrderBy(i => i.Order)
                         .Select(i => new ImageDTO

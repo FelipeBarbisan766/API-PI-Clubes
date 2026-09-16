@@ -58,6 +58,8 @@ namespace API_PI_Clubes.Application.DTOs
 
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
+        public decimal AverageRating { get; set; }
+        public int TotalReviews { get; set; }
         public List<ResponseSportDTO> Sports { get; set; } = new();
         public List<ImageDTO> Images { get; set; }
     }
@@ -74,6 +76,8 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
+        public decimal AverageRating { get; set; }
+        public int TotalReviews { get; set; }
         public List<ImageDTO> Images { get; set; }
         public List<ResponseCourtDTO> Courts { get; set; } = new();
     }
@@ -90,6 +94,16 @@ namespace API_PI_Clubes.Application.DTOs
         public int QuantReserveToday { get; set; }
         public int CountPlayers { get; set; }
         public List<ResponseReserveDetailDTO>  ClubReserve { get; set; }
+    }
+    public class CreateClubReviewDTO
+    {
+        public decimal Rating { get; set; }
+    }
+
+    public class ResponseClubReviewSummaryDTO
+    {
+        public decimal AverageRating { get; set; }
+        public int TotalReviews { get; set; }
     }
     
 }

@@ -20,13 +20,15 @@ namespace API_PI_Clubes.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
         private readonly IPlanLimitService _planLimitService;
+        private readonly IClubReviewRepository _clubReviewRepository; 
 
         public ClubService(IClubMapper mapper,
             IClubRepository repository,
             IStorageService storageService,
             IImageRepository imageRepository,
             IImageProcessingService imageProcessor,
-            IPlanLimitService planLimitService
+            IPlanLimitService planLimitService,
+            IClubReviewRepository clubReviewRepository 
         )
         {
             _mapper = mapper;
@@ -35,6 +37,7 @@ namespace API_PI_Clubes.Application.Services
             _imageRepository = imageRepository;
             _imageProcessor = imageProcessor;
             _planLimitService = planLimitService;
+            _clubReviewRepository = clubReviewRepository;
         }
 
         public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query)
@@ -55,11 +58,16 @@ namespace API_PI_Clubes.Application.Services
             ValidateId(id);
 
             var data = await _repository.GetByIdAsync(id);
-
             if (data == null)
                 throw new NotFoundException("Clube", id);
 
-            return _mapper.ToDTOById(data);
+            var dto = _mapper.ToDTOById(data);
+
+            var summary = await _clubReviewRepository.GetSummaryByClubIdAsync(id);
+            dto.AverageRating = summary.AverageRating;
+            dto.TotalReviews = summary.TotalReviews;
+
+            return dto;
         }
 
         public async Task<List<ResponseClubDTO>> GetAllByAdminId(Guid id)

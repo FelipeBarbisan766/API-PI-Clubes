@@ -58,7 +58,7 @@ namespace API_PI_Clubes.Application.DTOs
 
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
-        public List<SportDTO> Sports { get; set; } = new();
+        public List<ResponseSportDTO> Sports { get; set; } = new();
         public List<ImageDTO> Images { get; set; }
     }
     public class ResponseClubByIdDTO

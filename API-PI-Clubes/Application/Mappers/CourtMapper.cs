@@ -27,8 +27,8 @@ namespace API_PI_Clubes.Application.Mappers
                 Description = court.Description,
                 ClubId = court.ClubId,
                 Sports = court.CourtSports?
-                    .Select(cs => new SportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
-                    .ToList() ?? new List<SportDTO>(),
+                    .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
+                    .ToList() ?? new List<ResponseSportDTO>(),
                 Images = court.Images
                     .Select(ToImageDTO)
                     .ToList()

@@ -59,5 +59,35 @@ namespace API_PI_Clubes.Controllers
             await _service.Delete(userId, id);
             return NoContent();
         }
+        [HttpGet("name/{profileName}")]
+        public async Task<IActionResult> GetByProfileName(string profileName)
+        {
+            var result = await _service.GetByProfileName(profileName);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/profile-name")]
+        [Authorize]
+        public async Task<IActionResult> SetProfileName(Guid id, [FromBody] SetProfileNameDTO dto)
+        {
+            var userId = User.GetUserId();
+            var result = await _service.SetProfileName(userId, id, dto);
+            return Ok(result);
+        }
+        [HttpGet("{id}/favorite-sports")]
+        public async Task<IActionResult> GetFavoriteSports(Guid id)
+        {
+            var result = await _service.GetFavoriteSports(id);
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost("{id}/favorite-sports")]
+        public async Task<IActionResult> AddFavoriteSports(Guid id, [FromBody] AddFavoriteSportsDTO dto)
+        {
+            var userId = User.GetUserId();
+            var result = await _service.AddFavoriteSports(userId, id, dto);
+            return Ok(result);
+        }
     }
 }

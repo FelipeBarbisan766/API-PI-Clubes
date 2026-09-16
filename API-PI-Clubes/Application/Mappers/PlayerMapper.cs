@@ -14,8 +14,8 @@ namespace API_PI_Clubes.Application.Mappers
                 RankCategory = player.RankCategory,
                 UserId = player.UserId,
                 FavoriteSports = player.FavoriteSports?
-                    .Select(fs => new SportDTO { Id = fs.Sport.Id, Name = fs.Sport.Name })
-                    .ToList() ?? new List<SportDTO>()
+                    .Select(fs => new ResponseSportDTO { Id = fs.Sport.Id, Name = fs.Sport.Name })
+                    .ToList() ?? new List<ResponseSportDTO>()
             };
         }
 

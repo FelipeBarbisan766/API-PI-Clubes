@@ -17,8 +17,15 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public RankCategoryEnum RankCategory { get; set; }
         public Guid UserId { get; set; }
-        public List<SportDTO> FavoriteSports { get; set; } = new();
+        public List<ResponseSportDTO> FavoriteSports { get; set; } = new();
     }
-    
+    public class SetProfileNameDTO
+    {
+        public string ProfileName { get; set; }
+    }
+    public class AddFavoriteSportsDTO
+    {
+        public List<Guid> SportIds { get; set; }
+    }
 
 }

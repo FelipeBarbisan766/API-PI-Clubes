@@ -10,5 +10,9 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponseIdDTO> Create(Guid id);
         Task<ResponsePlayerDTO> Update(Guid userId, Guid id, UpdatePlayerDTO dto);
         Task Delete(Guid userId, Guid id);
+        Task<ResponsePlayerDTO> GetByProfileName(string profileName);
+        Task<ResponsePlayerDTO> SetProfileName(Guid userId, Guid id, SetProfileNameDTO dto);
+        Task<List<ResponseSportDTO>> GetFavoriteSports(Guid id);
+        Task<List<ResponseSportDTO>> AddFavoriteSports(Guid userId, Guid id, AddFavoriteSportsDTO dto);
     }
 }

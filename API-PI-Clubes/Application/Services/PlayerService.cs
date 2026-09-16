@@ -7,6 +7,7 @@ using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -18,14 +19,16 @@ namespace API_PI_Clubes.Application.Services
         private readonly IPlayerMapper _mapper;
         private readonly IUserService _userService;
         private readonly ISportRepository _sportRepository;
+        private readonly ISportService _sportService;
 
         public PlayerService(IPlayerMapper mapper, IPlayerRepository repository,
-            IUserService userService, ISportRepository sportRepository)
+            IUserService userService, ISportRepository sportRepository, ISportService sportService)
         {
             _mapper = mapper;
             _repository = repository;
             _userService = userService;
             _sportRepository = sportRepository;
+            _sportService = sportService;
         }
 
         public async Task<ResponsePlayerDTO> GetById(Guid id)
@@ -47,7 +50,7 @@ namespace API_PI_Clubes.Application.Services
                 throw new NotFoundException("Usuário", id);
             return _mapper.ToDTO(entity);
         }
-        
+
         public async Task<ResponseIdDTO> Create(Guid id)
         {
             var strategy = _repository.CreateExecutionStrategy();
@@ -81,7 +84,6 @@ namespace API_PI_Clubes.Application.Services
                     await transaction.RollbackAsync();
                     throw;
                 }
-
             });
         }
 
@@ -124,7 +126,7 @@ namespace API_PI_Clubes.Application.Services
 
         private async Task ValidateSportIdsAsync(List<Guid> sportIds)
         {
-            if (sportIds == null) return; // diferente do Court: favoritos podem ser esvaziados (lista vazia é válida)
+            if (sportIds == null) return; 
 
             var distinctIds = sportIds.Distinct().ToList();
             if (distinctIds.Count == 0) return;
@@ -146,6 +148,104 @@ namespace API_PI_Clubes.Application.Services
 
             await _repository.DeleteAsync(id);
         }
+
+        public async Task<ResponsePlayerDTO> GetByProfileName(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                throw new ValidationException("O nome de perfil informado é inválido.");
+
+            var data = await _repository.GetByProfileNameWithFavoriteSportsAsync(profileName);
+
+            if (data == null)
+                throw new NotFoundException("Jogador", profileName);
+
+            return _mapper.ToDTO(data);
+        }
+
+        public async Task<ResponsePlayerDTO> SetProfileName(Guid userId, Guid id, SetProfileNameDTO dto)
+        {
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id);
+
+            var alreadyTaken = await _repository.ExistsByProfileNameAsync(dto.ProfileName, id);
+            if (alreadyTaken)
+                throw new ConflictException("Esse nome de perfil já está em uso.");
+
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
+            if (data == null)
+                throw new NotFoundException("Jogador", id);
+
+            data.ProfileName = dto.ProfileName;
+            data.UpdatedAt = DateTime.UtcNow;
+
+            _repository.Update(data);
+
+            try
+            {
+                await _repository.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                throw new ConflictException("Esse nome de perfil já está em uso.");
+            }
+
+            return _mapper.ToDTO(data);
+        }
+        public async Task<List<ResponseSportDTO>> GetFavoriteSports(Guid id)
+        {
+            ValidateId(id);
+
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
+            if (data == null)
+                throw new NotFoundException("Jogador", id);
+
+            var sportIds = data.FavoriteSports.Select(fs => fs.SportId).ToList();
+            return await _sportService.GetByIds(sportIds);
+        }
+
+        public async Task<List<ResponseSportDTO>> AddFavoriteSports(Guid userId, Guid id, AddFavoriteSportsDTO dto)
+        {
+            ValidateId(id);
+            ValidateAddFavoriteSportsDTO(dto);
+            await ValidateSportIdsAsync(dto.SportIds);
+            await AuthorizeOwnership(userId, id);
+
+            var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
+            if (data == null)
+                throw new NotFoundException("Jogador", id);
+
+            var currentIds = data.FavoriteSports.Select(fs => fs.SportId).ToHashSet();
+            var toAdd = dto.SportIds.Distinct().Where(sid => !currentIds.Contains(sid));
+
+            foreach (var sportId in toAdd)
+                data.FavoriteSports.Add(new PlayerFavoriteSport { PlayerId = data.Id, SportId = sportId });
+
+            _repository.Update(data);
+            await _repository.SaveChangesAsync();
+
+            var sportIds = data.FavoriteSports.Select(fs => fs.SportId).ToList();
+            return await _sportService.GetByIds(sportIds);
+
+            static void ValidateAddFavoriteSportsDTO(AddFavoriteSportsDTO dto)
+            {
+                if (dto?.SportIds == null || dto.SportIds.Count == 0)
+                    throw new ValidationException("Informe ao menos um esporte.");
+            }
+        }
+
+        // --------------------------------------
+        private static void ValidateAddFavoriteSportsDTO(AddFavoriteSportsDTO dto)
+        {
+            if (dto?.SportIds == null || dto.SportIds.Count == 0)
+                throw new ValidationException("Informe ao menos um esporte.");
+        }        
+
+        private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is SqlException sqlEx &&
+                   (sqlEx.Number == 2601 || sqlEx.Number == 2627);
+        }
+
         private async Task AuthorizeOwnership(Guid userId, Guid id)
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);

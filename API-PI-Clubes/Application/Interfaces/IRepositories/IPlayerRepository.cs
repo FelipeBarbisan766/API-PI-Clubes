@@ -19,6 +19,8 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         IExecutionStrategy CreateExecutionStrategy();
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId);
+        Task<Player?> GetByProfileNameWithFavoriteSportsAsync(string profileName);
+        Task<bool> ExistsByProfileNameAsync(string profileName, Guid excludeId);
 
     }
 }

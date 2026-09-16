@@ -17,7 +17,11 @@ namespace API_PI_Clubes.Application.Validators.Common
 
         public const int MinPageSize = 1;
         public const int MaxPageSize = 50;
-
+        
+        
+        public const int ProfileNameMinLength = 3;
+        public const int ProfileNameMaxLength = 20;
+        public const string ProfileNameRegex = "^[a-zA-Z0-9]+$";
 
         public const int MaxImagesPerUpload = 10;
         public const long MaxImageSizeBytes = 5 * 1024 * 1024; // 5MB

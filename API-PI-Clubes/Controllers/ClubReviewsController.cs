@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API_PI_Clubes.Controllers;
 [ApiController]
-[Route("api/clubs/{clubId:guid}/reviews")]
+[Route("api/club/{clubId:guid}/reviews")]
 [Authorize]
 public class ClubReviewsController : ControllerBase
 {
@@ -27,6 +27,14 @@ public class ClubReviewsController : ControllerBase
     public async Task<IActionResult> GetSummary(Guid clubId)
     {
         var summary = await _service.GetSummary(clubId);
+        return Ok(summary);
+    }
+    [HttpGet("verify")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyReview(Guid clubId)
+    {
+        var userId = User.GetUserId();
+        var summary = await _service.VerifyReview(userId, clubId);
         return Ok(summary);
     }
 }

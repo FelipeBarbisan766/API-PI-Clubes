@@ -75,4 +75,17 @@ public class ClubReviewService : IClubReviewService
 
         return await _repository.GetSummaryByClubIdAsync(clubId);
     }
+
+    public async Task<Boolean> VerifyReview(Guid userId, Guid clubId)
+    {
+        var playerId = await _playerRepository.GetIdByUserIdAsync(userId);
+        if (playerId == null)
+            throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
+
+        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId.Value);
+        if (alreadyReviewed)
+            return true;
+        
+        return false;
+    }
 }

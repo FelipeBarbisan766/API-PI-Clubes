@@ -6,4 +6,5 @@ public interface IClubReviewService
 {
     Task<ResponseClubReviewSummaryDTO> RateClub(Guid userId, Guid clubId, CreateClubReviewDTO dto);
     Task<ResponseClubReviewSummaryDTO> GetSummary(Guid clubId);
+    Task<Boolean> VerifyReview(Guid userId, Guid clubId);
 }

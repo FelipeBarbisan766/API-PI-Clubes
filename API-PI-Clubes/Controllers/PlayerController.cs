@@ -52,11 +52,11 @@ namespace API_PI_Clubes.Controllers
         // }
 
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
         {
             var userId = User.GetUserId();
-            await _service.Delete(userId, id);
+            await _service.Delete(userId);
             return NoContent();
         }
         [HttpGet("name/{profileName}")]
@@ -66,35 +66,37 @@ namespace API_PI_Clubes.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{id}/profile-name")]
+        [HttpPost("profile-name")]
         [Authorize]
-        public async Task<IActionResult> SetProfileName(Guid id, [FromBody] SetProfileNameDTO dto)
+        public async Task<IActionResult> SetProfileName([FromBody] SetProfileNameDTO dto)
         {
             var userId = User.GetUserId();
-            var result = await _service.SetProfileName(userId, id, dto);
+            var result = await _service.SetProfileName(userId, dto);
             return Ok(result);
         }
-        [HttpGet("{id}/favorite-sports")]
-        public async Task<IActionResult> GetFavoriteSports(Guid id)
+        [Authorize]
+        [HttpGet("favorite-sports")]
+        public async Task<IActionResult> GetFavoriteSports()
         {
-            var result = await _service.GetFavoriteSports(id);
+            var userId = User.GetUserId();
+            var result = await _service.GetFavoriteSports(userId);
             return Ok(result);
         }
 
         [Authorize]
-        [HttpPost("{id}/favorite-sports")]
-        public async Task<IActionResult> AddFavoriteSports(Guid id, [FromBody] AddFavoriteSportsDTO dto)
+        [HttpPost("favorite-sports")]
+        public async Task<IActionResult> AddFavoriteSports([FromBody] AddFavoriteSportsDTO dto)
         {
             var userId = User.GetUserId();
-            var result = await _service.AddFavoriteSports(userId, id, dto);
+            var result = await _service.AddFavoriteSports(userId, dto);
             return Ok(result);
         }
         [Authorize]
-        [HttpPut("{id}/favorite-sports")]
-        public async Task<IActionResult> SetFavoriteSports(Guid id, [FromBody] SetFavoriteSportsDTO dto)
+        [HttpPut("favorite-sports")]
+        public async Task<IActionResult> SetFavoriteSports([FromBody] SetFavoriteSportsDTO dto)
         {
             var userId = User.GetUserId();
-            var result = await _service.SetFavoriteSports(userId, id, dto);
+            var result = await _service.SetFavoriteSports(userId, dto);
             return Ok(result);
         }
     }

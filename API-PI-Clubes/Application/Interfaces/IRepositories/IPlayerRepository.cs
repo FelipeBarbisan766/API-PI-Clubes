@@ -9,7 +9,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<IEnumerable<Player>> GetAllAsync();
         Task<Player?> GetByIdAsync(Guid id);
         Task<Player?> GetByUserIdAsync(Guid id);
-        Task<Guid?> GetIdByUserIdAsync(Guid id);
+        Task<Guid> GetIdByUserIdAsync(Guid id);
         Task<Player?> GetByIdWithFavoriteSportsAsync(Guid id);
         Task<Player?> GetByUserIdWithFavoriteSportsAsync(Guid userId);
         Task<bool> ExistsAsync(Guid id);

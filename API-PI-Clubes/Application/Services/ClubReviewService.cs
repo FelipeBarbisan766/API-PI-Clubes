@@ -37,7 +37,7 @@ public class ClubReviewService : IClubReviewService
         if (playerId == null)
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
-        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId.Value);
+        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId);
         if (alreadyReviewed)
             throw new ConflictException("Você já avaliou este clube.");
 
@@ -45,7 +45,7 @@ public class ClubReviewService : IClubReviewService
         {
             Id = Guid.NewGuid(),
             ClubId = clubId,
-            PlayerId = playerId.Value,
+            PlayerId = playerId,
             Rating = dto.Rating
         };
 
@@ -82,7 +82,7 @@ public class ClubReviewService : IClubReviewService
         if (playerId == null)
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
-        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId.Value);
+        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId);
         if (alreadyReviewed)
             return true;
         

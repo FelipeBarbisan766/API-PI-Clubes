@@ -136,9 +136,9 @@ namespace API_PI_Clubes.Application.Services
                 throw new ValidationException("Um ou mais esportes informados são inválidos.");
         }
 
-        public async Task Delete(Guid userId, Guid id)
+        public async Task Delete(Guid userId)
         {
-            ValidateId(id);
+            var id = await GetPlayerId(userId);
             await AuthorizeOwnership(userId, id);
 
             var exists = await _repository.ExistsAsync(id);
@@ -162,9 +162,9 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<ResponsePlayerDTO> SetProfileName(Guid userId, Guid id, SetProfileNameDTO dto)
+        public async Task<ResponsePlayerDTO> SetProfileName(Guid userId, SetProfileNameDTO dto)
         {
-            ValidateId(id);
+            var id = await GetPlayerId(userId);
             await AuthorizeOwnership(userId, id);
 
             var alreadyTaken = await _repository.ExistsByProfileNameAsync(dto.ProfileName, id);
@@ -191,9 +191,9 @@ namespace API_PI_Clubes.Application.Services
 
             return _mapper.ToDTO(data);
         }
-        public async Task<List<ResponseSportDTO>> GetFavoriteSports(Guid id)
+        public async Task<List<ResponseSportDTO>> GetFavoriteSports(Guid userId)
         {
-            ValidateId(id);
+            var id = await GetPlayerId(userId);
 
             var data = await _repository.GetByIdWithFavoriteSportsAsync(id);
             if (data == null)
@@ -203,9 +203,9 @@ namespace API_PI_Clubes.Application.Services
             return await _sportService.GetByIds(sportIds);
         }
 
-        public async Task<List<ResponseSportDTO>> AddFavoriteSports(Guid userId, Guid id, AddFavoriteSportsDTO dto)
+        public async Task<List<ResponseSportDTO>> AddFavoriteSports(Guid userId, AddFavoriteSportsDTO dto)
         {
-            ValidateId(id);
+            var id = await GetPlayerId(userId);
             ValidateAddFavoriteSportsDTO(dto);
             await ValidateSportIdsAsync(dto.SportIds);
             await AuthorizeOwnership(userId, id);
@@ -232,9 +232,9 @@ namespace API_PI_Clubes.Application.Services
                     throw new ValidationException("Informe ao menos um esporte.");
             }
         }
-        public async Task<List<ResponseSportDTO>> SetFavoriteSports(Guid userId, Guid id, SetFavoriteSportsDTO dto)
+        public async Task<List<ResponseSportDTO>> SetFavoriteSports(Guid userId, SetFavoriteSportsDTO dto)
         {
-            ValidateId(id);
+            var id = await GetPlayerId(userId);
             ValidateSetFavoriteSportsDTO(dto);
             await ValidateSportIdsAsync(dto.SportIds);
             await AuthorizeOwnership(userId, id);
@@ -280,6 +280,13 @@ namespace API_PI_Clubes.Application.Services
                    (sqlEx.Number == 2601 || sqlEx.Number == 2627);
         }
 
+        private async Task<Guid> GetPlayerId(Guid userId)
+        {
+            var playerId = await _repository.GetIdByUserIdAsync(userId);
+            if (playerId == null)
+                throw new NotFoundException("Não foi possivel buscar seu PlayerId com base no seu Id", userId);
+            return playerId;
+        }
         private async Task AuthorizeOwnership(Guid userId, Guid id)
         {
             var isOwner = await _repository.IsOwnedByUserAsync(id, userId);

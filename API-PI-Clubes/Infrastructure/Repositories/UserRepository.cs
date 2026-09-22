@@ -43,5 +43,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        
     }
 }

@@ -173,6 +173,21 @@ namespace API_PI_Clubes.Application.Auth
 
             return true;
         }
+
+        public async Task ChangePassword(Guid userId, ChangePasswordDTO request)
+        {
+            var user = await _repository.GetByIdAsync(userId);
+            if (user is null)
+                throw new NotFoundException("Usuário não encontrado.");
+
+            var verifyPassword = _passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!verifyPassword)
+                throw new InvalidCredentialsException("Senha atual incorreta.");
+
+            user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
+            _repository.Update(user);
+            await _repository.SaveChangesAsync();
+        }
         public async Task<UserDTO> GetCurrentUserInfo(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id);

@@ -1,3 +1,4 @@
+using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Validators.Common;
 using FluentValidation;
@@ -84,6 +85,25 @@ namespace API_PI_Clubes.Application.Validators
                     img is null ||
                     ValidationConstants.AllowedImageContentTypes.Contains(img.ContentType?.ToLowerInvariant()))
                 .WithMessage("Formato de imagem inválido. Use JPEG, PNG ou WEBP.");
+        }
+    }
+    public class ChangePasswordValidator : AbstractValidator<ChangePasswordDTO>
+    {
+        public ChangePasswordValidator()
+        {
+            RuleFor(x => x.Password).NotEmpty();
+
+            RuleFor(x => x.NewPassword)
+                .NotEmpty().WithMessage("A senha é obrigatória.")
+                .MinimumLength(8).WithMessage("A senha deve ter ao menos 8 caracteres.")
+                .MaximumLength(100)
+                .Matches("[A-Z]").WithMessage("A senha deve conter ao menos uma letra maiúscula.")
+                .Matches("[a-z]").WithMessage("A senha deve conter ao menos uma letra minúscula.")
+                .Matches("[0-9]").WithMessage("A senha deve conter ao menos um número.");
+
+            // RuleFor(x => x.ConfirmPassword)
+            //     .Equal(x => x.Password)
+            //     .WithMessage("As senhas não coincidem.");
         }
     }
 }

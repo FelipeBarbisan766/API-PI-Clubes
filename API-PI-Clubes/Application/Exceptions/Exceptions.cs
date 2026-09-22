@@ -69,4 +69,8 @@ namespace API_PI_Clubes.Application.Exceptions
             : base("LIMITS_EXCEEDING","Você não possui uma assinatura ativa.",403)
         { }
     }
+    public class InvalidCredentialsException : AppException
+    {
+        public InvalidCredentialsException(string message) : base("INVALID_PASSWORD", message, 400) { }
+    }
 }

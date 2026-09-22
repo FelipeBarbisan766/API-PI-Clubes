@@ -79,6 +79,14 @@ namespace API_PI_Clubes.Controllers
                 return BadRequest("O link de verificação é inválido ou expirou.");
             return Ok("Senha recuperada com sucesso!");
         }
+        [Authorize]
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO request)
+        {
+            var userId = User.GetUserId();
+            await _authService.ChangePassword(userId, request);
+            return NoContent();
+        }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()

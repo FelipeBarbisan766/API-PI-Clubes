@@ -39,6 +39,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string Email { get; set; }
         public string? PhoneNumber { get; set; }
         public RoleEnum Role { get; set; }
+        public bool HasPassword { get; set; }
         public string? AvatarUrl { get; set; }
     }
 }

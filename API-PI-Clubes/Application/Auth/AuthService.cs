@@ -199,8 +199,9 @@ namespace API_PI_Clubes.Application.Auth
                 Id = entity.Id,
                 Name = entity.Name,
                 Email = entity.Email,
-                Role = entity.Role,
                 PhoneNumber = entity.PhoneNumber,
+                Role = entity.Role,
+                HasPassword = entity.PasswordHash is not null,
                 AvatarUrl = entity.AvatarUrl
             };
         }

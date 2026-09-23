@@ -2,7 +2,7 @@
 {
     public interface IStorageService
     {
-        Task<string> UploadFileAsync(Stream fileStream, string fileName);
-        Task<bool> DeleteFileAsync(string fileName);
+        Task<string> UploadFileAsync(Stream fileStream, string fileName,CancellationToken cancellationToken);
+        Task<bool> DeleteFileAsync(string fileName, CancellationToken cancellationToken);
     }
 }

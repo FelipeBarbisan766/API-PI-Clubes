@@ -37,9 +37,9 @@ namespace API_PI_Clubes.Application.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<ResponseUserDTO> GetById(Guid id)
+        public async Task<ResponseUserDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuário", id); 
@@ -81,9 +81,9 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync();
         }
         
-        public async Task UpdateAvatar(Guid id, UpdateAvatarDTO dto)
+        public async Task UpdateAvatar(Guid id, UpdateAvatarDTO dto, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
             if (user == null)
                 throw new NotFoundException("Usuário", id);
 

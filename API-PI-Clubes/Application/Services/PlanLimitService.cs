@@ -21,27 +21,27 @@ public class PlanLimitService : IPlanLimitService
         _courtRepository = courtRepository;
     }
 
-    public async Task EnsureClubLimitNotReachedAsync(Guid userId)
+    public async Task EnsureClubLimitNotReachedAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var limits = await GetLimitsOrThrowAsync(userId);
-        var current = await _clubRepository.CountByUserIdAsync(userId);
+        var limits = await GetLimitsOrThrowAsync(userId, cancellationToken);
+        var current = await _clubRepository.CountByUserIdAsync(userId, cancellationToken);
 
         if (current >= limits.QuantClub)
             throw new PlanLimitExceededException("clube", limits.QuantClub);
     }
 
-    public async Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId)
+    public async Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId,CancellationToken cancellationToken)
     {
-        var limits = await GetLimitsOrThrowAsync(userId);
-        var current = await _courtRepository.CountByClubIdAsync(clubId);
+        var limits = await GetLimitsOrThrowAsync(userId, cancellationToken);
+        var current = await _courtRepository.CountByClubIdAsync(clubId, cancellationToken);
 
         if (current >= limits.QuantCourt)
             throw new PlanLimitExceededException("quadra", limits.QuantCourt);
     }
 
-    private async Task<PlanLimitsDTO> GetLimitsOrThrowAsync(Guid userId)
+    private async Task<PlanLimitsDTO> GetLimitsOrThrowAsync(Guid userId ,CancellationToken cancellationToken)
     {
-        var limits = await _subscriptionRepository.GetActivePlanLimitsByUserIdAsync(userId);
+        var limits = await _subscriptionRepository.GetActivePlanLimitsByUserIdAsync(userId, cancellationToken);
         if (limits == null)
             throw new NoActiveSubscriptionException();
 

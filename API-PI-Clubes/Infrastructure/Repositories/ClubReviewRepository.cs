@@ -28,7 +28,7 @@ public class ClubReviewRepository : IClubReviewRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId)
+    public async Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId,CancellationToken cancellationToken)
     {
         var result = await _context.ClubReviews
             .Where(cr => cr.ClubId == clubId)
@@ -38,7 +38,7 @@ public class ClubReviewRepository : IClubReviewRepository
                 AverageRating = Math.Round(g.Average(cr => cr.Rating), 1),
                 TotalReviews = g.Count()
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         return result ?? new ResponseClubReviewSummaryDTO { AverageRating = 0, TotalReviews = 0 };
     }

@@ -15,24 +15,24 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Subscription?> GetByIdAsync(Guid id)
+        public async Task<Subscription?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
             => await _context.Subscriptions
                 .Include(s => s.Plan)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
  
-        public async Task<Subscription?> GetActiveByAdminIdAsync(Guid adminId)
+        public async Task<Subscription?> GetActiveByAdminIdAsync(Guid adminId, CancellationToken cancellationToken)
             => await _context.Subscriptions
                 .Include(s => s.Plan)
-                .FirstOrDefaultAsync(s => s.AdminId == adminId && s.IsActive);
+                .FirstOrDefaultAsync(s => s.AdminId == adminId && s.IsActive, cancellationToken);
  
-        public async Task<Subscription?> GetByPaymentIdAsync(Guid paymentId)
+        public async Task<Subscription?> GetByPaymentIdAsync(Guid paymentId, CancellationToken cancellationToken)
             => await _context.Subscriptions
-                .FirstOrDefaultAsync(s => s.PaymentId == paymentId);
+                .FirstOrDefaultAsync(s => s.PaymentId == paymentId, cancellationToken);
  
-        public async Task<IEnumerable<Subscription>> GetExpiredAsync()
+        public async Task<IEnumerable<Subscription>> GetExpiredAsync(CancellationToken cancellationToken)
             => await _context.Subscriptions
                 .Where(s => s.IsActive && s.ExpiresAt < DateTime.UtcNow)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
  
         public async Task AddAsync(Subscription subscription)
         {
@@ -45,11 +45,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Subscriptions.Update(subscription);
             await _context.SaveChangesAsync();
         }
-        public async Task<bool> IsOwnedByUserAsync(Guid subscriptionId, Guid userId)
+        public async Task<bool> IsOwnedByUserAsync(Guid subscriptionId, Guid userId, CancellationToken cancellationToken)
             => await _context.Subscriptions
-                .AnyAsync(s => s.Id == subscriptionId && s.Admin.UserId == userId);
+                .AnyAsync(s => s.Id == subscriptionId && s.Admin.UserId == userId, cancellationToken);
     
-        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByAdminIdAsync(Guid adminId)
+        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByAdminIdAsync(Guid adminId, CancellationToken cancellationToken)
             => await _context.Subscriptions
                 .Where(s => s.AdminId == adminId && s.IsActive)
                 .Select(s => new PlanLimitsDTO
@@ -58,9 +58,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     QuantClub = s.Plan.QuantClub,
                     QuantCourt = s.Plan.QuantCourt
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         
-        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByUserIdAsync(Guid userId)
+        public async Task<PlanLimitsDTO?> GetActivePlanLimitsByUserIdAsync(Guid userId,CancellationToken cancellationToken)
             => await _context.Subscriptions
                 .Where(s => s.Admin.UserId == userId && s.IsActive)
                 .Select(s => new PlanLimitsDTO
@@ -69,6 +69,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     QuantClub = s.Plan.QuantClub,
                     QuantCourt = s.Plan.QuantCourt
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync( cancellationToken);
     }
 }

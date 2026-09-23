@@ -14,8 +14,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Plan?> GetByIdAsync(Guid id)
-            => await _context.Plans.FindAsync(id);
+        public async Task<Plan?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+            => await _context.Plans.FindAsync(id,cancellationToken);
  
         public async Task<IEnumerable<Plan>> GetAllActiveAsync()
             => await _context.Plans

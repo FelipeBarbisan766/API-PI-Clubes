@@ -4,8 +4,8 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IPlanLimitService
     {
-        Task EnsureClubLimitNotReachedAsync(Guid adminId);
-        Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId);
+        Task EnsureClubLimitNotReachedAsync(Guid adminId, CancellationToken cancellationToken);
+        Task EnsureCourtLimitNotReachedAsync(Guid userId, Guid clubId,CancellationToken cancellationToken);
         Task<PlanUsageDTO> GetUsageSummaryAsync(Guid userId);
     }
 }

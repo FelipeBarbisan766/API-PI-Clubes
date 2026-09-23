@@ -31,31 +31,31 @@ namespace API_PI_Clubes.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id, cancellationToken);
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("me")]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId(); 
-            var result = await _service.GetCurrentUserInfo(userId);
+            var result = await _service.GetCurrentUserInfo(userId, cancellationToken);
             return Ok(result);
         }
     
         [Authorize(Roles = "Player")]
         [HttpPost]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
             
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
             if (user == null)
                 return NotFound("User not found.");
 
-            var result = await _service.Create(userId);
+            var result = await _service.Create(userId, cancellationToken);
 
             await _cookieAuthService.SignInAsync(HttpContext, user);
 
@@ -64,19 +64,19 @@ namespace API_PI_Clubes.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateAdminDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateAdminDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            var result = await _service.Update(userId, id, dto);
+            var result = await _service.Update(userId, id, dto, cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.Delete(userId, id);
+            await _service.Delete(userId, id, cancellationToken);
             return NoContent();
         }
     }

@@ -5,16 +5,16 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
     public interface ICourtRepository
     {
-        Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query);
-        Task<Court?> GetByIdAsync(Guid id);
-        Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id);
-        Task<Court?> GetByIdWithImagesAsync(Guid id);
-        Task<bool> ExistsAsync(Guid id);
-        Task AddAsync(Court Court);
-        Task SaveChangesAsync();
+        Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query, CancellationToken cancellationToken);
+        Task<Court?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<Court?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken);
+        Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
+        Task AddAsync(Court Court, CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken cancellationToken);
         void Update(Court Court);
-        Task DeleteAsync(Guid id);
-        Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId);
-        Task<int> CountByClubIdAsync(Guid clubId);
+        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken);
+        Task<int> CountByClubIdAsync(Guid clubId, CancellationToken cancellationToken);
     }
 }

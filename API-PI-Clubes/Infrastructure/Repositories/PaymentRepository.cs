@@ -14,16 +14,16 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Payment?> GetByIdAsync(Guid id)
-            => await _context.Payments.FindAsync(id);
+        public async Task<Payment?> GetByIdAsync(Guid id,CancellationToken cancellationToken)
+            => await _context.Payments.FindAsync(new object[] { id }, cancellationToken);
  
  
-        public async Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId)
+        public async Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId,CancellationToken cancellationToken)
             => await _context.Payments
                 .Where(p => p.AdminId == adminId)
                 .OrderByDescending(p => p.Date)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
  
         public async Task AddAsync(Payment payment)
         {

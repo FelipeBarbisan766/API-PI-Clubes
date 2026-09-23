@@ -8,5 +8,5 @@ public interface IClubReviewRepository
     Task<bool> ExistsAsync(Guid clubId, Guid playerId);
     Task AddAsync(ClubReview review);
     Task SaveChangesAsync();
-    Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId);
+    Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId,CancellationToken cancellationToken);
 }

@@ -15,7 +15,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query)
+        public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query, CancellationToken cancellationToken)
         {
             var q = _context.Courts
                 .Where(c => c.IsActive)
@@ -30,7 +30,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             if (query.SportIds != null && query.SportIds.Count > 0)
                 q = q.Where(c => c.CourtSports.Any(cs => query.SportIds.Contains(cs.SportId)));
 
-            var totalCount = await q.CountAsync();
+            var totalCount = await q.CountAsync(cancellationToken);
 
             var items = await q
                 .Select(c => new ResponseCourtDTO
@@ -60,23 +60,23 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .OrderBy(c => c.Name)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return (items, totalCount);
         }
 
-        public async Task<Court?> GetByIdAsync(Guid id)
+        public async Task<Court?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Courts
                 .Where(u => u.Id == id && u.IsActive)
                 .Include(c => c.Images.OrderBy(i => i.Order))
                 .Include(c => c.CourtSports)
                 .ThenInclude(cs => cs.Sport)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
 
-        public async Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id)
+        public async Task<List<ResponseCourtDTO>> GetAllByClubIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Courts
                 .Where(c => c.ClubId == id && c.IsActive)
@@ -104,26 +104,26 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         })
                         .ToList()
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<Court?> GetByIdWithImagesAsync(Guid id)
+        public async Task<Court?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Courts
                 .Where(u => u.Id == id && u.IsActive)
                 .Include(c => c.Images.OrderBy(i => i.Order))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Courts
-                .AnyAsync(s => s.Id == id && s.IsActive);
+                .AnyAsync(s => s.Id == id && s.IsActive, cancellationToken);
         }
 
-        public async Task AddAsync(Court Court)
+        public async Task AddAsync(Court Court, CancellationToken cancellationToken)
         {
-            await _context.Courts.AddAsync(Court);
+            await _context.Courts.AddAsync(Court, cancellationToken);
         }
 
         public void Update(Court Court)
@@ -131,9 +131,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Courts.Update(Court);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Court = await _context.Courts.FindAsync(id);
+            var Court = await _context.Courts.FindAsync(id, cancellationToken);
             if (Court != null)
             {
                 Court.IsActive = false;
@@ -142,20 +142,21 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             }
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync( CancellationToken cancellationToken)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
+        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Courts
-                .AnyAsync(c => c.Id == Id && c.Club.ClubAdmin.Any(a => a.Admin.UserId == userId));
+                .AnyAsync(c => c.Id == Id && c.Club.ClubAdmin.Any(a => a.Admin.UserId == userId), cancellationToken);
         }
-        public async Task<int> CountByClubIdAsync(Guid clubId)
+
+        public async Task<int> CountByClubIdAsync(Guid clubId, CancellationToken cancellationToken)
         {
             return await _context.Courts
-                .CountAsync(c => c.IsActive && c.ClubId == clubId);
+                .CountAsync(c => c.IsActive && c.ClubId == clubId, cancellationToken);
         }
     }
 }

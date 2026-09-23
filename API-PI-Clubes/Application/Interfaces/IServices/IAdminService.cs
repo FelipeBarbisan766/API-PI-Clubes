@@ -5,11 +5,11 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IAdminService
     {
-        Task<ResponseAdminDTO> GetById(Guid id);
-        Task<ResponseAdminDTO> GetCurrentUserInfo(Guid id);
+        Task<ResponseAdminDTO> GetById(Guid id, CancellationToken cancellationToken);
+        Task<ResponseAdminDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken);
         
-        Task<ResponseIdDTO> Create(Guid id);
-        Task<ResponseAdminDTO> Update(Guid userId, Guid id, UpdateAdminDTO dto);
-        Task Delete(Guid userId, Guid id);
+        Task<ResponseIdDTO> Create(Guid id, CancellationToken cancellationToken);
+        Task<ResponseAdminDTO> Update(Guid userId, Guid id, UpdateAdminDTO dto, CancellationToken cancellationToken);
+        Task Delete(Guid userId, Guid id, CancellationToken cancellationToken);
     }
 }

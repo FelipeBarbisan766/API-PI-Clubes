@@ -35,41 +35,41 @@ namespace API_PI_Clubes.Application.Services
             _planRepository = planRepository;
         }
 
-        public async Task<ResponseAdminDTO> GetById(Guid id)
+        public async Task<ResponseAdminDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Admin", id); 
 
             return _mapper.ToDTO(data);
         }
-        public async Task<ResponseAdminDTO> GetCurrentUserInfo(Guid id)
+        public async Task<ResponseAdminDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken)
         {
-            var entity = await _repository.GetByUserIdAsync(id);
+            var entity = await _repository.GetByUserIdAsync(id, cancellationToken);
             if (entity == null)
                 throw new NotFoundException("Usuário", id);
             return _mapper.ToDTO(entity);
             
         }
-        public async Task<ResponseIdDTO> Create(Guid id)
+        public async Task<ResponseIdDTO> Create(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
             var strategy = _repository.CreateExecutionStrategy();
 
-            return await strategy.ExecuteAsync(async () =>
+            return await strategy.ExecuteAsync(async ct =>
             {
-                using var transaction = await _repository.BeginTransactionAsync();
+                using var transaction = await _repository.BeginTransactionAsync(ct);
 
                 try
                 {
-                    var user = await _userService.GetById(id)
+                    var user = await _userService.GetById(id, ct)
                                ?? throw new NotFoundException("Usuário", id);
 
-                    var freePlan = await _planRepository.GetByIdAsync(PlanConstants.FreePlanId)
+                    var freePlan = await _planRepository.GetByIdAsync(PlanConstants.FreePlanId, ct)
                                    ?? throw new InvalidOperationException(
                                        "Plano Free não está configurado no banco de dados.");
 
@@ -80,7 +80,7 @@ namespace API_PI_Clubes.Application.Services
                         CreatedAt = DateTime.UtcNow
                     };
 
-                    await _repository.AddAsync(entity);
+                    await _repository.AddAsync(entity, ct);
 
                     var freeSubscription = new Subscription
                     {
@@ -94,31 +94,31 @@ namespace API_PI_Clubes.Application.Services
                         CreatedAt = DateTime.UtcNow
                     };
 
-                    await _subscriptionRepository.AddAsync(freeSubscription);
+                    await _subscriptionRepository.AddAsync(freeSubscription, ct);
 
-                    await _userService.UpdateRole(id, RoleEnum.Admin);
+                    await _userService.UpdateRole(id, RoleEnum.Admin, ct);
 
-                    await _repository.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    await _repository.SaveChangesAsync(ct);
+                    await transaction.CommitAsync(ct);
 
                     return new ResponseIdDTO { Id = entity.Id };
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync();
+                    await transaction.RollbackAsync(CancellationToken.None);
                     throw;
                 }
-            });
+            }, cancellationToken);
         }
 
 
-        public async Task<ResponseAdminDTO> Update(Guid userId, Guid id, UpdateAdminDTO dto)
+        public async Task<ResponseAdminDTO> Update(Guid userId, Guid id, UpdateAdminDTO dto, CancellationToken cancellationToken)
         {
             ValidateId(id);
             ValidateUpdateAdminDTO(dto);
-            await AuthorizeOwnership(userId, id);
+            await AuthorizeOwnership(userId, id, cancellationToken);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Admin", id); 
@@ -126,26 +126,26 @@ namespace API_PI_Clubes.Application.Services
             data.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(data);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid userId, Guid id)
+        public async Task Delete(Guid userId, Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
-            await AuthorizeOwnership(userId, id);
+            await AuthorizeOwnership(userId, id, cancellationToken);
 
-            var exists = await _repository.ExistsAsync(id);
+            var exists = await _repository.ExistsAsync(id, cancellationToken);
 
             if (!exists)
                 throw new NotFoundException("Admin", id); 
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAsync(id, cancellationToken);
         }
-        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        private async Task AuthorizeOwnership(Guid userId, Guid id, CancellationToken cancellationToken)
         {
-            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId, cancellationToken);
             if (!isOwner)
                 throw new ForbiddenException("Você não tem permissão para gerenciar este admin.");
         }

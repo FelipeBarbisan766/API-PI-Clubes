@@ -20,10 +20,10 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("initiate")]
-        public async Task<IActionResult> Initiate([FromBody] CreatePaymentDto dto)
+        public async Task<IActionResult> Initiate([FromBody] CreatePaymentDto dto, CancellationToken cancellationToken)
         {
             var adminId = User.GetUserId();
-            var result = await _service.InitiateAsync(dto, adminId);
+            var result = await _service.InitiateAsync(dto, adminId, cancellationToken);
             return Ok(result);
         }
 
@@ -33,7 +33,8 @@ namespace API_PI_Clubes.Controllers
             [FromBody] MercadoPagoWebhookDto? bodyDto,
             [FromQuery] string? id,
             [FromQuery] string? topic,
-            [FromQuery] string? type)
+            [FromQuery] string? type
+            , CancellationToken cancellationToken)
         {
             try
             {
@@ -57,7 +58,7 @@ namespace API_PI_Clubes.Controllers
                 var signatureHeader = Request.Headers["x-signature"].ToString();
                 var requestIdHeader = Request.Headers["x-request-id"].ToString();
 
-                await _service.HandleWebhookAsync(webhookData, signatureHeader, requestIdHeader);
+                await _service.HandleWebhookAsync(webhookData, signatureHeader, requestIdHeader, cancellationToken);
                 return Ok();
             }
             catch (Exception ex)
@@ -68,10 +69,10 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet("history")]
-        public async Task<IActionResult> History()
+        public async Task<IActionResult> History(CancellationToken cancellationToken)
         {
             var adminId = User.GetUserId();
-            var history = await _service.GetHistoryByAdminAsync(adminId);
+            var history = await _service.GetHistoryByAdminAsync(adminId, cancellationToken);
             return Ok(history);
         }
     }

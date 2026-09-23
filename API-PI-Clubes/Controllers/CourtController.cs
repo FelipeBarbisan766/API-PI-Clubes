@@ -23,72 +23,72 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] CourtQueryDTO query)
+        public async Task<IActionResult> GetAll([FromQuery] CourtQueryDTO query, CancellationToken cancellationToken)
         {
-            var result = await _service.GetAll(query);
+            var result = await _service.GetAll(query, cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id, cancellationToken);
             return Ok(result);
         }
         
         [HttpGet("club/{id}")]
-        public async Task<IActionResult> GetByClubId(Guid id)
+        public async Task<IActionResult> GetByClubId(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetByClubId(id);
+            var result = await _service.GetByClubId(id, cancellationToken);
             return Ok(result);
         }
                 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CreatCourtDTO dto)
+        public async Task<IActionResult> Create([FromForm] CreatCourtDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            var result = await _service.Create(userId, dto);
+            var result = await _service.Create(userId, dto, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         [Authorize(Roles = "Admin")]
         [HttpPost("{Id}/images/")]
-        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto)
+        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId(); 
-            await _service.AddMoreImagesAsync(userId, Id, dto);
+            await _service.AddMoreImagesAsync(userId, Id, dto, cancellationToken);
             return Ok();
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{Id}/images/reorder")]
-        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto)
+        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.ReorderImagesAsync(userId, Id, dto.Orders);
+            await _service.ReorderImagesAsync(userId, Id, dto.Orders, cancellationToken);
             return NoContent();
         }
         [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}/images/{imageId}")]
-        public async Task<IActionResult> DeleteImage(Guid Id, Guid imageId)
+        public async Task<IActionResult> DeleteImage(Guid Id, Guid imageId, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.DeleteImageAsync(userId, Id, imageId);
+            await _service.DeleteImageAsync(userId, Id, imageId, cancellationToken);
             return NoContent();
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateCourtDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId(); 
-            var result = await _service.Update(userId, id, dto);
+            var result = await _service.Update(userId, id, dto, cancellationToken);
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId(); 
-            await _service.Delete(userId, id);
+            await _service.Delete(userId, id, cancellationToken);
             return NoContent();
         }
     }

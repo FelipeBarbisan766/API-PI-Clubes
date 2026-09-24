@@ -15,7 +15,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<(IEnumerable<ResponseClubDTO> Items, int TotalCount)> GetAllAsync(ClubQueryDTO query)
+        public async Task<(IEnumerable<ResponseClubDTO> Items, int TotalCount)> GetAllAsync(ClubQueryDTO query,
+            CancellationToken cancellationToken)
         {
             var q = _context.Clubs
                 .Where(c => c.IsActive)
@@ -33,7 +34,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     .Any(co => co.IsActive && co.CourtSports.Any(cs => query.SportIds.Contains(cs.SportId))));
 
 
-            var totalCount = await q.CountAsync();
+            var totalCount = await q.CountAsync(cancellationToken);
 
             var items = await q
                 .Select(c => new ResponseClubDTO
@@ -75,12 +76,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .OrderBy(c => c.Name)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return (items, totalCount);
         }
 
-        public async Task<Club?> GetByIdAsync(Guid id)
+        public async Task<Club?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
                 .Where(u => u.Id == id && u.IsActive)
@@ -91,19 +92,19 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Courts.Where(co => co.IsActive))
                 .ThenInclude(co => co.CourtSports)
                 .ThenInclude(cs => cs.Sport)
-                .Include(c => c.Reviews) 
-                .FirstOrDefaultAsync();
+                .Include(c => c.Reviews)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<Club?> GetByIdWithImagesAsync(Guid id)
+        public async Task<Club?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
                 .Where(u => u.Id == id && u.IsActive)
                 .Include(c => c.Images.OrderBy(i => i.Order))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id)
+        public async Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
                 .AsQueryable()
@@ -147,11 +148,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         })
                         .ToList()
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
 
-        public async Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId)
+        public async Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId, CancellationToken cancellationToken)
         {
             var stats = await _context.Clubs
                 .AsNoTracking()
@@ -171,7 +172,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Distinct()
                         .Count()
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (stats == null)
                 return null;
@@ -204,7 +205,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         }
                     }
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return new ResponseDashboardDTO
             {
@@ -216,20 +217,20 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         }
 
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .AnyAsync(s => s.Id == id && s.IsActive);
+                .AnyAsync(s => s.Id == id && s.IsActive,cancellationToken);
         }
 
-        public async Task AddAsync(Club club)
+        public async Task AddAsync(Club club, CancellationToken cancellationToken)
         {
-            await _context.Clubs.AddAsync(club);
+            await _context.Clubs.AddAsync(club,cancellationToken);
         }
 
-        public async Task AddClubAdminAsync(ClubAdmin clubAdmin)
+        public async Task AddClubAdminAsync(ClubAdmin clubAdmin, CancellationToken cancellationToken)
         {
-            await _context.ClubAdmins.AddAsync(clubAdmin);
+            await _context.ClubAdmins.AddAsync(clubAdmin,cancellationToken);
         }
 
         public void Update(Club club)
@@ -237,9 +238,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Clubs.Update(club);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var club = await _context.Clubs.FindAsync(id);
+            var club = await _context.Clubs.FindAsync(new object[] { id }, cancellationToken);
             if (club != null)
             {
                 club.IsActive = false;
@@ -248,23 +249,25 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             }
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId)
+        public async Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId));
-        }
-        public async Task<int> CountByUserIdAsync(Guid userId)
-        {
-            return await _context.Clubs
-                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId));
+                .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId),cancellationToken);
         }
 
-        public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId)
+        public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            return await _context.Clubs
+                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId),cancellationToken);
+        }
+
+        public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId,
+            CancellationToken cancellationToken)
         {
             return await _context.Clubs
                 .Where(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId))
@@ -274,7 +277,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     ClubName = c.Name,
                     Used = c.Courts.Count(co => co.IsActive)
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

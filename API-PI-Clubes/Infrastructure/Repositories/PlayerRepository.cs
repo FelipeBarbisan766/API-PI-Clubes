@@ -15,59 +15,59 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Player>> GetAllAsync()
+        public async Task<IEnumerable<Player>> GetAllAsync( CancellationToken cancellationToken)
         {
             return await _context.Players
                 .Where(c => c.IsActive)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<Player?> GetByIdAsync(Guid id)
+        public async Task<Player?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Players
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive,cancellationToken);
         }
 
-        public async Task<Player?> GetByUserIdAsync(Guid id)
+        public async Task<Player?> GetByUserIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Players
-                .FirstOrDefaultAsync(u => u.UserId == id && u.IsActive);
+                .FirstOrDefaultAsync(u => u.UserId == id && u.IsActive,cancellationToken);
         }
-        public async Task<Guid> GetIdByUserIdAsync(Guid id)
+        public async Task<Guid> GetIdByUserIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Players
                 .Where(u => u.UserId == id && u.IsActive)
                 .Select(u => u.Id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<Player?> GetByIdWithFavoriteSportsAsync(Guid id)
+        public async Task<Player?> GetByIdWithFavoriteSportsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Players
                 .Where(u => u.Id == id && u.IsActive)
                 .Include(p => p.FavoriteSports)
                 .ThenInclude(fs => fs.Sport)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<Player?> GetByUserIdWithFavoriteSportsAsync(Guid userId)
+        public async Task<Player?> GetByUserIdWithFavoriteSportsAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Players
                 .Where(u => u.UserId == userId && u.IsActive)
                 .Include(p => p.FavoriteSports)
                 .ThenInclude(fs => fs.Sport)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Players
-                .AnyAsync(s => s.Id == id && s.IsActive);
+                .AnyAsync(s => s.Id == id && s.IsActive,cancellationToken);
         }
 
-        public async Task AddAsync(Player Player)
+        public async Task AddAsync(Player Player, CancellationToken cancellationToken)
         {
-            await _context.Players.AddAsync(Player);
+            await _context.Players.AddAsync(Player,cancellationToken);
         }
 
         public void Update(Player Player)
@@ -75,9 +75,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Players.Update(Player);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Player = await _context.Players.FindAsync(id);
+            var Player = await _context.Players.FindAsync(new object[] { id },cancellationToken);
             if (Player != null)
             {
                 Player.IsActive = false;
@@ -86,9 +86,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             }
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync( CancellationToken cancellationToken)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public IExecutionStrategy CreateExecutionStrategy()
@@ -96,30 +96,30 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             return _context.Database.CreateExecutionStrategy();
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public async Task<IDbContextTransaction> BeginTransactionAsync( CancellationToken cancellationToken)
         {
-            return await _context.Database.BeginTransactionAsync();
+            return await _context.Database.BeginTransactionAsync(cancellationToken);
         }
 
-        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
+        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Players
-                .AnyAsync(c => c.Id == Id && c.User.Id == userId);
+                .AnyAsync(c => c.Id == Id && c.User.Id == userId,cancellationToken);
         }
 
-        public async Task<Player?> GetByProfileNameWithFavoriteSportsAsync(string profileName)
+        public async Task<Player?> GetByProfileNameWithFavoriteSportsAsync(string profileName, CancellationToken cancellationToken)
         {
             return await _context.Players
                 .Where(p => p.ProfileName == profileName && p.IsActive)
                 .Include(p => p.FavoriteSports)
                 .ThenInclude(fs => fs.Sport)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<bool> ExistsByProfileNameAsync(string profileName, Guid excludeId)
+        public async Task<bool> ExistsByProfileNameAsync(string profileName, Guid excludeId, CancellationToken cancellationToken)
         {
             return await _context.Players
-                .AnyAsync(p => p.ProfileName == profileName && p.Id != excludeId && p.IsActive);
+                .AnyAsync(p => p.ProfileName == profileName && p.Id != excludeId && p.IsActive,cancellationToken);
         }
     }
 }

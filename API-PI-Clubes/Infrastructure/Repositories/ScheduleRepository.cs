@@ -14,26 +14,26 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Schedule>> GetAllAsync()
+        public async Task<IEnumerable<Schedule>> GetAllAsync( CancellationToken cancellationToken)
         {
             return await _context.Schedules
                 .Where(c => c.IsActive)
-                .ToListAsync();
+                .ToListAsync( cancellationToken);
         }
 
-        public async Task<IEnumerable<Schedule>> GetByCourtIdAsync(Guid courtId)
+        public async Task<IEnumerable<Schedule>> GetByCourtIdAsync(Guid courtId, CancellationToken cancellationToken)
         {
             return await _context.Schedules
                 .Where(c => c.CourtId == courtId && c.IsActive)
-                .ToListAsync();
+                .ToListAsync( cancellationToken);
         }
 
-        public async Task<Schedule?> GetByIdAsync(Guid id)
+        public async Task<Schedule?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Schedules
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive, cancellationToken);
         }
-        public async Task<IEnumerable<Schedule>> GetByCourtAndDateAsync(Guid courtId, DateOnly date)
+        public async Task<IEnumerable<Schedule>> GetByCourtAndDateAsync(Guid courtId, DateOnly date, CancellationToken cancellationToken)
         {
             // Intervalo da data para filtrar as reservas pelo dia exato
             var dateStart = date.ToDateTime(TimeOnly.MinValue);
@@ -45,30 +45,30 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                             && s.IsActive)
                 .Include(s => s.Reserves
                     .Where(r => r.Date >= dateStart && r.Date < dateEnd && r.IsActive))
-                .ToListAsync();
+                .ToListAsync( cancellationToken);
         }
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Schedules
-                .AnyAsync(s => s.Id == id && s.IsActive);
+                .AnyAsync(s => s.Id == id && s.IsActive, cancellationToken);
         }
-        public async Task<IEnumerable<Schedule>> GetByCourtAndDaysOfWeekAsync(Guid courtId, List<DayOfWeek> daysOfWeek)
+        public async Task<IEnumerable<Schedule>> GetByCourtAndDaysOfWeekAsync(Guid courtId, List<DayOfWeek> daysOfWeek, CancellationToken cancellationToken)
         {
             return await _context.Schedules
                 .Where(s => s.CourtId == courtId
                             && daysOfWeek.Contains(s.DayOfWeek)
                             && s.IsActive)
-                .ToListAsync();
+                .ToListAsync( cancellationToken);
         }
 
-        public async Task AddRangeAsync(IEnumerable<Schedule> schedules)
+        public async Task AddRangeAsync(IEnumerable<Schedule> schedules, CancellationToken cancellationToken)
         {
-            await _context.Schedules.AddRangeAsync(schedules);
+            await _context.Schedules.AddRangeAsync(schedules, cancellationToken);
         }
-        public async Task AddAsync(Schedule schedule)
+        public async Task AddAsync(Schedule schedule, CancellationToken cancellationToken)
         {
-            await _context.Schedules.AddAsync(schedule);
+            await _context.Schedules.AddAsync(schedule, cancellationToken);
         }
 
         public void Update(Schedule schedule)
@@ -76,9 +76,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Schedules.Update(schedule);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var schedule = await _context.Schedules.FindAsync(id);
+            var schedule = await _context.Schedules.FindAsync(new object[] { id }, cancellationToken);
             if (schedule != null)
             {
                 schedule.IsActive = false;
@@ -87,14 +87,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             }
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync( CancellationToken cancellationToken)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
-        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
+        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Schedules
-                .AnyAsync(c => c.Id == Id && c.Court.Club.ClubAdmin.Any(a => a.Admin.UserId == userId));
+                .AnyAsync(c => c.Id == Id && c.Court.Club.ClubAdmin.Any(a => a.Admin.UserId == userId),cancellationToken);
         }
     }
 }

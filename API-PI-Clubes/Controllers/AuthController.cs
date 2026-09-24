@@ -25,11 +25,11 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(AuthDTO dto)
+        public async Task<IActionResult> Login(AuthDTO dto, CancellationToken cancellationToken)
         {
             try
             {
-                var user = await _authService.LoginAsync(dto);
+                var user = await _authService.LoginAsync(dto, cancellationToken);
                 await _cookieAuthService.SignInAsync(HttpContext, user);
                 return Ok("Login realizado com sucesso");
             }
@@ -40,16 +40,16 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(CreatUserDTO dto)
+        public async Task<IActionResult> Register(CreatUserDTO dto, CancellationToken cancellationToken)
         {
-            await _authService.Register(dto);
+            await _authService.Register(dto, cancellationToken);
             return Ok("Usuário registrado! Verifique seu e-mail.");
         }
 
         [HttpPost("verify")]
-        public async Task<IActionResult> VerifyEmail([FromBody] VerifyToken request)
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyToken request, CancellationToken cancellationToken)
         {
-            var result = await _authService.ValidateEmailToken(request.Token);
+            var result = await _authService.ValidateEmailToken(request.Token, cancellationToken);
     
             if (!result)
                 return BadRequest("O link de verificação é inválido ou expirou.");
@@ -58,69 +58,69 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpPost("resend")]
-        public async Task<IActionResult> ResendEmail(string email)
+        public async Task<IActionResult> ResendEmail(string email, CancellationToken cancellationToken)
         {
-            await _authService.ResendEmailToken(email);
+            await _authService.ResendEmailToken(email, cancellationToken);
             return Ok("Verifique seu e-mail.");
         }
 
         [HttpPost("requestPassword")]
-        public async Task<IActionResult> RequestResetPassword(string email)
+        public async Task<IActionResult> RequestResetPassword(string email, CancellationToken cancellationToken)
         {
-            await _authService.RequestResetPassword(email);
+            await _authService.RequestResetPassword(email, cancellationToken);
             return Ok("Requisisao realizada! Verifique seu e-mail.");
         }
 
         [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody]ResetPassword request)
+        public async Task<IActionResult> ResetPassword([FromBody]ResetPassword request, CancellationToken cancellationToken)
         {
-            var result = await _authService.ResetPassword(request);
+            var result = await _authService.ResetPassword(request, cancellationToken);
             if (!result)
                 return BadRequest("O link de verificação é inválido ou expirou.");
             return Ok("Senha recuperada com sucesso!");
         }
         [Authorize]
         [HttpPost("changePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO request)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO request, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _authService.ChangePassword(userId, request);
+            await _authService.ChangePassword(userId, request, cancellationToken);
             return NoContent();
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout( CancellationToken cancellationToken)
         {
             await _cookieAuthService.SignOutAsync(HttpContext);
             return Ok("Logout realizado com sucesso");
         }
 
         [HttpGet("me")]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
             if (User.Identity?.IsAuthenticated != true)
                 return Ok(new { isAuthenticated = false, user = (UserDTO?)null });
 
             var userId = User.GetUserId();
-            var result = await _authService.GetCurrentUserInfo(userId);
+            var result = await _authService.GetCurrentUserInfo(userId, cancellationToken);
             return Ok(new { isAuthenticated = true, user = result });
         }
 
         [HttpPost("google/signup")]
-        public async Task<IActionResult> GoogleSignUp([FromBody] GoogleSignUpRequest request)
+        public async Task<IActionResult> GoogleSignUp([FromBody] GoogleSignUpRequest request, CancellationToken cancellationToken)
         {
-            await _authService.GoogleSignUp(request.IdToken);
+            await _authService.GoogleSignUp(request.IdToken, cancellationToken);
             return Ok("Usuario gerado com sucesso!");
         }
 
         public record GoogleSignUpRequest(string IdToken);
 
         [HttpPost("google/login")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleSignUpRequest request)
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleSignUpRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                var user = await _authService.GoogleLogin(request.IdToken);
+                var user = await _authService.GoogleLogin(request.IdToken, cancellationToken);
                 await _cookieAuthService.SignInAsync(HttpContext, user);
                 return Ok("Login realizado com sucesso");
             }
@@ -132,10 +132,10 @@ namespace API_PI_Clubes.Controllers
         
         [Authorize]
         [HttpPatch("complete-profile")]
-        public async Task<IActionResult> CompleteProfile(CompleteProfileDTO dto)
+        public async Task<IActionResult> CompleteProfile(CompleteProfileDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _authService.CompleteProfile(userId, dto);
+            await _authService.CompleteProfile(userId, dto, cancellationToken);
             return Ok("Perfil completado com sucesso! Você já pode reservar quadras.");
         }
     }

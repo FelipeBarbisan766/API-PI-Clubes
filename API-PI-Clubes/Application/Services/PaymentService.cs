@@ -34,9 +34,9 @@ namespace API_PI_Clubes.Application.Services
             _logger = logger;
         }
 
-        public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid adminId)
+        public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid adminId, CancellationToken cancellationToken)
         {
-            var plan = await _planRepository.GetByIdAsync(dto.PlanId)
+            var plan = await _planRepository.GetByIdAsync(dto.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", dto.PlanId);
 
             var paymentId = Guid.NewGuid();
@@ -100,7 +100,7 @@ namespace API_PI_Clubes.Application.Services
         }
 
         public async Task HandleWebhookAsync(MercadoPagoWebhookDto webhook, string? signatureHeader,
-            string? requestIdHeader)
+            string? requestIdHeader, CancellationToken cancellationToken)
         {
             if (webhook.Action is not ("payment.updated" or "payment.created" or "payment" or ""))
             {
@@ -135,7 +135,7 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            var payment = await _paymentRepository.GetByIdAsync(internalPaymentId);
+            var payment = await _paymentRepository.GetByIdAsync(internalPaymentId, cancellationToken);
 
             if (payment is null)
             {
@@ -165,14 +165,14 @@ namespace API_PI_Clubes.Application.Services
             _logger.LogInformation("Payment {Id} atualizado para {Status}", payment.Id, payment.Status);
 
             if (newStatus == PaymentStatus.Confirmed)
-                await HandleApprovedPaymentAsync(payment);
+                await HandleApprovedPaymentAsync(payment, cancellationToken);
             else if (newStatus == PaymentStatus.Failed)
-                await HandleFailedPaymentAsync(payment);
+                await HandleFailedPaymentAsync(payment, cancellationToken);
         }
 
-        private async Task HandleApprovedPaymentAsync(Payment payment)
+        private async Task HandleApprovedPaymentAsync(Payment payment, CancellationToken cancellationToken)
         {
-            var byPayment = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id);
+            var byPayment = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id, cancellationToken);
             if (byPayment is not null)
             {
                 if (!byPayment.IsActive)
@@ -184,10 +184,10 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            var plan = await _planRepository.GetByIdAsync(payment.PlanId)
+            var plan = await _planRepository.GetByIdAsync(payment.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", payment.PlanId);
 
-            var active = await _subscriptionRepository.GetActiveByAdminIdAsync(payment.AdminId);
+            var active = await _subscriptionRepository.GetActiveByAdminIdAsync(payment.AdminId, cancellationToken);
 
             try
             {
@@ -214,7 +214,7 @@ namespace API_PI_Clubes.Application.Services
                         IsActive = true
                     };
 
-                    await _subscriptionRepository.AddAsync(subscription);
+                    await _subscriptionRepository.AddAsync(subscription, cancellationToken);
                 }
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
@@ -224,9 +224,9 @@ namespace API_PI_Clubes.Application.Services
             }
         }
 
-        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId)
+        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId, CancellationToken cancellationToken)
         {
-            var payments = await _paymentRepository.GetByAdminIdAsync(adminId);
+            var payments = await _paymentRepository.GetByAdminIdAsync(adminId, cancellationToken);
 
             return payments.Select(p => new PaymentHistoryDto(
                 Id: p.Id,
@@ -242,9 +242,9 @@ namespace API_PI_Clubes.Application.Services
             => ex.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
                && (sqlEx.Number == 2601 || sqlEx.Number == 2627);
 
-        private async Task HandleFailedPaymentAsync(Payment payment)
+        private async Task HandleFailedPaymentAsync(Payment payment, CancellationToken cancellationToken)
         {
-            var subscription = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id);
+            var subscription = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id, cancellationToken);
             if (subscription is null) return;
 
             subscription.IsActive = false;

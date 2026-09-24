@@ -2,6 +2,6 @@
 {
     public interface IImageService
     {
-        Task<bool> DeleteImageAsync(Guid userId, string fileName);
+        Task<bool> DeleteImageAsync(Guid userId, string fileName, CancellationToken cancellationToken);
     }
 }

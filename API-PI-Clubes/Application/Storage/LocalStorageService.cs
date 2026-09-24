@@ -15,18 +15,20 @@ public class LocalStorageService : IStorageService
         Directory.CreateDirectory(_storagePath);
     }
 
-    public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
+    public async Task<string> UploadFileAsync(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
         var filePath = Path.Combine(_storagePath, fileName);
 
         using var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-        await fileStream.CopyToAsync(outputStream);
+        await fileStream.CopyToAsync(outputStream, cancellationToken);
 
         return $"{_baseUrl.TrimEnd('/')}/uploads/{fileName}";
     }
 
-    public Task<bool> DeleteFileAsync(string fileName)
+    public Task<bool> DeleteFileAsync(string fileName, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (string.IsNullOrWhiteSpace(fileName))
             throw new ArgumentException("fileName não pode ser nulo ou vazio.", nameof(fileName));
 

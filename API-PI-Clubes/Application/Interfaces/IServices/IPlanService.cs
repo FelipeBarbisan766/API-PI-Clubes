@@ -4,10 +4,10 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IPlanService
     {
-        Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync();
-        Task<PlanResponseDto> CreateAsync(CreatePlanDto dto);
-        Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto);
-        Task SetActiveAsync(Guid id, bool isActive);
+        Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync(CancellationToken cancellationToken);
+        Task<PlanResponseDto> CreateAsync(CreatePlanDto dto, CancellationToken cancellationToken);
+        Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto, CancellationToken cancellationToken);
+        Task SetActiveAsync(Guid id, bool isActive, CancellationToken cancellationToken);
 
     }
 }

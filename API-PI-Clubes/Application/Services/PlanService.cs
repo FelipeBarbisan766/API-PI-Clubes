@@ -21,13 +21,13 @@ namespace API_PI_Clubes.Application.Services
             _planRepository = planRepository;
         }
 
-        public async Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync()
+        public async Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync(CancellationToken  cancellationToken)
         {
-            var plans = await _planRepository.GetAllActiveAsync();
+            var plans = await _planRepository.GetAllActiveAsync(cancellationToken);
             return plans.Select(MapToDto);
         }
  
-        public async Task<PlanResponseDto> CreateAsync(CreatePlanDto dto)
+        public async Task<PlanResponseDto> CreateAsync(CreatePlanDto dto,CancellationToken  cancellationToken)
         {
             var plan = new Plan
             {
@@ -42,13 +42,13 @@ namespace API_PI_Clubes.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
  
-            await _planRepository.AddAsync(plan);
+            await _planRepository.AddAsync(plan,cancellationToken);
             return MapToDto(plan);
         }
  
-        public async Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto)
+        public async Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto, CancellationToken  cancellationToken)
         {
-            var plan = await _planRepository.GetByIdAsync(id)
+            var plan = await _planRepository.GetByIdAsync(id,cancellationToken)
                        ?? throw new NotFoundException("Plano", id);
  
             // Só atualiza os campos que foram enviados
@@ -59,17 +59,17 @@ namespace API_PI_Clubes.Application.Services
             if (dto.QuantCourt is not null) plan.QuantCourt = dto.QuantCourt.Value;
             if (dto.DurationDays is not null) plan.DurationDays = dto.DurationDays.Value;
  
-            await _planRepository.UpdateAsync(plan);
+            await _planRepository.UpdateAsync(plan,cancellationToken);
             return MapToDto(plan);
         }
  
-        public async Task SetActiveAsync(Guid id, bool isActive)
+        public async Task SetActiveAsync(Guid id, bool isActive, CancellationToken  cancellationToken)
         {
-            var plan = await _planRepository.GetByIdAsync(id)
+            var plan = await _planRepository.GetByIdAsync(id,cancellationToken)
                        ?? throw new NotFoundException("Plano", id);
  
             plan.IsActive = isActive;
-            await _planRepository.UpdateAsync(plan);
+            await _planRepository.UpdateAsync(plan, cancellationToken);
         }
         
         

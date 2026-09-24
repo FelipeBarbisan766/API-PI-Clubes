@@ -15,31 +15,31 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Reserve>> GetAllAsync()
+        public async Task<IEnumerable<Reserve>> GetAllAsync( CancellationToken cancellationToken)
         {
             return await _context.Reserves
                 .Where(c => c.IsActive)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<Reserve?> GetByIdAsync(Guid id)
+        public async Task<Reserve?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Reserves
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive, cancellationToken);
         }
 
-        public async Task<IEnumerable<Reserve>> GetAllByClubIdAsync(Guid clubId)
+        public async Task<IEnumerable<Reserve>> GetAllByClubIdAsync(Guid clubId, CancellationToken cancellationToken)
         {
             return await _context.Reserves
                 .Where(r => r.IsActive &&
                             r.Schedule.Court.ClubId == clubId)
                 .Include(r => r.Schedule)
                 .ThenInclude(s => s.Court)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByClubIdAsync(Guid clubId,
-            ReserveQueryDTO query)
+            ReserveQueryDTO query, CancellationToken cancellationToken)
         {
             var q = _context.Reserves
                 .Where(c => c.IsActive && c.Schedule.Court.ClubId == clubId)
@@ -51,7 +51,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             if (query.Status != null && query.Status > 0)
                 q = q.Where(c => c.Status == query.Status);
 
-            var totalCount = await q.CountAsync();
+            var totalCount = await q.CountAsync(cancellationToken);
 
             var items = await q
                 .Include(r => r.Player)
@@ -63,12 +63,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .OrderByDescending(r => r.Date)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             return (items, totalCount);
         }
 
         public async Task<(IEnumerable<Reserve> Items, int TotalCount)> GetAllDetailedByPlayerIdAsync(Guid playerId,
-            ReserveQueryDTO query)
+            ReserveQueryDTO query, CancellationToken cancellationToken)
         {
             var q = _context.Reserves
                 .Where(c => c.IsActive && c.Player.Id == playerId)
@@ -80,7 +80,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             if (query.Status != null && query.Status > 0)
                 q = q.Where(c => c.Status == query.Status);
 
-            var totalCount = await q.CountAsync();
+            var totalCount = await q.CountAsync(cancellationToken);
 
             var items = await q
                 .Include(r => r.Schedule)
@@ -93,27 +93,27 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .OrderByDescending(r => r.Date)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             return (items, totalCount);
         }
 
-        public async Task<Reserve?> GetByIdWithClubAsync(Guid id)
+        public async Task<Reserve?> GetByIdWithClubAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Reserves
                 .Include(r => r.Schedule)
                 .ThenInclude(s => s.Court)
-                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
+                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive,cancellationToken);
         }
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Reserves
-                .AnyAsync(s => s.Id == id && s.IsActive);
+                .AnyAsync(s => s.Id == id && s.IsActive,cancellationToken);
         }
 
-        public async Task AddAsync(Reserve Reserve)
+        public async Task AddAsync(Reserve Reserve, CancellationToken cancellationToken)
         {
-            await _context.Reserves.AddAsync(Reserve);
+            await _context.Reserves.AddAsync(Reserve,cancellationToken);
         }
 
         public void Update(Reserve Reserve)
@@ -121,9 +121,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Reserves.Update(Reserve);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Reserve = await _context.Reserves.FindAsync(id);
+            var Reserve = await _context.Reserves.FindAsync(new object[] {id},cancellationToken);
             if (Reserve != null)
             {
                 Reserve.IsActive = false;
@@ -140,9 +140,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .ExecuteDeleteAsync();
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

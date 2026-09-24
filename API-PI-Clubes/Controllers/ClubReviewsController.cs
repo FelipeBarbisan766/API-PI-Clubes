@@ -15,26 +15,26 @@ public class ClubReviewsController : ControllerBase
     public ClubReviewsController(IClubReviewService service) => _service = service;
 
     [HttpPost]
-    public async Task<IActionResult> RateClub(Guid clubId, [FromBody] CreateClubReviewDTO dto)
+    public async Task<IActionResult> RateClub(Guid clubId, [FromBody] CreateClubReviewDTO dto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var summary = await _service.RateClub(userId, clubId, dto);
+        var summary = await _service.RateClub(userId, clubId, dto, cancellationToken);
         return Ok(summary);
     }
 
     [HttpGet("summary")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSummary(Guid clubId)
+    public async Task<IActionResult> GetSummary(Guid clubId, CancellationToken cancellationToken)
     {
-        var summary = await _service.GetSummary(clubId);
+        var summary = await _service.GetSummary(clubId, cancellationToken);
         return Ok(summary);
     }
     [HttpGet("verify")]
     [AllowAnonymous]
-    public async Task<IActionResult> VerifyReview(Guid clubId)
+    public async Task<IActionResult> VerifyReview(Guid clubId, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var summary = await _service.VerifyReview(userId, clubId);
+        var summary = await _service.VerifyReview(userId, clubId, cancellationToken);
         return Ok(summary);
     }
 }

@@ -49,9 +49,9 @@ namespace API_PI_Clubes.Application.Auth
             _cpfEncryptionService = cpfEncryptionService;
         }
 
-        public async Task<User> LoginAsync(AuthDTO dto)
+        public async Task<User> LoginAsync(AuthDTO dto, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByEmailAsync(dto.Email);
+            var user = await _repository.GetByEmailAsync(dto.Email, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuario Não Encontrado");
@@ -69,10 +69,10 @@ namespace API_PI_Clubes.Application.Auth
 
             return user;
         }
-        public async Task Register(CreatUserDTO dto)
+        public async Task Register(CreatUserDTO dto, CancellationToken cancellationToken)
         {
             var userExists =
-                await _repository.GetByEmailAsync(dto.Email);
+                await _repository.GetByEmailAsync(dto.Email, cancellationToken);
 
             if (userExists != null)
                 throw new ConflictException("Usuario Já Existente");
@@ -92,13 +92,13 @@ namespace API_PI_Clubes.Application.Auth
             var token = _tokenService.GenerateEmailVerificationToken(entity.Id);
             await _emailService.SendVerificationEmailAsync(entity.Email, entity.Name, token);
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.AddAsync(entity, cancellationToken);
+            await _repository.SaveChangesAsync( cancellationToken);
 
         }
 
 
-        public async Task<bool> ValidateEmailToken(string token)
+        public async Task<bool> ValidateEmailToken(string token, CancellationToken cancellationToken)
         {
             var principal = _tokenService.ValidateEmailVerificationToken(token);
             if (principal == null) return false;
@@ -106,22 +106,22 @@ namespace API_PI_Clubes.Application.Auth
             var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(id)) return false;
 
-            var user = await _repository.GetByIdAsync(Guid.Parse(id));
+            var user = await _repository.GetByIdAsync(Guid.Parse(id), cancellationToken);
             if (user == null) return false;
 
             if (user.EmailVerification.IsConfirmed) return true;
 
             user.EmailVerification = EmailVerificationVO.Confirm();
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync( cancellationToken);
 
             return true;
         }
 
-        public async Task<bool> ResendEmailToken(string email)
+        public async Task<bool> ResendEmailToken(string email, CancellationToken cancellationToken)
         {
             var user =
-                await _repository.GetByEmailAsync(email);
+                await _repository.GetByEmailAsync(email, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuario Não Encontrado");
@@ -134,10 +134,10 @@ namespace API_PI_Clubes.Application.Auth
 
             return true;
         }
-        public async Task RequestResetPassword(string email)
+        public async Task RequestResetPassword(string email, CancellationToken cancellationToken)
         {
             var user =
-                await _repository.GetByEmailAsync(email);
+                await _repository.GetByEmailAsync(email, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuario Não Encontrado");
@@ -148,11 +148,11 @@ namespace API_PI_Clubes.Application.Auth
 
             user.ResetPassword = ResetPasswordVO.Create(token, DateTime.UtcNow.AddMinutes(15));
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync( cancellationToken);
 
         }
 
-        public async Task<bool> ResetPassword(ResetPassword request)
+        public async Task<bool> ResetPassword(ResetPassword request, CancellationToken cancellationToken)
         {
             var principal = _tokenService.ValidateEmailResetPasswordToken(request.Token);
             if (principal == null) return false;
@@ -160,7 +160,7 @@ namespace API_PI_Clubes.Application.Auth
             var id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(id)) return false;
 
-            var user = await _repository.GetByIdAsync(Guid.Parse(id));
+            var user = await _repository.GetByIdAsync(Guid.Parse(id), cancellationToken);
             if (user == null) return false;
 
             if (user.ResetPassword.PasswordResetToken != request.Token) return false;
@@ -169,14 +169,14 @@ namespace API_PI_Clubes.Application.Auth
 
             user.PasswordHash = _passwordHasher.Hash(request.Password);
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync( cancellationToken);
 
             return true;
         }
 
-        public async Task ChangePassword(Guid userId, ChangePasswordDTO request)
+        public async Task ChangePassword(Guid userId, ChangePasswordDTO request, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(userId);
+            var user = await _repository.GetByIdAsync(userId, cancellationToken);
             if (user is null)
                 throw new NotFoundException("Usuário não encontrado.");
 
@@ -186,11 +186,11 @@ namespace API_PI_Clubes.Application.Auth
 
             user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync( cancellationToken);
         }
-        public async Task<UserDTO> GetCurrentUserInfo(Guid id)
+        public async Task<UserDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
                 throw new NotFoundException("Usuario Não Encontrado");
             
@@ -205,7 +205,7 @@ namespace API_PI_Clubes.Application.Auth
                 AvatarUrl = entity.AvatarUrl
             };
         }
-        public async Task GoogleSignUp(string idToken)
+        public async Task GoogleSignUp(string idToken, CancellationToken cancellationToken)
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
@@ -225,7 +225,7 @@ namespace API_PI_Clubes.Application.Auth
             if (!payload.EmailVerified)
                 throw new ValidationException("E-mail do Google não verificado.");
 
-            var userExists = await _repository.GetByEmailAsync(payload.Email);
+            var userExists = await _repository.GetByEmailAsync(payload.Email, cancellationToken);
             if (userExists != null)
                 throw new ConflictException("Usuario Já Existente");
 
@@ -234,7 +234,7 @@ namespace API_PI_Clubes.Application.Auth
             {
                 try
                 {
-                    avatarUrl = await _userService.ProcessAvatarFromUrlAsync(payload.Picture);
+                    avatarUrl = await _userService.ProcessAvatarFromUrlAsync(payload.Picture, cancellationToken);
                 }
                 catch
                 {
@@ -252,11 +252,11 @@ namespace API_PI_Clubes.Application.Auth
                 EmailVerification = EmailVerificationVO.Confirm()
             };
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.AddAsync(entity, cancellationToken);
+            await _repository.SaveChangesAsync( cancellationToken);
 
         }
-        public async Task<User> GoogleLogin(string idToken)
+        public async Task<User> GoogleLogin(string idToken, CancellationToken cancellationToken)
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
@@ -274,15 +274,15 @@ namespace API_PI_Clubes.Application.Auth
                 throw new ValidationException("Token do Google inválido ou expirado.");
             }
 
-            var user = await _repository.GetByEmailAsync(payload.Email);
+            var user = await _repository.GetByEmailAsync(payload.Email, cancellationToken);
             if (user is null)
                 throw new ValidationException("Nenhuma conta encontrada com esse e-mail. Faça o cadastro primeiro.");
 
             return user; 
         }
-        public async Task CompleteProfile(Guid userId, CompleteProfileDTO dto)
+        public async Task CompleteProfile(Guid userId, CompleteProfileDTO dto, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(userId);
+            var user = await _repository.GetByIdAsync(userId, cancellationToken);
             if (user == null)
                 throw new NotFoundException("Usuário não encontrado");
 
@@ -303,7 +303,7 @@ namespace API_PI_Clubes.Application.Auth
             //     throw new Exception("Idade mínima não atendida");
 
             var cpfHash = _cpfEncryptionService.Hash(cpfDigits);
-            var cpfInUse = await _repository.ExistsByCpfHashAsync(cpfHash);
+            var cpfInUse = await _repository.ExistsByCpfHashAsync(cpfHash,cancellationToken);
             if (cpfInUse)
                 throw new ConflictException("CPF já cadastrado em outra conta");
 
@@ -314,9 +314,9 @@ namespace API_PI_Clubes.Application.Auth
             user.Role = RoleEnum.Player;
 
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
-            await _playerService.Create(user.Id);
+            await _playerService.Create(user.Id, cancellationToken);
         }
     }
 }

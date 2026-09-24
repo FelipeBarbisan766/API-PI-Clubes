@@ -12,23 +12,23 @@ public class ClubReviewRepository : IClubReviewRepository
 
     public ClubReviewRepository(AppDbContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid clubId, Guid playerId)
+    public async Task<bool> ExistsAsync(Guid clubId, Guid playerId, CancellationToken cancellationToken)
     {
         return await _context.ClubReviews
-            .AnyAsync(cr => cr.ClubId == clubId && cr.PlayerId == playerId);
+            .AnyAsync(cr => cr.ClubId == clubId && cr.PlayerId == playerId,cancellationToken);
     }
 
-    public async Task AddAsync(ClubReview review)
+    public async Task AddAsync(ClubReview review, CancellationToken cancellationToken)
     {
-        await _context.ClubReviews.AddAsync(review);
+        await _context.ClubReviews.AddAsync(review,cancellationToken );
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync( CancellationToken cancellationToken)
     {
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId)
+    public async Task<ResponseClubReviewSummaryDTO> GetSummaryByClubIdAsync(Guid clubId,CancellationToken cancellationToken)
     {
         var result = await _context.ClubReviews
             .Where(cr => cr.ClubId == clubId)
@@ -38,7 +38,7 @@ public class ClubReviewRepository : IClubReviewRepository
                 AverageRating = Math.Round(g.Average(cr => cr.Rating), 1),
                 TotalReviews = g.Count()
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         return result ?? new ResponseClubReviewSummaryDTO { AverageRating = 0, TotalReviews = 0 };
     }

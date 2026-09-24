@@ -37,9 +37,9 @@ namespace API_PI_Clubes.Application.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<ResponseUserDTO> GetById(Guid id)
+        public async Task<ResponseUserDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuário", id); 
@@ -48,9 +48,9 @@ namespace API_PI_Clubes.Application.Services
         }
 
 
-        public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto)
+        public async Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuário", id);
@@ -62,14 +62,14 @@ namespace API_PI_Clubes.Application.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return _mapper.ToDTO(user);
         }
 
-        public async Task UpdateRole(Guid id, RoleEnum role)
+        public async Task UpdateRole(Guid id, RoleEnum role, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuário", id);
@@ -78,12 +78,12 @@ namespace API_PI_Clubes.Application.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
         }
         
-        public async Task UpdateAvatar(Guid id, UpdateAvatarDTO dto)
+        public async Task UpdateAvatar(Guid id, UpdateAvatarDTO dto, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
             if (user == null)
                 throw new NotFoundException("Usuário", id);
 
@@ -91,23 +91,23 @@ namespace API_PI_Clubes.Application.Services
             {
                 var oldAvatarUrl = user.AvatarUrl;
 
-                user.AvatarUrl = await ProcessAndUploadImage(dto.AvatarImage);
+                user.AvatarUrl = await ProcessAndUploadImage(dto.AvatarImage, cancellationToken);
                 user.UpdatedAt = DateTime.UtcNow;
 
                 _repository.Update(user);
-                await _repository.SaveChangesAsync();
+                await _repository.SaveChangesAsync(cancellationToken);
 
                 if (!string.IsNullOrEmpty(oldAvatarUrl))
                 {
                     var oldFileName = Path.GetFileName(new Uri(oldAvatarUrl).LocalPath);
-                    await _storageService.DeleteFileAsync(oldFileName);
+                    await _storageService.DeleteFileAsync(oldFileName, cancellationToken);
                 }
             }
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid id, CancellationToken cancellationToken)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 throw new NotFoundException("Usuário", id);
@@ -116,24 +116,24 @@ namespace API_PI_Clubes.Application.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(user);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
         }
         
-        private async Task<string> ProcessAndUploadImage(IFormFile file)
+        private async Task<string> ProcessAndUploadImage(IFormFile file, CancellationToken cancellationToken)
         {
             using var inputStream = file.OpenReadStream();
-            return await ProcessAndUploadImageStream(inputStream);
+            return await ProcessAndUploadImageStream(inputStream, cancellationToken);
         }
-        private async Task<string> ProcessAndUploadImageStream(Stream inputStream)
+        private async Task<string> ProcessAndUploadImageStream(Stream inputStream, CancellationToken cancellationToken)
         {
             using var variant = await _imageProcessor.ProcessAsync(inputStream, ImageVariantType.Avatar);
-            return await _storageService.UploadFileAsync(variant.Stream, variant.FileName);
+            return await _storageService.UploadFileAsync(variant.Stream, variant.FileName, cancellationToken);
         }
-        public async Task<string> ProcessAvatarFromUrlAsync(string imageUrl)
+        public async Task<string> ProcessAvatarFromUrlAsync(string imageUrl, CancellationToken cancellationToken)
         {
             using var httpClient = _httpClientFactory.CreateClient();
             await using var inputStream = await httpClient.GetStreamAsync(imageUrl);
-            return await ProcessAndUploadImageStream(inputStream);
+            return await ProcessAndUploadImageStream(inputStream, cancellationToken);
         }
     }
 }

@@ -15,28 +15,28 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<int> CountExistingAsync(List<Guid> ids)
+        public async Task<int> CountExistingAsync(List<Guid> ids,CancellationToken cancellationToken)
         {
             return await _context.Sports
                 .Where(s => s.IsActive && ids.Contains(s.Id))
-                .CountAsync();
+                .CountAsync(cancellationToken);
         }
 
-        public async Task<List<ResponseSportDTO>> GetAllAsync()
+        public async Task<List<ResponseSportDTO>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _context.Sports
                 .Where(s => s.IsActive)
                 .OrderBy(s => s.Name)
                 .Select(s => new ResponseSportDTO { Id = s.Id, Name = s.Name })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
-        public async Task<List<ResponseSportDTO>> GetByIdsAsync(List<Guid> ids)
+        public async Task<List<ResponseSportDTO>> GetByIdsAsync(List<Guid> ids, CancellationToken cancellationToken)
         {
             return await _context.Sports
                 .Where(s => ids.Contains(s.Id) && s.IsActive)
                 .OrderBy(s => s.Name)
                 .Select(s => new ResponseSportDTO { Id = s.Id, Name = s.Name })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

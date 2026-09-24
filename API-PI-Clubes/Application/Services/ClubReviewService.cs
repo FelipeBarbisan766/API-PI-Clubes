@@ -24,20 +24,20 @@ public class ClubReviewService : IClubReviewService
         _playerRepository = playerRepository;
     }
 
-    public async Task<ResponseClubReviewSummaryDTO> RateClub(Guid userId, Guid clubId, CreateClubReviewDTO dto)
+    public async Task<ResponseClubReviewSummaryDTO> RateClub(Guid userId, Guid clubId, CreateClubReviewDTO dto, CancellationToken cancellationToken)
     {
         if (clubId == Guid.Empty)
             throw new ValidationException("O ID do clube informado é inválido.");
 
-        var clubExists = await _clubRepository.ExistsAsync(clubId);
+        var clubExists = await _clubRepository.ExistsAsync(clubId, cancellationToken);
         if (!clubExists)
             throw new NotFoundException("Clube", clubId);
 
-        var playerId = await _playerRepository.GetIdByUserIdAsync(userId);
+        var playerId = await _playerRepository.GetIdByUserIdAsync(userId, cancellationToken);
         if (playerId == null)
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
-        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId);
+        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
         if (alreadyReviewed)
             throw new ConflictException("Você já avaliou este clube.");
 
@@ -49,11 +49,11 @@ public class ClubReviewService : IClubReviewService
             Rating = dto.Rating
         };
 
-        await _repository.AddAsync(review);
+        await _repository.AddAsync(review, cancellationToken);
 
         try
         {
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx &&
             (sqlEx.Number == 2601 || sqlEx.Number == 2627))
@@ -61,28 +61,28 @@ public class ClubReviewService : IClubReviewService
             throw new ConflictException("Você já avaliou este clube.");
         }
 
-        return await _repository.GetSummaryByClubIdAsync(clubId);
+        return await _repository.GetSummaryByClubIdAsync(clubId, cancellationToken);
     }
 
-    public async Task<ResponseClubReviewSummaryDTO> GetSummary(Guid clubId)
+    public async Task<ResponseClubReviewSummaryDTO> GetSummary(Guid clubId, CancellationToken cancellationToken)
     {
         if (clubId == Guid.Empty)
             throw new ValidationException("O ID do clube informado é inválido.");
 
-        var clubExists = await _clubRepository.ExistsAsync(clubId);
+        var clubExists = await _clubRepository.ExistsAsync(clubId, cancellationToken);
         if (!clubExists)
             throw new NotFoundException("Clube", clubId);
 
-        return await _repository.GetSummaryByClubIdAsync(clubId);
+        return await _repository.GetSummaryByClubIdAsync(clubId, cancellationToken);
     }
 
-    public async Task<Boolean> VerifyReview(Guid userId, Guid clubId)
+    public async Task<Boolean> VerifyReview(Guid userId, Guid clubId, CancellationToken cancellationToken)
     {
-        var playerId = await _playerRepository.GetIdByUserIdAsync(userId);
+        var playerId = await _playerRepository.GetIdByUserIdAsync(userId, cancellationToken);
         if (playerId == null)
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
-        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId);
+        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
         if (alreadyReviewed)
             return true;
         

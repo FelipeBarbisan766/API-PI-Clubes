@@ -12,12 +12,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public ImageRepository(AppDbContext context)
         {
             _context = context;
-    }
+        }
 
-        public async Task<Image?> GetByNameAsync(string fileName)
+        public async Task<Image?> GetByNameAsync(string fileName, CancellationToken cancellationToken)
         {
             return await _context.Images
-                .FirstOrDefaultAsync(x => x.Name == fileName);
+                .FirstOrDefaultAsync(x => x.Name == fileName, cancellationToken);
         }
 
         public void Remove(Image image)
@@ -30,14 +30,16 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Images.Add(image);
         }
 
-        public async Task<bool> SaveChangesAsync()
+        public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
         {
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
-        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId)
+
+        public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Images
-                .AnyAsync(c => c.Id == Id && c.Club.ClubAdmin.Any(a => a.Admin.UserId == userId) || c.Court.Club.ClubAdmin.Any(a => a.Admin.UserId == userId));
+                .AnyAsync(c => c.Id == Id && c.Club.ClubAdmin.Any(a => a.Admin.UserId == userId) || c.Court.Club.ClubAdmin.Any(a => a.Admin.UserId == userId),
+                    cancellationToken);
         }
     }
 }

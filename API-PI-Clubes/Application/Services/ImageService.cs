@@ -16,23 +16,23 @@ namespace API_PI_Clubes.Application.Services
             _repository = repository;
             _storageService = storageService;
         }
-        public async Task<bool> DeleteImageAsync(Guid userId, string fileName)
+        public async Task<bool> DeleteImageAsync(Guid userId, string fileName, CancellationToken cancellationToken)
         {
             
-            var imageEntity = await _repository.GetByNameAsync(fileName);
+            var imageEntity = await _repository.GetByNameAsync(fileName, cancellationToken);
             if (imageEntity == null) return false;
 
-            var isOwner = await _repository.IsOwnedByUserAsync(imageEntity.Id, userId);
+            var isOwner = await _repository.IsOwnedByUserAsync(imageEntity.Id, userId, cancellationToken);
             if (!isOwner)
                 throw new ForbiddenException("Você não tem permissão para gerenciar esta imagem.");
             
-            var storageDeleted = await _storageService.DeleteFileAsync(fileName);
+            var storageDeleted = await _storageService.DeleteFileAsync(fileName, cancellationToken);
 
             if (storageDeleted)
             {
                 _repository.Remove(imageEntity);
 
-                return await _repository.SaveChangesAsync();
+                return await _repository.SaveChangesAsync(cancellationToken);
             }
 
             return false;

@@ -24,17 +24,17 @@ namespace API_PI_Clubes.Application.Services
             _notificationService = notificationService;
         }
 
-        public async Task<IEnumerable<ResponseReserveDTO>> GetAll()
+        public async Task<IEnumerable<ResponseReserveDTO>> GetAll(CancellationToken cancellationToken)
         {
-            var data = await _repository.GetAllAsync();
+            var data = await _repository.GetAllAsync(cancellationToken);
             return _mapper.ToDTO(data);
         }
 
-        public async Task<ResponseReserveDTO> GetById(Guid id)
+        public async Task<ResponseReserveDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id,cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Reserva", id);  
@@ -42,11 +42,11 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<IEnumerable<ResponseReserveDTO>> GetByClubId(Guid id)
+        public async Task<IEnumerable<ResponseReserveDTO>> GetByClubId(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var data = await _repository.GetAllByClubIdAsync(id);
+            var data = await _repository.GetAllByClubIdAsync(id,cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Reserva", id);
@@ -54,11 +54,11 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<PagedResultDTO<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId, ReserveQueryDTO query)
+        public async Task<PagedResultDTO<ResponseReserveDetailDTO>> GetDetailedByClubId(Guid clubId, ReserveQueryDTO query, CancellationToken cancellationToken)
         {
             ValidateId(clubId);
 
-            var (items, total) = await _repository.GetAllDetailedByClubIdAsync(clubId, query);
+            var (items, total) = await _repository.GetAllDetailedByClubIdAsync(clubId, query,cancellationToken);
 
             var itemsDto = items.Select(r => new ResponseReserveDetailDTO
             {
@@ -93,11 +93,11 @@ namespace API_PI_Clubes.Application.Services
                 
         }
 
-        public async Task<PagedResultDTO<ResponseReserveDetailToPlayerDTO>> GetDetailedByPlayerId(Guid playerId, ReserveQueryDTO query)
+        public async Task<PagedResultDTO<ResponseReserveDetailToPlayerDTO>> GetDetailedByPlayerId(Guid playerId, ReserveQueryDTO query, CancellationToken cancellationToken)
         {
             ValidateId(playerId);
 
-            var (items, total) = await _repository.GetAllDetailedByPlayerIdAsync(playerId,query);
+            var (items, total) = await _repository.GetAllDetailedByPlayerIdAsync(playerId,query,cancellationToken);
 
             var itemsDto = items.Select(r => new ResponseReserveDetailToPlayerDTO
             {
@@ -132,7 +132,7 @@ namespace API_PI_Clubes.Application.Services
             };
         }
         
-        public async Task<ResponseIdDTO> Create(CreatReserveDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatReserveDTO dto, CancellationToken cancellationToken)
         {
             ValidateReserveDTO(dto);
 
@@ -145,11 +145,11 @@ namespace API_PI_Clubes.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.AddAsync(entity,cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
 
             // busca com Schedule.Court já carregado pra pegar o ClubId
-            var withClub = await _repository.GetByIdWithClubAsync(entity.Id);
+            var withClub = await _repository.GetByIdWithClubAsync(entity.Id,cancellationToken);
 
             if (withClub != null)
             {
@@ -162,17 +162,18 @@ namespace API_PI_Clubes.Application.Services
                         CourtId = withClub.Schedule.CourtId,
                         Date = withClub.Date,
                         Status = withClub.Status
-                    });
+                    }
+                    );
             }
 
             return new ResponseIdDTO { Id = entity.Id };
         }
 
-        public async Task ChangeStatus(Guid id, StatusEnum status)
+        public async Task ChangeStatus(Guid id, StatusEnum status, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var entity = await _repository.GetByIdWithClubAsync(id);
+            var entity = await _repository.GetByIdWithClubAsync(id,cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("Reserva", id); 
@@ -180,7 +181,7 @@ namespace API_PI_Clubes.Application.Services
             entity.Status = status;
 
             _repository.Update(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
             await _notificationService.NotifyStatusChangedAsync(
                 entity.Schedule.Court.ClubId,
@@ -194,12 +195,12 @@ namespace API_PI_Clubes.Application.Services
                 });
         }
         
-        public async Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto)
+        public async Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto, CancellationToken cancellationToken)
         {
             ValidateId(id);
             ValidateUpdateReserveDTO(dto);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id,cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Reserva", id);
@@ -209,21 +210,21 @@ namespace API_PI_Clubes.Application.Services
             data.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(data);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid id)
+        public async Task Delete(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var exists = await _repository.ExistsAsync(id);
+            var exists = await _repository.ExistsAsync(id,cancellationToken);
 
             if (!exists)
                 throw new NotFoundException("Reserva", id);
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAsync(id,cancellationToken);
         }
 
         private static void ValidateId(Guid id)

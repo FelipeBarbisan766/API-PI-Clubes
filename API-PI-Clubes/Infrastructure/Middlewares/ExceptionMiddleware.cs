@@ -21,6 +21,15 @@ namespace API_PI_Clubes.Infrastructure.Middlewares
             {
                 await _next(context);
             }
+            catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+            {
+                _logger.LogInformation("Requisição cancelada pelo cliente: {Path}", context.Request.Path);
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = 499;
+                }
+            }
             catch (AppException ex)
             {
                 _logger.LogWarning(ex, "Erro de aplicação: {ErrorCode}", ex.ErrorCode);

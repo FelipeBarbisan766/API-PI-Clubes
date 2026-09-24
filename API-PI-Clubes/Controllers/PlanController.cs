@@ -19,30 +19,30 @@ namespace API_PI_Clubes.Controllers
         
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var plans = await _service.GetAllActiveAsync();
+            var plans = await _service.GetAllActiveAsync(cancellationToken);
             return Ok(plans);
         }
  
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePlanDto dto)
+        public async Task<IActionResult> Create([FromBody] CreatePlanDto dto,CancellationToken cancellationToken)
         {
-            var plan = await _service.CreateAsync(dto);
+            var plan = await _service.CreateAsync(dto, cancellationToken);
             return CreatedAtAction(nameof(GetAll), new { id = plan.Id }, plan);
         }
  
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlanDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlanDto dto, CancellationToken cancellationToken)
         {
-            var plan = await _service.UpdateAsync(id, dto);
+            var plan = await _service.UpdateAsync(id, dto, cancellationToken);
             return Ok(plan);
         }
  
         [HttpPatch("{id:guid}/set-active")]
-        public async Task<IActionResult> SetActive(Guid id, [FromQuery] bool isActive)
+        public async Task<IActionResult> SetActive(Guid id, [FromQuery] bool isActive, CancellationToken cancellationToken)
         {
-            await _service.SetActiveAsync(id, isActive);
+            await _service.SetActiveAsync(id, isActive, cancellationToken);
             return NoContent();
         }
 

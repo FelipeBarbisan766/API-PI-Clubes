@@ -1,0 +1,40 @@
+version: "3.9"
+
+# Sobe SOMENTE o banco de dados.
+# Roda isso separado da API/Front pra nao correr risco do pipeline
+# (GitHub Actions) recriar/derrubar o banco por acidente.
+#
+# Rede externa precisa existir antes de subir este compose:
+#   docker network create homelab-network
+#
+# Subir:
+#   docker compose -f docker-compose.db.yml --env-file .env up -d
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-clubes
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - homelab-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  homelab-network:
+    external: true
+
+volumes:
+  sql_data:

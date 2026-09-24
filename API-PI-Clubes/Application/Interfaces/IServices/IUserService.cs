@@ -8,10 +8,10 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     {
         //Task<IEnumerable<ResponseUserDTO>> GetAll();
         Task<ResponseUserDTO> GetById(Guid id, CancellationToken cancellationToken);
-        Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto);
-        Task UpdateAvatar(Guid id, UpdateAvatarDTO dto);
+        Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto, CancellationToken cancellationToken);
+        Task UpdateAvatar(Guid id, UpdateAvatarDTO dto, CancellationToken cancellationToken);
         Task UpdateRole(Guid id, RoleEnum role, CancellationToken cancellationToken);
-        Task Delete(Guid id);
-        Task<string> ProcessAvatarFromUrlAsync(string imageUrl);
+        Task Delete(Guid id, CancellationToken cancellationToken);
+        Task<string> ProcessAvatarFromUrlAsync(string imageUrl, CancellationToken cancellationToken);
     }
 }

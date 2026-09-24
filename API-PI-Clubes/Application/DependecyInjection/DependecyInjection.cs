@@ -83,9 +83,9 @@ namespace API_PI_Clubes.Application.DependencyInjection
             
             var provider = configuration.GetSection("Storage")["Provider"];
 
-            if (string.Equals(provider, "Azure", StringComparison.OrdinalIgnoreCase))
-                services.AddScoped<IStorageService, AzureStorageService>();
-            else
+            // if (string.Equals(provider, "Azure", StringComparison.OrdinalIgnoreCase))
+            //     services.AddScoped<IStorageService, AzureStorageService>();
+            // else
                 services.AddScoped<IStorageService, LocalStorageService>();
             
             services.AddScoped<IImageProcessingService, ImageProcessingService>();

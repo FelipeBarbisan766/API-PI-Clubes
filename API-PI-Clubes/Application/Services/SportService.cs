@@ -13,16 +13,16 @@ namespace API_PI_Clubes.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<ResponseSportDTO>> GetAll()
+        public async Task<List<ResponseSportDTO>> GetAll(CancellationToken cancellationToken)
         {
-            return await _repository.GetAllAsync();
+            return await _repository.GetAllAsync(cancellationToken);
         }
-        public async Task<List<ResponseSportDTO>> GetByIds(List<Guid> ids)
+        public async Task<List<ResponseSportDTO>> GetByIds(List<Guid> ids,CancellationToken cancellationToken)
         {
             if (ids == null || ids.Count == 0)
                 return new List<ResponseSportDTO>();
 
-            var sports = await _repository.GetByIdsAsync(ids.Distinct().ToList()); 
+            var sports = await _repository.GetByIdsAsync(ids.Distinct().ToList(),cancellationToken); 
             return sports;
         }
     }

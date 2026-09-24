@@ -2,7 +2,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
-public class AzureStorageService : IStorageService
+public class AzureStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName;

@@ -15,9 +15,9 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(cancellationToken);
             return Ok(result);
         }
     }

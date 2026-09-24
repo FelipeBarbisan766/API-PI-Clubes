@@ -18,70 +18,70 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id,cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("club/{id}")]
-        public async Task<IActionResult> GetByClubId(Guid id)
+        public async Task<IActionResult> GetByClubId(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetByClubId(id);
+            var result = await _service.GetByClubId(id,cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("club/{id}/details")]
-        public async Task<IActionResult> GetDetailedByClubId(Guid id, [FromQuery] ReserveQueryDTO query)
+        public async Task<IActionResult> GetDetailedByClubId(Guid id, [FromQuery] ReserveQueryDTO query, CancellationToken cancellationToken)
         {
-            var result = await _service.GetDetailedByClubId(id, query);
+            var result = await _service.GetDetailedByClubId(id, query,cancellationToken);
             return Ok(result);
         }
         
         [Authorize]
         [HttpGet("player/{id}/details")]
-        public async Task<IActionResult> GetDetailedByPlayerId(Guid id, [FromQuery] ReserveQueryDTO query)
+        public async Task<IActionResult> GetDetailedByPlayerId(Guid id, [FromQuery] ReserveQueryDTO query, CancellationToken cancellationToken)
         {
-            var result = await _service.GetDetailedByPlayerId(id, query);
+            var result = await _service.GetDetailedByPlayerId(id, query,cancellationToken);
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreatReserveDTO dto)
+        public async Task<IActionResult> Create(CreatReserveDTO dto, CancellationToken cancellationToken)
         {
-            var result = await _service.Create(dto);
+            var result = await _service.Create(dto,cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         
         [Authorize(Roles = "Admin")]
         [HttpPut("status/{id}")]
-        public async Task<IActionResult> UpdateStatus(Guid id, StatusEnum status)
+        public async Task<IActionResult> UpdateStatus(Guid id, StatusEnum status, CancellationToken cancellationToken)
         {
-            await _service.ChangeStatus(id, status);
+            await _service.ChangeStatus(id, status,cancellationToken);
             return Ok();
         }
         
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateReserveDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateReserveDTO dto, CancellationToken cancellationToken)
         {
-            var result = await _service.Update(id, dto);
+            var result = await _service.Update(id, dto,cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            await _service.Delete(id);
+            await _service.Delete(id,cancellationToken);
             return NoContent();
         }
     }

@@ -214,7 +214,7 @@ namespace API_PI_Clubes.Application.Services
                         IsActive = true
                     };
 
-                    await _subscriptionRepository.AddAsync(subscription);
+                    await _subscriptionRepository.AddAsync(subscription, cancellationToken);
                 }
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))

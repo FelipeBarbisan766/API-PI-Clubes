@@ -20,26 +20,26 @@ namespace API_PI_Clubes.Application.Services
             _planRepository = planRepository;
         }
 
-        public async Task<SubscriptionResponseDto?> GetActiveByAdminAsync(Guid adminId)
+        public async Task<SubscriptionResponseDto?> GetActiveByAdminAsync(Guid userId, CancellationToken cancellationToken)
         {
-            var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+            var subscription = await _subscriptionRepository.GetActiveByUserIdAsync(userId, cancellationToken);
             return subscription is null ? null : MapToDto(subscription);
         }
 
-        public async Task<bool> CheckAccessAsync(Guid adminId)
+        public async Task<bool> CheckAccessAsync(Guid userId, CancellationToken cancellationToken)
         {
-            var subscription = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+            var subscription = await _subscriptionRepository.GetActiveByUserIdAsync(userId, cancellationToken);
             if (subscription is null) return false;
             return subscription.IsActive && subscription.ExpiresAt > DateTime.UtcNow;
         }
 
-        public async Task RenewAsync(Guid adminId, Guid paymentId)
+        public async Task RenewAsync(Guid userId, Guid paymentId, CancellationToken cancellationToken)
         {
-            var current = await _subscriptionRepository.GetActiveByAdminIdAsync(adminId);
+            var current = await _subscriptionRepository.GetActiveByUserIdAsync(userId, cancellationToken);
             if (current is null)
                 throw new NotFoundException("Assinatura ativa para este admin");
 
-            var plan = await _planRepository.GetByIdAsync(current.PlanId)
+            var plan = await _planRepository.GetByIdAsync(current.PlanId,cancellationToken)
                        ?? throw new NotFoundException("Plano", current.PlanId);
 
             current.PaymentId = paymentId;
@@ -50,11 +50,11 @@ namespace API_PI_Clubes.Application.Services
             await _subscriptionRepository.UpdateAsync(current);
         }
 
-        public async Task CancelAsync(Guid subscriptionId, Guid userId)
+        public async Task CancelAsync(Guid subscriptionId, Guid userId, CancellationToken cancellationToken)
         {
-            await AuthorizeOwnership(userId, subscriptionId);
+            await AuthorizeOwnership(userId, subscriptionId, cancellationToken);
 
-            var subscription = await _subscriptionRepository.GetByIdAsync(subscriptionId)
+            var subscription = await _subscriptionRepository.GetByIdAsync(subscriptionId,cancellationToken)
                                ?? throw new NotFoundException("Assinatura", subscriptionId);
 
             subscription.IsActive = false;
@@ -71,9 +71,9 @@ namespace API_PI_Clubes.Application.Services
             }
         }
 
-        private async Task AuthorizeOwnership(Guid userId, Guid subscriptionId)
+        private async Task AuthorizeOwnership(Guid userId, Guid subscriptionId, CancellationToken cancellationToken)
         {
-            var isOwner = await _subscriptionRepository.IsOwnedByUserAsync(subscriptionId, userId);
+            var isOwner = await _subscriptionRepository.IsOwnedByUserAsync(subscriptionId, userId, cancellationToken);
             if (!isOwner)
                 throw new ForbiddenException("Você não tem permissão para gerenciar esta assinatura.");
         }

@@ -48,11 +48,11 @@ public class PlanLimitService : IPlanLimitService
         return limits;
     }
     
-    public async Task<PlanUsageDTO> GetUsageSummaryAsync(Guid userId)
+    public async Task<PlanUsageDTO> GetUsageSummaryAsync(Guid userId,CancellationToken cancellationToken)
     {
-        var limits = await GetLimitsOrThrowAsync(userId);
-        var clubsUsed = await _clubRepository.CountByUserIdAsync(userId);
-        var courtUsage = await _clubRepository.GetClubsWithCourtCountByUserIdAsync(userId);
+        var limits = await GetLimitsOrThrowAsync(userId, cancellationToken);
+        var clubsUsed = await _clubRepository.CountByUserIdAsync(userId, cancellationToken);
+        var courtUsage = await _clubRepository.GetClubsWithCourtCountByUserIdAsync(userId, cancellationToken);
 
         return new PlanUsageDTO
         {

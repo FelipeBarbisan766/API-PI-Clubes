@@ -19,17 +19,17 @@ namespace API_PI_Clubes.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ResponseScheduleDTO>> GetAll()
+        public async Task<IEnumerable<ResponseScheduleDTO>> GetAll(CancellationToken cancellationToken)
         {
-            var data = await _repository.GetAllAsync();
+            var data = await _repository.GetAllAsync(cancellationToken);
             return _mapper.ToDTO(data);
         }
 
-        public async Task<ResponseScheduleDTO> GetById(Guid id)
+        public async Task<ResponseScheduleDTO> GetById(Guid id,CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id,cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Horário", id); 
@@ -37,27 +37,27 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId)
+        public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId, CancellationToken cancellationToken  )
         {
             ValidateId(courtId);
 
-            var data = await _repository.GetByCourtIdAsync(courtId);
+            var data = await _repository.GetByCourtIdAsync(courtId,cancellationToken);
             return _mapper.ToDTO(data);
         }
         public async Task<IEnumerable<ResponseScheduleAvailabilityDTO>> GetAvailabilityByCourtAndDate(
-            Guid courtId, DateOnly date)
+            Guid courtId, DateOnly date, CancellationToken cancellationToken)
         {
             ValidateId(courtId);
  
             if (date == DateOnly.MinValue)
                 throw new ValidationException("Data inválida.");
  
-            var schedules = await _repository.GetByCourtAndDateAsync(courtId, date);
+            var schedules = await _repository.GetByCourtAndDateAsync(courtId, date,cancellationToken);
  
             return _mapper.ToAvailabilityDTO(schedules);
         }
 
-        public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto)
+        public async Task<ResponseIdDTO> Create(CreatScheduleDTO dto, CancellationToken cancellationToken)
         {
             ValidateScheduleDTO(dto);
 
@@ -70,17 +70,17 @@ namespace API_PI_Clubes.Application.Services
                 CourtId = dto.CourtId
             };
 
-            await _repository.AddAsync(entity);
-            await _repository.SaveChangesAsync();
+            await _repository.AddAsync(entity,cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return new ResponseIdDTO { Id = entity.Id };
         }
         
-public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
+public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto, CancellationToken cancellationToken)
 {
     ValidateBulkScheduleDTO(dto);
 
-    var existing = await _repository.GetByCourtAndDaysOfWeekAsync(dto.CourtId, dto.DaysOfWeek);
+    var existing = await _repository.GetByCourtAndDaysOfWeekAsync(dto.CourtId, dto.DaysOfWeek,cancellationToken);
 
     var toCreate = new List<Schedule>();
     var conflicts = new List<ScheduleConflictDTO>();
@@ -131,8 +131,8 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
 
     if (toCreate.Count > 0)
     {
-        await _repository.AddRangeAsync(toCreate);
-        await _repository.SaveChangesAsync(); 
+        await _repository.AddRangeAsync(toCreate,cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken); 
     }
 
     return new ResponseBulkScheduleDTO
@@ -142,13 +142,13 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
     };
 }
 
-        public async Task<ResponseScheduleDTO> Update(Guid userId, Guid id, UpdateScheduleDTO dto)
+        public async Task<ResponseScheduleDTO> Update(Guid userId, Guid id, UpdateScheduleDTO dto, CancellationToken cancellationToken)
         {
             ValidateId(id);
             ValidateUpdateScheduleDTO(dto);
-            await AuthorizeOwnership(userId, id);
+            await AuthorizeOwnership(userId, id,cancellationToken);
 
-            var data = await _repository.GetByIdAsync(id);
+            var data = await _repository.GetByIdAsync(id,cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Horário", id);
@@ -160,27 +160,27 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto)
             data.UpdatedAt = DateTime.UtcNow;
 
             _repository.Update(data);
-            await _repository.SaveChangesAsync();
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return _mapper.ToDTO(data);
         }
 
-        public async Task Delete(Guid userId, Guid id)
+        public async Task Delete(Guid userId, Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
-            await AuthorizeOwnership(userId, id);
+            await AuthorizeOwnership(userId, id,cancellationToken);
 
-            var exists = await _repository.ExistsAsync(id);
+            var exists = await _repository.ExistsAsync(id,cancellationToken);
 
             if (!exists)
                 throw new NotFoundException("Horário", id);
 
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAsync(id,cancellationToken);
         }
 
-        private async Task AuthorizeOwnership(Guid userId, Guid id)
+        private async Task AuthorizeOwnership(Guid userId, Guid id, CancellationToken cancellationToken)
         {
-            var isOwner = await _repository.IsOwnedByUserAsync(id, userId);
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId,cancellationToken);
             if (!isOwner)
                 throw new ForbiddenException("Você não tem permissão para gerenciar este horário.");
         }

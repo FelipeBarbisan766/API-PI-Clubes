@@ -23,10 +23,10 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetActive()
+        public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
         {
-            var adminId = User.GetUserId();
-            var subscription = await _service.GetActiveByAdminAsync(adminId);
+            var userId = User.GetUserId();
+            var subscription = await _service.GetActiveByAdminAsync(userId,cancellationToken);
 
             if (subscription is null)
                 return NotFound("Nenhuma assinatura ativa encontrada.");
@@ -35,25 +35,25 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet("check-access")]
-        public async Task<IActionResult> CheckAccess()
+        public async Task<IActionResult> CheckAccess(CancellationToken cancellationToken)
         {
-            var adminId = User.GetUserId();
-            var hasAccess = await _service.CheckAccessAsync(adminId);
+            var userId = User.GetUserId();
+            var hasAccess = await _service.CheckAccessAsync(userId,cancellationToken);
             return Ok(new { hasAccess });
         }
 
         [HttpPost("cancel/{subscriptionId:guid}")]
-        public async Task<IActionResult> Cancel(Guid subscriptionId)
+        public async Task<IActionResult> Cancel(Guid subscriptionId, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.CancelAsync(subscriptionId, userId);
+            await _service.CancelAsync(subscriptionId, userId,cancellationToken);
             return NoContent();
         }
         [HttpGet("me/usage")]
-        public async Task<ActionResult<PlanUsageDTO>> GetMyUsage()
+        public async Task<ActionResult<PlanUsageDTO>> GetMyUsage(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            var usage = await _planLimitService.GetUsageSummaryAsync(userId); 
+            var usage = await _planLimitService.GetUsageSummaryAsync(userId,cancellationToken); 
             return Ok(usage);
         }
     }

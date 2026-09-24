@@ -18,65 +18,65 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id,cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("court/{courtId}")]
-        public async Task<IActionResult> GetByCourtId(Guid courtId)
+        public async Task<IActionResult> GetByCourtId(Guid courtId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetByCourtId(courtId);
+            var result = await _service.GetByCourtId(courtId,cancellationToken);
             return Ok(result);
         }
         
         [HttpGet("court/{courtId}/availability")]
-        public async Task<IActionResult> GetAvailabilityByCourtAndDate(Guid courtId, [FromQuery] DateOnly date)
+        public async Task<IActionResult> GetAvailabilityByCourtAndDate(Guid courtId, [FromQuery] DateOnly date, CancellationToken cancellationToken)
         {
-            var result = await _service.GetAvailabilityByCourtAndDate(courtId, date);
+            var result = await _service.GetAvailabilityByCourtAndDate(courtId, date,cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(CreatScheduleDTO dto)
+        public async Task<IActionResult> Create(CreatScheduleDTO dto, CancellationToken cancellationToken)
         {
-            var result = await _service.Create(dto);
+            var result = await _service.Create(dto,cancellationToken);
             return Ok(result);
         }
         
         [Authorize(Roles = "Admin")]
         [HttpPost("court/{courtId}/bulk")]
-        public async Task<IActionResult> CreateBulk(Guid courtId, CreateBulkScheduleDTO dto)
+        public async Task<IActionResult> CreateBulk(Guid courtId, CreateBulkScheduleDTO dto, CancellationToken cancellationToken)
         {
             dto.CourtId = courtId;
-            var result = await _service.CreateBulk(dto);
+            var result = await _service.CreateBulk(dto,cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, UpdateScheduleDTO dto)
+        public async Task<IActionResult> Update(Guid id, UpdateScheduleDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            var result = await _service.Update(userId, id, dto);
+            var result = await _service.Update(userId, id, dto,cancellationToken);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.Delete(userId, id);
+            await _service.Delete(userId, id,cancellationToken);
             return NoContent();
         }
     }

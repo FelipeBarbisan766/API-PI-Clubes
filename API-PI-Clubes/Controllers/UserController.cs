@@ -19,35 +19,35 @@ namespace API_PI_Clubes.Controllers
         
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id, cancellationToken);
             return Ok(result);
         }
 
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> Update(UpdateUserDTO dto)
+        public async Task<IActionResult> Update(UpdateUserDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId(); 
-            var result = await _service.Update(userId, dto);
+            var result = await _service.Update(userId, dto, cancellationToken);
             return Ok(result);
         }
         [Authorize]
         [HttpPut("avatar")]
-        public async Task<IActionResult> UpdateAvatar( UpdateAvatarDTO dto)
+        public async Task<IActionResult> UpdateAvatar( UpdateAvatarDTO dto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.UpdateAvatar(userId, dto);
+            await _service.UpdateAvatar(userId, dto, cancellationToken);
             return Ok();
         }
 
         [Authorize]
         [HttpDelete]
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> Delete(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.Delete(userId);
+            await _service.Delete(userId, cancellationToken);
             return NoContent();
         }
     }

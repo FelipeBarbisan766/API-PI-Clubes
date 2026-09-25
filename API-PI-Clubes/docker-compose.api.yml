@@ -1,5 +1,6 @@
 version: "3.9"
 
+
 # Este e o compose que o GitHub Actions vai recriar a cada deploy.
 #
 # Subir:
@@ -8,7 +9,7 @@ version: "3.9"
 
 services:
   api:
-    image: "${API_IMAGE:-ghcr.io/FelipeBarbisan766/API-PI-Clubes/api-clubes:latest}"
+    image: "${API_IMAGE:-ghcr.io/felipebarbisan766/api-clubes:latest}"
     pull_policy: always
     container_name: api-clubes
     restart: unless-stopped

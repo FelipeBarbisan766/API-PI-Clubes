@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_PI_Clubes.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260925015250_newMigration")]
-    partial class newMigration
+    [Migration("20260925114004_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

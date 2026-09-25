@@ -33,10 +33,10 @@ builder.Services.AddControllers(options => { options.Filters.Add<ValidationFilte
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 builder.Services.AddValidatorsFromAssemblyContaining<CreateClubDTOValidator>();
 // --- 2. Configurações de Storage (Azure Blob Storage) ---
-var storageConnectionString = builder.Configuration.GetSection("AzureStorage:ConnectionString").Value
-                              ?? throw new InvalidOperationException("Azure Storage connection string not found.");
+// var storageConnectionString = builder.Configuration.GetSection("AzureStorage:ConnectionString").Value
+//                               ?? throw new InvalidOperationException("Azure Storage connection string not found.");
 
-builder.Services.AddAzureClients(clientBuilder => { clientBuilder.AddBlobServiceClient(storageConnectionString); });
+// builder.Services.AddAzureClients(clientBuilder => { clientBuilder.AddBlobServiceClient(storageConnectionString); });
 
 // --- 3. Injeção de Dependência da Camada Application ---
 builder.Services.AddApplication(builder.Configuration);

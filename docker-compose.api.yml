@@ -1,10 +1,5 @@
 version: "3.9"
 
-# Sobe SOMENTE a API, usando a imagem ja pronta do GHCR
-# (nada de build no servidor - notebook so faz pull + run).
-# Depende do banco ja estar rodando na rede externa
-# "homelab-network" (docker-compose.db.yml).
-#
 # Este e o compose que o GitHub Actions vai recriar a cada deploy.
 #
 # Subir:
@@ -24,11 +19,53 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Production}"
       ConnectionStrings__DefaultConnection: "Server=sqlserver-clubes,1433;Database=ClubesDB;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+
+      # --- Jwt ---
+      Jwt__Key: "${JWT_KEY}"
+      Jwt__Issuer: "api-pi-clubes"
+      Jwt__Audience: "api-pi-clubes"
+      Jwt__Expiration: "3"
+      Jwt__EmailVerificationKey: "${JWT_EMAIL_VERIFICATION_KEY}"
+      Jwt__ExpirationEmailVerification: "30"
+      Jwt__ResetPasswordKey: "${JWT_RESET_PASSWORD_KEY}"
+      Jwt__ExpirationResetPassword: "15"
+
+      # --- Security ---
+      Security__CpfEncryptionKey: "${CPF_ENCRYPTION_KEY}"
+      Security__CpfHmacKey: "${CPF_HMAC_KEY}"
+
+      # --- Email ---
       Email__SenderEmail: "${EMAIL_SENDER}"
-      Email__SmtpPassword: "${EMAIL_SMTP_PASSWORD}"
+      Email__SenderName: "Clube PI"
+      Email__SmtpServer: "smtp.azurecomm.net"
+      Email__SmtpPort: "587"
       Email__SmtpUsername: "${EMAIL_SMTP_USERNAME}"
+      Email__SmtpPassword: "${EMAIL_SMTP_PASSWORD}"
+      Email__EnableSsl: "true"
       Email__BaseUrl: "${PUBLIC_BASE_URL}"
+
+      # --- AzureStorage (so preenche de verdade se for usar; senao deixa vazio) ---
+      AzureStorage__ConnectionString: "${AZURE_STORAGE_CONNECTION_STRING}"
+      AzureStorage__ContainerName: "image"
+
+      # --- Google ---
+      Google__ClientId: "${GOOGLE_CLIENT_ID}"
+
+      # --- MercadoPago ---
+      MercadoPago__AccessToken: "${MERCADOPAGO_ACCESS_TOKEN}"
+      MercadoPago__WebhookUrl: "${API_BASE_URL}/api/payment/webhook"
+      MercadoPago__WebhookSecret: "${MERCADOPAGO_WEBHOOK_SECRET}"
+      MercadoPago__BackUrls__Success: "${PUBLIC_BASE_URL}/payment/success"
+      MercadoPago__BackUrls__Failure: "${PUBLIC_BASE_URL}/payment/failure"
+      MercadoPago__BackUrls__Pending: "${PUBLIC_BASE_URL}/payment/pending"
+
+      # --- Storage local (arquivos enviados) ---
       LocalStorage__BaseUrl: "${API_BASE_URL}"
+      Storage__Provider: "Local"
+
+      # --- Outros ---
+      ReserveCleanup__RetentionMonths: "6"
+      AllowedHosts: "*"
     networks:
       - homelab-network
 

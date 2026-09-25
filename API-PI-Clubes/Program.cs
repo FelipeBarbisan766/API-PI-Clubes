@@ -126,11 +126,35 @@ if (app.Environment.IsDevelopment())
 }
 
 // Aplicação automática de Migrations
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     db.Database.Migrate();
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    const int maxRetries = 10;
+    const int delaySeconds = 5;
+
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break; 
+        }
+        catch (Exception ex)
+        {
+            if (attempt == maxRetries)
+            {
+                throw;
+            }
+
+            Console.WriteLine(
+                $"[Startup] Falha ao migrar o banco (tentativa {attempt}/{maxRetries}): {ex.Message}. " +
+                $"Tentando de novo em {delaySeconds}s...");
+
+            Thread.Sleep(TimeSpan.FromSeconds(delaySeconds));
+        }
+    }
+}
 var wwwrootPath = app.Environment.WebRootPath
                   ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
 Directory.CreateDirectory(wwwrootPath);

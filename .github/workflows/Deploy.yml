@@ -7,10 +7,10 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest   
+    runs-on: ubuntu-latest   # roda na infra do GitHub, nao no seu notebook
     permissions:
       contents: read
-      packages: write        
+      packages: write        # necessario pra dar push no GHCR
     steps:
       - name: Checkout do codigo
         uses: actions/checkout@v4
@@ -18,7 +18,8 @@ jobs:
       - name: Definir nome da imagem em minusculo
         run: |
           echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/api-clubes" >> "$GITHUB_ENV"
-
+        # Docker exige nome de repositorio 100% minusculo; o dono deste repo
+        # (FelipeBarbisan766) tem maiuscula, entao converte aqui antes de usar.
 
       - name: Login no GHCR
         uses: docker/login-action@v3
@@ -33,8 +34,8 @@ jobs:
       - name: Build e push da imagem
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./API-PI-Clubes
+          file: ./API-PI-Clubes/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
@@ -44,11 +45,14 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted   
+    runs-on: self-hosted   # este job roda DENTRO do seu notebook
     steps:
       - name: Checkout (traz o docker-compose.api.yml atualizado do repo)
         uses: actions/checkout@v4
-        
+        # Atencao: por padrao o checkout roda "git clean -ffdx" antes,
+        # o que apaga qualquer arquivo nao versionado da pasta (.env incluso).
+        # Por isso o .env e GERADO no passo abaixo, a cada run, a partir
+        # dos secrets do GitHub - nunca fica um .env fisico esperando aqui.
 
       - name: Gerar .env a partir dos secrets
         run: |

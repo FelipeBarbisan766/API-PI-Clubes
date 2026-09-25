@@ -3,14 +3,13 @@ name: Build, Push e Deploy API
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}   # permite disparar manualmente pela aba Actions
-
+  workflow_dispatch: {}  
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest   # roda na infra do GitHub, nao no seu notebook
+    runs-on: ubuntu-latest   
     permissions:
       contents: read
-      packages: write        # necessario pra dar push no GHCR
+      packages: write        
     steps:
       - name: Checkout do codigo
         uses: actions/checkout@v4
@@ -18,8 +17,7 @@ jobs:
       - name: Definir nome da imagem em minusculo
         run: |
           echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/api-clubes" >> "$GITHUB_ENV"
-        # Docker exige nome de repositorio 100% minusculo; o dono deste repo
-        # (FelipeBarbisan766) tem maiuscula, entao converte aqui antes de usar.
+        
 
       - name: Login no GHCR
         uses: docker/login-action@v3
@@ -45,29 +43,34 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted   # este job roda DENTRO do seu notebook
+    runs-on: self-hosted   
     steps:
       - name: Checkout (traz o docker-compose.api.yml atualizado do repo)
         uses: actions/checkout@v4
-        # Atencao: por padrao o checkout roda "git clean -ffdx" antes,
-        # o que apaga qualquer arquivo nao versionado da pasta (.env incluso).
-        # Por isso o .env e GERADO no passo abaixo, a cada run, a partir
-        # dos secrets do GitHub - nunca fica um .env fisico esperando aqui.
 
       - name: Gerar .env a partir dos secrets
         run: |
           cat > .env <<EOF
           MSSQL_SA_PASSWORD=${{ secrets.MSSQL_SA_PASSWORD }}
-          ASPNETCORE_ENVIRONMENT=Production
+          ASPNETCORE_ENVIRONMENT=Development
           API_BASE_URL=http://192.168.0.76:5000
           PUBLIC_BASE_URL=http://192.168.0.76:5050
           EMAIL_SENDER=${{ secrets.EMAIL_SENDER }}
           EMAIL_SMTP_USERNAME=${{ secrets.EMAIL_SMTP_USERNAME }}
           EMAIL_SMTP_PASSWORD=${{ secrets.EMAIL_SMTP_PASSWORD }}
+          JWT_KEY=${{ secrets.JWT_KEY }}
+          JWT_EMAIL_VERIFICATION_KEY=${{ secrets.JWT_EMAIL_VERIFICATION_KEY }}
+          JWT_RESET_PASSWORD_KEY=${{ secrets.JWT_RESET_PASSWORD_KEY }}
+          CPF_ENCRYPTION_KEY=${{ secrets.CPF_ENCRYPTION_KEY }}
+          CPF_HMAC_KEY=${{ secrets.CPF_HMAC_KEY }}
+          AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          MERCADOPAGO_ACCESS_TOKEN=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_WEBHOOK_SECRET=${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
           EOF
 
       - name: Pull da imagem nova + restart da API
         run: |
           docker compose -f docker-compose.api.yml --env-file .env pull
           docker compose -f docker-compose.api.yml --env-file .env up -d
-          docker image prune -f   # limpa imagens antigas pra nao acumular disco
+          docker image prune -f   

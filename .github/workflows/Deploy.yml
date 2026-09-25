@@ -53,8 +53,8 @@ jobs:
           cat > .env <<EOF
           MSSQL_SA_PASSWORD=${{ secrets.MSSQL_SA_PASSWORD }}
           ASPNETCORE_ENVIRONMENT=Development
-          API_BASE_URL=http://192.168.0.76:5000
-          PUBLIC_BASE_URL=http://192.168.0.76:5050
+          API_BASE_URL=http://api.clubera.dev
+          PUBLIC_BASE_URL=http://www.clubera.dev
           EMAIL_SENDER=${{ secrets.EMAIL_SENDER }}
           EMAIL_SMTP_USERNAME=${{ secrets.EMAIL_SMTP_USERNAME }}
           EMAIL_SMTP_PASSWORD=${{ secrets.EMAIL_SMTP_PASSWORD }}

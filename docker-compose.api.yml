@@ -45,7 +45,7 @@ services:
       # --- Email ---
       Email__SenderEmail: "${EMAIL_SENDER}"
       Email__SenderName: "Clube PI"
-      Email__SmtpServer: "smtp.azurecomm.net"
+      Email__SmtpServer: "smtp.gmail.com"
       Email__SmtpPort: "587"
       Email__SmtpUsername: "${EMAIL_SMTP_USERNAME}"
       Email__SmtpPassword: "${EMAIL_SMTP_PASSWORD}"

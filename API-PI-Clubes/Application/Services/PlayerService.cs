@@ -31,16 +31,16 @@ namespace API_PI_Clubes.Application.Services
             _sportService = sportService;
         }
 
-        public async Task<ResponsePlayerDTO> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ResponsePlayerByIdDTO> GetByUserId(Guid userId, CancellationToken cancellationToken)
         {
-            ValidateId(id);
+            ValidateId(userId);
 
-            var data = await _repository.GetByIdWithFavoriteSportsAsync(id,cancellationToken);
+            var data = await _repository.GetByUserIdAsync(userId,cancellationToken);
 
             if (data == null)
-                throw new NotFoundException("Jogador", id);
+                throw new NotFoundException("Jogador with this userId : ", userId);
 
-            return _mapper.ToDTO(data);
+            return data;
         }
 
         public async Task<ResponsePlayerDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken)

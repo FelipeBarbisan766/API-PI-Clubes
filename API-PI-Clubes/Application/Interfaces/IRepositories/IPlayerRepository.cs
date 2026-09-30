@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Model;
+﻿using API_PI_Clubes.Application.DTOs;
+using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -8,7 +9,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
     {
         Task<IEnumerable<Player>> GetAllAsync(CancellationToken cancellationToken);
         Task<Player?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<Player?> GetByUserIdAsync(Guid id, CancellationToken cancellationToken);
+        Task<ResponsePlayerByIdDTO?> GetByUserIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Guid> GetIdByUserIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Player?> GetByIdWithFavoriteSportsAsync(Guid id, CancellationToken cancellationToken);
         Task<Player?> GetByUserIdWithFavoriteSportsAsync(Guid userId, CancellationToken cancellationToken);

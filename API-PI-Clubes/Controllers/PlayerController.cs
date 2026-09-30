@@ -26,10 +26,10 @@ namespace API_PI_Clubes.Controllers
             _userRepository = userRepository;
             _tokenService = tokenService;
         }
-        [HttpGet("{id}")]
+        [HttpGet("/user/{id}")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetById(id, cancellationToken);
+            var result = await _service.GetByUserId(id, cancellationToken);
             return Ok(result);
         }
         

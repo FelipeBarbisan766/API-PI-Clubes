@@ -36,6 +36,9 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<ISportRepository, SportRepository>();
             services.AddScoped<ISportService, SportService>();
             
+            services.AddScoped<IFlagRepository, FlagRepository>();
+            services.AddScoped<IFlagService, FlagService>();
+            
             services.AddScoped<IReserveService, ReserveService>();
             services.AddScoped<IReserveRepository, ReserveRepository>();
             services.AddScoped<IReserveMapper, ReserveMapper>();
@@ -70,7 +73,6 @@ namespace API_PI_Clubes.Application.DependencyInjection
             
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IPlanRepository, PlanRepository>();
-            
             services.AddScoped<IPlanLimitService, PlanLimitService>();
             
             services.AddScoped<IAuthService, AuthService>();

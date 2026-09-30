@@ -18,6 +18,16 @@ namespace API_PI_Clubes.Application.DTOs
         public RankCategoryEnum RankCategory { get; set; }
         public Guid UserId { get; set; }
         public List<ResponseSportDTO> FavoriteSports { get; set; } = new();
+        
+    }
+    public class ResponsePlayerByIdDTO
+    {
+        public Guid Id { get; set; }
+        public RankCategoryEnum RankCategory { get; set; }
+        public Guid UserId { get; set; }
+        public string? ProfileName { get; set; }
+        public int TotalFlags { get; set; }
+        public List<FlagDTO.FlagTypeCountDto> FlagsByType { get; set; } = new();
     }
     public class SetProfileNameDTO
     {

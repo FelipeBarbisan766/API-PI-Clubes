@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API_PI_Clubes.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,6 +37,23 @@ namespace API_PI_Clubes.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clubs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Flags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Flags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -384,7 +401,7 @@ namespace API_PI_Clubes.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PlayerFavoriteSport",
+                name: "PlayerFavoriteSports",
                 columns: table => new
                 {
                     PlayerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -392,15 +409,15 @@ namespace API_PI_Clubes.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PlayerFavoriteSport", x => new { x.PlayerId, x.SportId });
+                    table.PrimaryKey("PK_PlayerFavoriteSports", x => new { x.PlayerId, x.SportId });
                     table.ForeignKey(
-                        name: "FK_PlayerFavoriteSport_Players_PlayerId",
+                        name: "FK_PlayerFavoriteSports_Players_PlayerId",
                         column: x => x.PlayerId,
                         principalTable: "Players",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_PlayerFavoriteSport_Sports_SportId",
+                        name: "FK_PlayerFavoriteSports_Sports_SportId",
                         column: x => x.SportId,
                         principalTable: "Sports",
                         principalColumn: "Id",
@@ -436,6 +453,43 @@ namespace API_PI_Clubes.Migrations
                         principalTable: "Schedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FlagPlayers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PlayerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FlagId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReserveId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedByAdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FlagPlayers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FlagPlayers_Flags_FlagId",
+                        column: x => x.FlagId,
+                        principalTable: "Flags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FlagPlayers_Players_PlayerId",
+                        column: x => x.PlayerId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FlagPlayers_Reserves_ReserveId",
+                        column: x => x.ReserveId,
+                        principalTable: "Reserves",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
@@ -508,6 +562,23 @@ namespace API_PI_Clubes.Migrations
                 column: "SportId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FlagPlayers_FlagId",
+                table: "FlagPlayers",
+                column: "FlagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlagPlayers_PlayerId",
+                table: "FlagPlayers",
+                column: "PlayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlagPlayers_ReserveId_FlagId",
+                table: "FlagPlayers",
+                columns: new[] { "ReserveId", "FlagId" },
+                unique: true,
+                filter: "[ReserveId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Images_ClubId",
                 table: "Images",
                 column: "ClubId");
@@ -518,8 +589,8 @@ namespace API_PI_Clubes.Migrations
                 column: "CourtId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PlayerFavoriteSport_SportId",
-                table: "PlayerFavoriteSport",
+                name: "IX_PlayerFavoriteSports_SportId",
+                table: "PlayerFavoriteSports",
                 column: "SportId");
 
             migrationBuilder.CreateIndex(
@@ -587,25 +658,25 @@ namespace API_PI_Clubes.Migrations
                 name: "CourtSports");
 
             migrationBuilder.DropTable(
+                name: "FlagPlayers");
+
+            migrationBuilder.DropTable(
                 name: "Images");
 
             migrationBuilder.DropTable(
-                name: "PlayerFavoriteSport");
-
-            migrationBuilder.DropTable(
-                name: "Reserves");
+                name: "PlayerFavoriteSports");
 
             migrationBuilder.DropTable(
                 name: "Subscriptions");
 
             migrationBuilder.DropTable(
+                name: "Flags");
+
+            migrationBuilder.DropTable(
+                name: "Reserves");
+
+            migrationBuilder.DropTable(
                 name: "Sports");
-
-            migrationBuilder.DropTable(
-                name: "Players");
-
-            migrationBuilder.DropTable(
-                name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "Admins");
@@ -617,10 +688,16 @@ namespace API_PI_Clubes.Migrations
                 name: "Plans");
 
             migrationBuilder.DropTable(
-                name: "Courts");
+                name: "Players");
+
+            migrationBuilder.DropTable(
+                name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Courts");
 
             migrationBuilder.DropTable(
                 name: "Clubs");

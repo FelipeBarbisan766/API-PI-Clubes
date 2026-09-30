@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_PI_Clubes.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260925114004_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260930002153_NewMigration")]
+    partial class NewMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -214,6 +214,82 @@ namespace API_PI_Clubes.Migrations
                     b.HasIndex("SportId");
 
                     b.ToTable("CourtSports");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.Flag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Flags");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.FlagPlayer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByAdminId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FlagId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ReserveId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FlagId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("ReserveId", "FlagId")
+                        .IsUnique()
+                        .HasFilter("[ReserveId] IS NOT NULL");
+
+                    b.ToTable("FlagPlayers");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Image", b =>
@@ -436,7 +512,7 @@ namespace API_PI_Clubes.Migrations
 
                     b.HasIndex("SportId");
 
-                    b.ToTable("PlayerFavoriteSport");
+                    b.ToTable("PlayerFavoriteSports");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Reserve", b =>
@@ -972,6 +1048,31 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("Sport");
                 });
 
+            modelBuilder.Entity("API_PI_Clubes.Model.FlagPlayer", b =>
+                {
+                    b.HasOne("API_PI_Clubes.Model.Flag", "Flag")
+                        .WithMany()
+                        .HasForeignKey("FlagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("API_PI_Clubes.Model.Player", "Player")
+                        .WithMany("Flags")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API_PI_Clubes.Model.Reserve", "Reserve")
+                        .WithMany()
+                        .HasForeignKey("ReserveId");
+
+                    b.Navigation("Flag");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Reserve");
+                });
+
             modelBuilder.Entity("API_PI_Clubes.Model.Image", b =>
                 {
                     b.HasOne("API_PI_Clubes.Model.Club", "Club")
@@ -1163,6 +1264,8 @@ namespace API_PI_Clubes.Migrations
             modelBuilder.Entity("API_PI_Clubes.Model.Player", b =>
                 {
                     b.Navigation("FavoriteSports");
+
+                    b.Navigation("Flags");
 
                     b.Navigation("Reserves");
                 });

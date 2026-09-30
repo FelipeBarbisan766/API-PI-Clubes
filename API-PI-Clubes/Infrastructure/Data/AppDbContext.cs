@@ -16,6 +16,7 @@ namespace API_PI_Clubes.Infrastructure.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<PlayerFavoriteSport> PlayerFavoriteSports { get; set; }
         public DbSet<ClubAdmin> ClubAdmins { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Payment> Payments { get; set; }
@@ -24,6 +25,8 @@ namespace API_PI_Clubes.Infrastructure.Data
         public DbSet<Sport> Sports { get; set; }  
         public DbSet<CourtSport> CourtSports { get; set; }
         
+        public DbSet<Flag> Flags { get; set; }
+        public DbSet<FlagPlayer> FlagPlayers { get; set; }
         public DbSet<ClubReview> ClubReviews { get; set; }
 
 

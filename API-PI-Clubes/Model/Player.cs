@@ -11,6 +11,7 @@ namespace API_PI_Clubes.Model
         public virtual User User { get; set; }
 
         public virtual ICollection<Reserve> Reserves { get; set; }
+        public virtual ICollection<FlagPlayer> Flags { get; set; } = new List<FlagPlayer>();
         public virtual ICollection<PlayerFavoriteSport> FavoriteSports { get; set; }
     }
 }

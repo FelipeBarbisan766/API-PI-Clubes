@@ -47,7 +47,7 @@ public class PlanConfiguration : IEntityTypeConfiguration<Plan>
                 Description = "Plano Basico Gratuito", 
                 Price = 0m, 
                 QuantClub = 1, 
-                QuantCourt = 0, 
+                QuantCourt = 1, 
                 DurationDays = 30,
                 IsActive = true, 
                 CreatedAt = new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc) 

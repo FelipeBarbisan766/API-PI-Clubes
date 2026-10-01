@@ -12,11 +12,16 @@ namespace API_PI_Clubes.Application.Services
     {
         private readonly IScheduleRepository _repository;
         private readonly IScheduleMapper _mapper;
+        private readonly IBookingPolicy _bookingPolicy;
 
-        public ScheduleService(IScheduleRepository repository, IScheduleMapper mapper)
+        public ScheduleService(
+            IScheduleRepository repository,
+            IScheduleMapper mapper,
+            IBookingPolicy bookingPolicy)
         {
             _repository = repository;
             _mapper = mapper;
+            _bookingPolicy = bookingPolicy;
         }
 
         public async Task<IEnumerable<ResponseScheduleDTO>> GetAll(CancellationToken cancellationToken)
@@ -25,35 +30,38 @@ namespace API_PI_Clubes.Application.Services
             return _mapper.ToDTO(data);
         }
 
-        public async Task<ResponseScheduleDTO> GetById(Guid id,CancellationToken cancellationToken)
+        public async Task<ResponseScheduleDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
 
-            var data = await _repository.GetByIdAsync(id,cancellationToken);
+            var data = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (data == null)
-                throw new NotFoundException("Horário", id); 
+                throw new NotFoundException("Horário", id);
 
             return _mapper.ToDTO(data);
         }
 
-        public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId, CancellationToken cancellationToken  )
+        public async Task<IEnumerable<ResponseScheduleDTO>> GetByCourtId(Guid courtId,
+            CancellationToken cancellationToken)
         {
             ValidateId(courtId);
 
-            var data = await _repository.GetByCourtIdAsync(courtId,cancellationToken);
+            var data = await _repository.GetByCourtIdAsync(courtId, cancellationToken);
             return _mapper.ToDTO(data);
         }
+
         public async Task<IEnumerable<ResponseScheduleAvailabilityDTO>> GetAvailabilityByCourtAndDate(
             Guid courtId, DateOnly date, CancellationToken cancellationToken)
         {
             ValidateId(courtId);
- 
+
             if (date == DateOnly.MinValue)
                 throw new ValidationException("Data inválida.");
- 
-            var schedules = await _repository.GetByCourtAndDateAsync(courtId, date,cancellationToken);
- 
+
+            var schedules = await _repository.GetByCourtAndDateAsync(
+                courtId, date, _bookingPolicy.GetEarliestBookable(), cancellationToken);
+
             return _mapper.ToAvailabilityDTO(schedules);
         }
 
@@ -70,85 +78,88 @@ namespace API_PI_Clubes.Application.Services
                 CourtId = dto.CourtId
             };
 
-            await _repository.AddAsync(entity,cancellationToken);
+            await _repository.AddAsync(entity, cancellationToken);
             await _repository.SaveChangesAsync(cancellationToken);
 
             return new ResponseIdDTO { Id = entity.Id };
         }
-        
-public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto, CancellationToken cancellationToken)
-{
-    ValidateBulkScheduleDTO(dto);
 
-    var existing = await _repository.GetByCourtAndDaysOfWeekAsync(dto.CourtId, dto.DaysOfWeek,cancellationToken);
-
-    var toCreate = new List<Schedule>();
-    var conflicts = new List<ScheduleConflictDTO>();
-
-    foreach (var day in dto.DaysOfWeek)
-    {
-        var current = dto.StartTime;
-
-        while (current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes)) <= dto.EndTime)
+        public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto,
+            CancellationToken cancellationToken)
         {
-            var slotEnd = current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes));
+            ValidateBulkScheduleDTO(dto);
 
-            var hasOverlap = existing.Any(s =>
-                s.DayOfWeek == day &&
-                current < s.EndTime &&
-                slotEnd > s.StartTime);
+            var existing =
+                await _repository.GetByCourtAndDaysOfWeekAsync(dto.CourtId, dto.DaysOfWeek, cancellationToken);
 
-            var hasOverlapWithBatch = toCreate.Any(s =>
-                s.DayOfWeek == day &&
-                current < s.EndTime &&
-                slotEnd > s.StartTime);
+            var toCreate = new List<Schedule>();
+            var conflicts = new List<ScheduleConflictDTO>();
 
-            if (hasOverlap || hasOverlapWithBatch)
+            foreach (var day in dto.DaysOfWeek)
             {
-                conflicts.Add(new ScheduleConflictDTO
+                var current = dto.StartTime;
+
+                while (current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes)) <= dto.EndTime)
                 {
-                    DayOfWeek = day,
-                    StartTime = current,
-                    EndTime = slotEnd,
-                    Reason = "Conflito com horário já existente"
-                });
-            }
-            else
-            {
-                toCreate.Add(new Schedule
-                {
-                    StartTime = current,
-                    EndTime = slotEnd,
-                    State = StateEnum.Actived,
-                    DayOfWeek = day,
-                    CourtId = dto.CourtId
-                });
+                    var slotEnd = current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes));
+
+                    var hasOverlap = existing.Any(s =>
+                        s.DayOfWeek == day &&
+                        current < s.EndTime &&
+                        slotEnd > s.StartTime);
+
+                    var hasOverlapWithBatch = toCreate.Any(s =>
+                        s.DayOfWeek == day &&
+                        current < s.EndTime &&
+                        slotEnd > s.StartTime);
+
+                    if (hasOverlap || hasOverlapWithBatch)
+                    {
+                        conflicts.Add(new ScheduleConflictDTO
+                        {
+                            DayOfWeek = day,
+                            StartTime = current,
+                            EndTime = slotEnd,
+                            Reason = "Conflito com horário já existente"
+                        });
+                    }
+                    else
+                    {
+                        toCreate.Add(new Schedule
+                        {
+                            StartTime = current,
+                            EndTime = slotEnd,
+                            State = StateEnum.Actived,
+                            DayOfWeek = day,
+                            CourtId = dto.CourtId
+                        });
+                    }
+
+                    current = slotEnd;
+                }
             }
 
-            current = slotEnd;
+            if (toCreate.Count > 0)
+            {
+                await _repository.AddRangeAsync(toCreate, cancellationToken);
+                await _repository.SaveChangesAsync(cancellationToken);
+            }
+
+            return new ResponseBulkScheduleDTO
+            {
+                Created = _mapper.ToDTO(toCreate).ToList(),
+                Conflicts = conflicts
+            };
         }
-    }
 
-    if (toCreate.Count > 0)
-    {
-        await _repository.AddRangeAsync(toCreate,cancellationToken);
-        await _repository.SaveChangesAsync(cancellationToken); 
-    }
-
-    return new ResponseBulkScheduleDTO
-    {
-        Created = _mapper.ToDTO(toCreate).ToList(),
-        Conflicts = conflicts
-    };
-}
-
-        public async Task<ResponseScheduleDTO> Update(Guid userId, Guid id, UpdateScheduleDTO dto, CancellationToken cancellationToken)
+        public async Task<ResponseScheduleDTO> Update(Guid userId, Guid id, UpdateScheduleDTO dto,
+            CancellationToken cancellationToken)
         {
             ValidateId(id);
             ValidateUpdateScheduleDTO(dto);
-            await AuthorizeOwnership(userId, id,cancellationToken);
+            await AuthorizeOwnership(userId, id, cancellationToken);
 
-            var data = await _repository.GetByIdAsync(id,cancellationToken);
+            var data = await _repository.GetByIdAsync(id, cancellationToken);
 
             if (data == null)
                 throw new NotFoundException("Horário", id);
@@ -168,19 +179,19 @@ public async Task<ResponseBulkScheduleDTO> CreateBulk(CreateBulkScheduleDTO dto,
         public async Task Delete(Guid userId, Guid id, CancellationToken cancellationToken)
         {
             ValidateId(id);
-            await AuthorizeOwnership(userId, id,cancellationToken);
+            await AuthorizeOwnership(userId, id, cancellationToken);
 
-            var exists = await _repository.ExistsAsync(id,cancellationToken);
+            var exists = await _repository.ExistsAsync(id, cancellationToken);
 
             if (!exists)
                 throw new NotFoundException("Horário", id);
 
-            await _repository.DeleteAsync(id,cancellationToken);
+            await _repository.DeleteAsync(id, cancellationToken);
         }
 
         private async Task AuthorizeOwnership(Guid userId, Guid id, CancellationToken cancellationToken)
         {
-            var isOwner = await _repository.IsOwnedByUserAsync(id, userId,cancellationToken);
+            var isOwner = await _repository.IsOwnedByUserAsync(id, userId, cancellationToken);
             if (!isOwner)
                 throw new ForbiddenException("Você não tem permissão para gerenciar este horário.");
         }

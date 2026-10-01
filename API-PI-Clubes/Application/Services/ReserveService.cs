@@ -13,15 +13,22 @@ namespace API_PI_Clubes.Application.Services
         private readonly IReserveRepository _repository;
         private readonly IReserveMapper _mapper;
         private readonly IReserveNotificationService _notificationService;
+        private readonly IScheduleRepository _scheduleRepository;
+        private readonly IBookingPolicy _bookingPolicy;
 
         public ReserveService(
             IReserveMapper mapper,
             IReserveRepository repository,
-            IReserveNotificationService notificationService)
+            IReserveNotificationService notificationService,
+            IScheduleRepository scheduleRepository,
+            IBookingPolicy bookingPolicy
+            )
         {
             _mapper = mapper;
             _repository = repository;
             _notificationService = notificationService;
+            _scheduleRepository = scheduleRepository;
+            _bookingPolicy = bookingPolicy;
         }
 
         public async Task<IEnumerable<ResponseReserveDTO>> GetAll(CancellationToken cancellationToken)
@@ -136,6 +143,17 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateReserveDTO(dto);
 
+            var schedule = await _scheduleRepository.GetByIdAsync(dto.ScheduleId, cancellationToken);
+
+            if (schedule == null)
+                throw new NotFoundException("Horário", dto.ScheduleId);
+
+            if (dto.Date.DayOfWeek != schedule.DayOfWeek)
+                throw new ValidationException("A data informada não corresponde ao dia da semana do horário.");
+
+            if (!_bookingPolicy.IsBookable(dto.Date, schedule.StartTime))
+                throw new ValidationException("Este horário não está mais disponível para reserva.");
+            
             var entity = new Reserve
             {
                 Date = dto.Date,

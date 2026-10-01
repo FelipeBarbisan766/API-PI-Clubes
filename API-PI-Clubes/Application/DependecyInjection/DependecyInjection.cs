@@ -1,4 +1,5 @@
 ﻿using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.Common;
 using API_PI_Clubes.Application.Email;
 using API_PI_Clubes.Application.Interfaces.IMappers;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
@@ -97,6 +98,10 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
             services.AddScoped<ICpfEncryptionService, AesCpfEncryptionService>();
+            
+            services.Configure<BookingOptions>(configuration.GetSection(BookingOptions.SectionName));
+            services.AddSingleton(TimeProvider.System);
+            services.AddSingleton<IBookingPolicy, BookingPolicy>();
             
             return services;
         }

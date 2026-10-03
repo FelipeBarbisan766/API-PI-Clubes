@@ -95,30 +95,26 @@ namespace API_PI_Clubes.Application.Services
             var toCreate = new List<Schedule>();
             var conflicts = new List<ScheduleConflictDTO>();
 
-            foreach (var day in dto.DaysOfWeek)
+            var duration = TimeSpan.FromMinutes(dto.SlotDurationMinutes);
+            var start = dto.StartTime.ToTimeSpan();
+            var end = dto.EndTime.ToTimeSpan();
+
+            foreach (var day in dto.DaysOfWeek.Distinct())
             {
-                var current = dto.StartTime;
-
-                while (current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes)) <= dto.EndTime)
+                for (var s = start; s + duration <= end; s += duration)
                 {
-                    var slotEnd = current.Add(TimeSpan.FromMinutes(dto.SlotDurationMinutes));
+                    var slotStart = TimeOnly.FromTimeSpan(s);
+                    var slotEnd = TimeOnly.FromTimeSpan(s + duration);
 
-                    var hasOverlap = existing.Any(s =>
-                        s.DayOfWeek == day &&
-                        current < s.EndTime &&
-                        slotEnd > s.StartTime);
+                    var hasOverlap = existing.Any(x =>
+                        x.DayOfWeek == day && slotStart < x.EndTime && slotEnd > x.StartTime);
 
-                    var hasOverlapWithBatch = toCreate.Any(s =>
-                        s.DayOfWeek == day &&
-                        current < s.EndTime &&
-                        slotEnd > s.StartTime);
-
-                    if (hasOverlap || hasOverlapWithBatch)
+                    if (hasOverlap)
                     {
                         conflicts.Add(new ScheduleConflictDTO
                         {
                             DayOfWeek = day,
-                            StartTime = current,
+                            StartTime = slotStart,
                             EndTime = slotEnd,
                             Reason = "Conflito com horário já existente"
                         });
@@ -127,15 +123,13 @@ namespace API_PI_Clubes.Application.Services
                     {
                         toCreate.Add(new Schedule
                         {
-                            StartTime = current,
+                            StartTime = slotStart,
                             EndTime = slotEnd,
                             State = StateEnum.Actived,
                             DayOfWeek = day,
                             CourtId = dto.CourtId
                         });
                     }
-
-                    current = slotEnd;
                 }
             }
 
@@ -232,6 +226,8 @@ namespace API_PI_Clubes.Application.Services
                 throw new ValidationException("O horário de início deve ser antes do de término.");
             if (dto.SlotDurationMinutes <= 0)
                 throw new ValidationException("A duração do slot deve ser maior que zero.");
+            if (dto.SlotDurationMinutes > 24 * 60)
+                throw new ValidationException("A duração do slot é inválida.");
         }
     }
 }

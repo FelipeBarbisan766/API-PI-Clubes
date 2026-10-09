@@ -9,5 +9,5 @@ public interface IClubReviewService
     Task<ResponseClubReviewSummaryDTO> RerateClub(Guid userId, Guid clubId, CreateClubReviewDTO dto,
         CancellationToken cancellationToken);
     Task<ResponseClubReviewSummaryDTO> GetSummary(Guid clubId, CancellationToken cancellationToken);
-    Task<Boolean> VerifyReview(Guid userId, Guid clubId, CancellationToken cancellationToken);
+    Task<ResponseClubReviewDTO> VerifyReview(Guid userId, Guid clubId, CancellationToken cancellationToken);
 }

@@ -105,5 +105,9 @@ namespace API_PI_Clubes.Application.DTOs
         public decimal AverageRating { get; set; }
         public int TotalReviews { get; set; }
     }
+    public class ResponseClubReviewDTO
+    {
+        public decimal Rating { get; set; }
+    }
     
 }

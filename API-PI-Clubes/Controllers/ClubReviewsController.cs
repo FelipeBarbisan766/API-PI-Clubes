@@ -21,6 +21,13 @@ public class ClubReviewsController : ControllerBase
         var summary = await _service.RateClub(userId, clubId, dto, cancellationToken);
         return Ok(summary);
     }
+    [HttpPut]
+    public async Task<IActionResult> RerateClub(Guid clubId, [FromBody] CreateClubReviewDTO dto, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var summary = await _service.RerateClub(userId, clubId, dto, cancellationToken);
+        return Ok(summary);
+    }
 
     [HttpGet("summary")]
     [AllowAnonymous]

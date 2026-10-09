@@ -38,7 +38,7 @@ public class ClubReviewService : IClubReviewService
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
         var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
-        if (alreadyReviewed)
+        if (alreadyReviewed != null)
             throw new ConflictException("Você já avaliou este clube.");
 
         var review = new ClubReview
@@ -57,6 +57,39 @@ public class ClubReviewService : IClubReviewService
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx &&
             (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            throw new ConflictException("Você já avaliou este clube.");
+        }
+
+        return await _repository.GetSummaryByClubIdAsync(clubId, cancellationToken);
+    }
+    public async Task<ResponseClubReviewSummaryDTO> RerateClub(Guid userId, Guid clubId, CreateClubReviewDTO dto, CancellationToken cancellationToken)
+    {
+        if (clubId == Guid.Empty)
+            throw new ValidationException("O ID do clube informado é inválido.");
+
+        var clubExists = await _clubRepository.ExistsAsync(clubId, cancellationToken);
+        if (!clubExists)
+            throw new NotFoundException("Clube", clubId);
+
+        var playerId = await _playerRepository.GetIdByUserIdAsync(userId, cancellationToken);
+        if (playerId == null)
+            throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
+
+        var review = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
+        if (review == null)
+            throw new ConflictException("Você ainda Não avaliou este clube.");
+        
+        review.Rating = dto.Rating;
+
+        await _repository.UpdateAsync(review, cancellationToken);
+
+        try
+        {
+            await _repository.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx &&
+                                           (sqlEx.Number == 2601 || sqlEx.Number == 2627))
         {
             throw new ConflictException("Você já avaliou este clube.");
         }
@@ -83,7 +116,7 @@ public class ClubReviewService : IClubReviewService
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
         var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
-        if (alreadyReviewed)
+        if (alreadyReviewed != null)
             return true;
         
         return false;

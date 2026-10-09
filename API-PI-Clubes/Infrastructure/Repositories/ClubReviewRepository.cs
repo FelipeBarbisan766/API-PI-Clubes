@@ -12,10 +12,10 @@ public class ClubReviewRepository : IClubReviewRepository
 
     public ClubReviewRepository(AppDbContext context) => _context = context;
 
-    public async Task<bool> ExistsAsync(Guid clubId, Guid playerId, CancellationToken cancellationToken)
+    public async Task<ClubReview?> ExistsAsync(Guid clubId, Guid playerId, CancellationToken cancellationToken)
     {
         return await _context.ClubReviews
-            .AnyAsync(cr => cr.ClubId == clubId && cr.PlayerId == playerId,cancellationToken);
+            .FirstOrDefaultAsync(cr => cr.ClubId == clubId && cr.PlayerId == playerId,cancellationToken);
     }
 
     public async Task AddAsync(ClubReview review, CancellationToken cancellationToken)
@@ -23,6 +23,10 @@ public class ClubReviewRepository : IClubReviewRepository
         await _context.ClubReviews.AddAsync(review,cancellationToken );
     }
 
+    public async Task UpdateAsync(ClubReview review, CancellationToken cancellationToken)
+    {
+        _context.ClubReviews.Update(review);
+    }
     public async Task SaveChangesAsync( CancellationToken cancellationToken)
     {
         await _context.SaveChangesAsync(cancellationToken);

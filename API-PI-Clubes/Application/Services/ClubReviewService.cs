@@ -109,16 +109,20 @@ public class ClubReviewService : IClubReviewService
         return await _repository.GetSummaryByClubIdAsync(clubId, cancellationToken);
     }
 
-    public async Task<Boolean> VerifyReview(Guid userId, Guid clubId, CancellationToken cancellationToken)
+    public async Task<ResponseClubReviewDTO> VerifyReview(Guid userId, Guid clubId, CancellationToken cancellationToken)
     {
         var playerId = await _playerRepository.GetIdByUserIdAsync(userId, cancellationToken);
         if (playerId == null)
             throw new ForbiddenException("Apenas jogadores podem avaliar clubes.");
 
-        var alreadyReviewed = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
-        if (alreadyReviewed != null)
-            return true;
-        
-        return false;
+        var review = await _repository.ExistsAsync(clubId, playerId, cancellationToken);
+        if (review == null)
+            return null;
+
+        var clubReview = new ResponseClubReviewDTO()
+        {
+            Rating = review.Rating
+        };
+        return clubReview;
     }
 }

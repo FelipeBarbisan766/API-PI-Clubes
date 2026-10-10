@@ -20,7 +20,7 @@ public class BookingPolicy : IBookingPolicy
     public DateTime GetEarliestBookable()
     {
         var localNow = TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), _timeZone).DateTime;
-        return localNow.AddMinutes(_options.MinAdvanceMinutes);
+        return localNow.AddMinutes(_options.BookingCutoffMinutes);
     }
     
     public bool IsBookable(DateTime date, TimeOnly startTime)

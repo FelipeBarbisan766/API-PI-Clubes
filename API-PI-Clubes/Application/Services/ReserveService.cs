@@ -15,13 +15,15 @@ namespace API_PI_Clubes.Application.Services
         private readonly IReserveNotificationService _notificationService;
         private readonly IScheduleRepository _scheduleRepository;
         private readonly IBookingPolicy _bookingPolicy;
+        private readonly ICancellationPolicy _cancellationPolicy;
 
         public ReserveService(
             IReserveMapper mapper,
             IReserveRepository repository,
             IReserveNotificationService notificationService,
             IScheduleRepository scheduleRepository,
-            IBookingPolicy bookingPolicy
+            IBookingPolicy bookingPolicy,
+            ICancellationPolicy cancellationPolicy
             )
         {
             _mapper = mapper;
@@ -29,6 +31,7 @@ namespace API_PI_Clubes.Application.Services
             _notificationService = notificationService;
             _scheduleRepository = scheduleRepository;
             _bookingPolicy = bookingPolicy;
+            _cancellationPolicy = cancellationPolicy;
         }
 
         public async Task<IEnumerable<ResponseReserveDTO>> GetAll(CancellationToken cancellationToken)
@@ -76,6 +79,7 @@ namespace API_PI_Clubes.Application.Services
                 PhoneNumber = r.Player.User.PhoneNumber,
                 UserId = r.Player.UserId,
                 DateOfReservation = r.CreatedAt,
+                CanCancel = _cancellationPolicy.CanCancel(r.Date, r.Schedule.StartTime, r.Status),
                 Schedule = new ScheduleReserveDTO
                 {
                     StartTime = r.Schedule.StartTime,
@@ -111,6 +115,7 @@ namespace API_PI_Clubes.Application.Services
                 Id = r.Id,
                 Date = r.Date,
                 Status = r.Status,
+                CanCancel = _cancellationPolicy.CanCancel(r.Date, r.Schedule.StartTime, r.Status),
                 Club = new ClubReserveDTO()
                 {
                     Name = r.Schedule.Court.Club.Name,
@@ -166,7 +171,6 @@ namespace API_PI_Clubes.Application.Services
             await _repository.AddAsync(entity,cancellationToken);
             await _repository.SaveChangesAsync(cancellationToken);
 
-            // busca com Schedule.Court já carregado pra pegar o ClubId
             var withClub = await _repository.GetByIdWithClubAsync(entity.Id,cancellationToken);
 
             if (withClub != null)
@@ -191,11 +195,16 @@ namespace API_PI_Clubes.Application.Services
         {
             ValidateId(id);
 
+            
             var entity = await _repository.GetByIdWithClubAsync(id,cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("Reserva", id); 
 
+            if (status == StatusEnum.Cancelada &&
+                !_cancellationPolicy.CanCancel(entity.Date, entity.Schedule.StartTime, entity.Status))
+                throw new ConflictException("Essa Reserva Não Pode Mais ser Cancelada"); 
+            
             entity.Status = status;
 
             _repository.Update(entity);

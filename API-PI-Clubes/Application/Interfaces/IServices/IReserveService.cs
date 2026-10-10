@@ -13,6 +13,5 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         Task<ResponseIdDTO> Create(CreatReserveDTO dto, CancellationToken cancellationToken);
         Task ChangeStatus(Guid id, StatusEnum status, CancellationToken cancellationToken);
         Task<ResponseReserveDTO> Update(Guid id, UpdateReserveDTO dto, CancellationToken cancellationToken);
-        Task Delete(Guid id, CancellationToken cancellationToken);
     }
 }

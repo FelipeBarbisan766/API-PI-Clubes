@@ -1,4 +1,5 @@
-﻿using API_PI_Clubes.Model.Enums;
+﻿using System.Runtime.InteropServices.JavaScript;
+using API_PI_Clubes.Model.Enums;
 
 namespace API_PI_Clubes.Application.DTOs
 {
@@ -39,6 +40,7 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid UserId { get; set; }
         public DateTime DateOfReservation { get; set; }
         public ScheduleReserveDTO Schedule { get; set; } = null!;
+        public bool CanCancel { get; set; }
     }
     public class ResponseReserveDetailToPlayerDTO
     {
@@ -47,6 +49,7 @@ namespace API_PI_Clubes.Application.DTOs
         public StatusEnum Status { get; set; }
         public ScheduleReserveDTO Schedule { get; set; } = null!;
         public ClubReserveDTO Club { get; set; } = null!;
+        public bool CanCancel { get; set; }
     }
     public class ReserveAvailabilityChangedDTO
     {

@@ -102,6 +102,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.Configure<BookingOptions>(configuration.GetSection(BookingOptions.SectionName));
             services.AddSingleton(TimeProvider.System);
             services.AddSingleton<IBookingPolicy, BookingPolicy>();
+            services.AddScoped<ICancellationPolicy, CancellationPolicy>();
             
             return services;
         }

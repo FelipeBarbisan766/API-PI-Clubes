@@ -76,13 +76,5 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.Update(id, dto,cancellationToken);
             return Ok(result);
         }
-
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
-        {
-            await _service.Delete(id,cancellationToken);
-            return NoContent();
-        }
     }
 }

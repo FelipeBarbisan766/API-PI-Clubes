@@ -188,6 +188,32 @@ namespace API_PI_Clubes.Application.Auth
             _repository.Update(user);
             await _repository.SaveChangesAsync( cancellationToken);
         }
+        public async Task ChangeEmail(Guid userId, ChangeEmailDTO request, CancellationToken cancellationToken)
+        {
+            var emailExists = await _repository.GetByEmailAsync(request.NewEmail, cancellationToken);
+            if (emailExists is not null)
+                throw new ConflictException("Esse Email já está sendo usado por outra conta.");
+            
+            var user = await _repository.GetByIdAsync(userId, cancellationToken);
+            if (user is null)
+                throw new NotFoundException("Usuário não encontrado.");
+
+            var verifyPassword = _passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!verifyPassword)
+                throw new InvalidCredentialsException("Senha atual incorreta.");
+
+            await _emailService.SendAlertEmailChangeAsync( user.Email , user.Name, request.NewEmail);
+            
+            user.EmailVerification = EmailVerificationVO.Create();
+            
+            var token = _tokenService.GenerateEmailVerificationToken(user.Id);
+            await _emailService.SendVerificationEmailAsync( request.NewEmail , user.Name, token);
+            
+            user.Email = request.NewEmail;
+            
+            _repository.Update(user);
+            await _repository.SaveChangesAsync( cancellationToken);
+        }
         public async Task<UserDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken)
         {
             var entity = await _repository.GetByIdAsync(id, cancellationToken);

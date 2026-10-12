@@ -19,4 +19,9 @@
         public string Password { get; set; }
         public string NewPassword { get; set; }
     }
+    public class ChangeEmailDTO
+    {
+        public string Password { get; set; }
+        public string NewEmail { get; set; }
+    }
 }

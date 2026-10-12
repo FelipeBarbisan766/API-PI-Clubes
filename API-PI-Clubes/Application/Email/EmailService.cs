@@ -60,6 +60,14 @@ public class EmailService : IEmailService
 
         await SendEmailAsync(recipientEmail, recipientName, subject, htmlBody);
     }
+    
+    public async Task SendAlertEmailChangeAsync(string recipientEmail, string recipientName, string newEmail)
+    {
+        var subject = "Alerta seu Email Foi Alterado ! - Clubera PI";
+        var htmlBody = _emailBodyService.GenerateEmailChangedHtml(recipientName,newEmail);
+
+        await SendEmailAsync(recipientEmail, recipientName, subject, htmlBody);
+    }
     public async Task SendResetPasswordAsync(string recipientEmail, string recipientName, string jwtToken)
     {
 

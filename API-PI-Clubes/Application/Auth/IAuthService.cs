@@ -13,6 +13,7 @@ namespace API_PI_Clubes.Application.Auth
         Task RequestResetPassword(string email, CancellationToken cancellationToken);
         Task<bool> ResetPassword(ResetPassword request, CancellationToken cancellationToken);
         Task ChangePassword(Guid userId, ChangePasswordDTO request, CancellationToken cancellationToken);
+        Task ChangeEmail(Guid userId, ChangeEmailDTO request, CancellationToken cancellationToken);
         Task<UserDTO> GetCurrentUserInfo(Guid id, CancellationToken cancellationToken);
         Task GoogleSignUp(string idToken, CancellationToken cancellationToken);
         Task<User> GoogleLogin(string idToken, CancellationToken cancellationToken); 

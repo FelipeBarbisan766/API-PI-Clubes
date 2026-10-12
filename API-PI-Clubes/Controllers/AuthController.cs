@@ -87,7 +87,15 @@ namespace API_PI_Clubes.Controllers
             await _authService.ChangePassword(userId, request, cancellationToken);
             return NoContent();
         }
-
+        [Authorize]
+        [HttpPost("changeEmail")]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDTO request, CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            await _authService.ChangeEmail(userId, request, cancellationToken);
+            await _cookieAuthService.SignOutAsync(HttpContext);
+            return NoContent();
+        }
         [HttpPost("logout")]
         public async Task<IActionResult> Logout( CancellationToken cancellationToken)
         {

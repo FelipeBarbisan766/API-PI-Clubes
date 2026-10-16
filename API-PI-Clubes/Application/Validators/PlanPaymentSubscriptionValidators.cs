@@ -64,9 +64,7 @@ namespace API_PI_Clubes.Application.Validators
     {
         public CreatePaymentDtoValidator()
         {
-            RuleFor(x => x.AdminId).NotEmpty();
             RuleFor(x => x.PlanId).NotEmpty();
-            RuleFor(x => x.Method).IsInEnum();
         }
     }
 

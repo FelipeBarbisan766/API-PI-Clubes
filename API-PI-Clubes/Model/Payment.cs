@@ -6,10 +6,10 @@ namespace API_PI_Clubes.Model
         {
             public decimal Amount { get; set; }
             public DateTime Date { get; set; } = DateTime.UtcNow;
-            public PaymentMethod Method { get; set; }
+            public string? Method { get; set; }
             public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
  
-            public string? MercadoPagoPreferenceId { get; set; }  
+            public string? MercadoPagoOrderId { get; set; }  
             public string? MercadoPagoPaymentId { get; set; } 
  
             public Guid AdminId { get; set; }

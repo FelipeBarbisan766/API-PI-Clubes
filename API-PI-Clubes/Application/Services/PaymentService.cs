@@ -63,8 +63,7 @@ namespace API_PI_Clubes.Application.Services
                     {
                         Title = plan.Name,
                         UnitPrice = amount,
-                        Quantity = 1,
-                        TotalAmount = amount
+                        Quantity = 1
                     }
                 ],
                 Config = new MpOrderConfig

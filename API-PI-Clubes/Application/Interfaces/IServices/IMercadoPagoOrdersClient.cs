@@ -27,8 +27,6 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         [JsonPropertyName("title")] public required string Title { get; init; }
         [JsonPropertyName("unit_price")] public required string UnitPrice { get; init; }
         [JsonPropertyName("quantity")] public int Quantity { get; init; } = 1;
-        [JsonPropertyName("unit_measure")] public string UnitMeasure { get; init; } = "unit";
-        [JsonPropertyName("total_amount")] public required string TotalAmount { get; init; }
     }
 
     public sealed class MpOrderConfig

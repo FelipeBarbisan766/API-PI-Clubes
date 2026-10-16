@@ -9,14 +9,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
 using API_PI_Clubes.Api.Filters;
 using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Validators;
 using API_PI_Clubes.Hubs;
 using API_PI_Clubes.Infrastructure.Jobs;
 using API_PI_Clubes.Infrastructure.Middlewares;
+using API_PI_Clubes.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.FileProviders;
@@ -83,6 +86,14 @@ builder.Services.AddSignalR()
     .AddJsonProtocol(options => { options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
+var mpAccessToken = builder.Configuration["MercadoPago:AccessToken"]
+                    ?? throw new InvalidOperationException("MercadoPago:AccessToken não configurado.");
+
+builder.Services.AddHttpClient<IMercadoPagoOrdersClient, MercadoPagoOrdersClient>(c =>
+{
+    c.BaseAddress = new Uri("https://api.mercadopago.com/");
+    c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", mpAccessToken);
+});
 
 // --- 5. Configuração de CORS ---
 builder.Services.AddCors(options =>
@@ -112,10 +123,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHostedService<SubscriptionExpiryJob>();
 
 var app = builder.Build();
-
-MercadoPago.Config.MercadoPagoConfig.AccessToken = builder.Configuration["MercadoPago:AccessToken"]
-                                                   ?? throw new InvalidOperationException(
-                                                       "MercadoPago:AccessToken não configurado.");
 
 app.UseMiddleware<ExceptionMiddleware>();
 

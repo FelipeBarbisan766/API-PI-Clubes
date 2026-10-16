@@ -10,6 +10,7 @@ using API_PI_Clubes.Application.Storage;
 using API_PI_Clubes.Infrastructure.Repositories;
 using API_PI_Clubes.Infrastructure.Security;
 using API_PI_Clubes.Infrastructure.Security.Interfaces;
+using API_PI_Clubes.Infrastructure.Services;
 using API_PI_Clubes.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -68,6 +69,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
             
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IMercadoPagoOrdersClient, MercadoPagoOrdersClient>();
             
             services.AddScoped<ISubscriptionService, SubscriptionService>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
@@ -103,6 +105,7 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddSingleton(TimeProvider.System);
             services.AddSingleton<IBookingPolicy, BookingPolicy>();
             services.AddScoped<ICancellationPolicy, CancellationPolicy>();
+            
             
             return services;
         }

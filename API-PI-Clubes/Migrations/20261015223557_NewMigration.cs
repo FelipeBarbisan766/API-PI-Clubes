@@ -44,8 +44,8 @@ namespace API_PI_Clubes.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -65,7 +65,7 @@ namespace API_PI_Clubes.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     Method = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    MercadoPagoPreferenceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MercadoPagoOrderId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MercadoPagoPaymentId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -493,9 +493,22 @@ namespace API_PI_Clubes.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Flags",
+                columns: new[] { "Id", "CreatedAt", "DeletedAt", "Description", "IsActive", "Name", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { new Guid("22222222-0000-0000-0000-000000000001"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Reservou a quadra e não compareceu, sem avisar.", true, "No-show", null },
+                    { new Guid("22222222-0000-0000-0000-000000000002"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Chegou muito depois do horário reservado, prejudicando o uso da quadra.", true, "Atraso excessivo", null },
+                    { new Guid("22222222-0000-0000-0000-000000000003"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Cancelou a reserva sem antecedência, deixando o horário vazio.", true, "Cancelamento em cima da hora", null },
+                    { new Guid("22222222-0000-0000-0000-000000000004"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Causou danos à quadra ou aos equipamentos do clube.", true, "Danos à quadra", null },
+                    { new Guid("22222222-0000-0000-0000-000000000005"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Conduta agressiva ou desrespeitosa com outros jogadores ou funcionários.", true, "Comportamento inadequado", null },
+                    { new Guid("22222222-0000-0000-0000-000000000006"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Utilizou a quadra e não realizou o pagamento.", true, "Falta de pagamento", null }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Plans",
                 columns: new[] { "Id", "CreatedAt", "DeletedAt", "Description", "DurationDays", "IsActive", "Name", "Price", "QuantClub", "QuantCourt", "UpdatedAt" },
-                values: new object[] { new Guid("11111111-0000-0000-0000-000000000001"), new DateTime(2023, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Plano Basico Gratuito", 30, true, "Free", 0m, 1, 0, null });
+                values: new object[] { new Guid("11111111-0000-0000-0000-000000000001"), new DateTime(2023, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Plano Basico Gratuito", 30, true, "Free", 0m, 1, 1, null });
 
             migrationBuilder.InsertData(
                 table: "Sports",
@@ -577,6 +590,12 @@ namespace API_PI_Clubes.Migrations
                 columns: new[] { "ReserveId", "FlagId" },
                 unique: true,
                 filter: "[ReserveId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Flags_Name",
+                table: "Flags",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ClubId",

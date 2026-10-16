@@ -13,6 +13,7 @@ namespace API_PI_Clubes.Controllers
     {
         private readonly IPaymentService _service;
         private readonly ILogger<PaymentController> _logger;
+
         public PaymentController(IPaymentService service, ILogger<PaymentController> logger)
         {
             _logger = logger;
@@ -31,41 +32,38 @@ namespace API_PI_Clubes.Controllers
         [HttpPost("webhook")]
         public async Task<IActionResult> Webhook(
             [FromBody] MercadoPagoWebhookDto? bodyDto,
-            [FromQuery] string? id,
-            [FromQuery] string? topic,
-            [FromQuery] string? type
-            , CancellationToken cancellationToken)
+            [FromQuery(Name = "data.id")] string? dataId,
+            [FromQuery] string? type)
         {
-            try
+            _logger.LogInformation(
+                "Webhook recebido — body: {@Body} | data.id: {DataId} | type: {Type}",
+                bodyDto, dataId, type);
+
+            // O Mercado Pago assina usando o data.id da QUERY STRING, então ela é a fonte principal.
+            var id = dataId ?? bodyDto?.Data?.Id;
+            if (string.IsNullOrWhiteSpace(id))
             {
-                _logger.LogInformation(
-                    "Webhook recebido — body: {@Body} | query id: {Id} | topic: {Topic} | type: {Type}",
-                    bodyDto, id, topic, type);
-
-                var webhookData = new MercadoPagoWebhookDto(
-                    Action: bodyDto?.Action ?? topic ?? type ?? string.Empty,
-                    Data: new MercadoPagoWebhookDataDto(
-                        Id: bodyDto?.Data?.Id ?? id ?? string.Empty
-                    )
-                );
-
-                if (string.IsNullOrEmpty(webhookData.Data.Id))
-                {
-                    _logger.LogWarning("Webhook recebido sem ID. Ignorando.");
-                    return Ok();
-                }
-
-                var signatureHeader = Request.Headers["x-signature"].ToString();
-                var requestIdHeader = Request.Headers["x-request-id"].ToString();
-
-                await _service.HandleWebhookAsync(webhookData, signatureHeader, requestIdHeader, cancellationToken);
+                _logger.LogWarning("Webhook recebido sem ID. Ignorando.");
                 return Ok();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao processar webhook do Mercado Pago.");
-                return Ok();
-            }
+
+            var webhookData = new MercadoPagoWebhookDto(
+                Action: bodyDto?.Action,
+                Type: bodyDto?.Type ?? type,
+                Data: new MercadoPagoWebhookDataDto(id)
+            );
+
+            var signatureHeader = Request.Headers["x-signature"].ToString();
+            var requestIdHeader = Request.Headers["x-request-id"].ToString();
+
+            // Sem try/catch de propósito (padrão do projeto): se algo transitório falhar (API do MP fora,
+            // banco), o ExceptionMiddleware devolve erro e o Mercado Pago reenvia a notificação depois.
+            // Casos inválidos/ignoráveis o service resolve com return, e aí respondemos 200.
+            //
+            // CancellationToken.None: quem chama não é o usuário final, e o MP derruba a conexão após 22s.
+            // Usar o RequestAborted poderia cancelar o processamento no meio. Troque se decidir diferente.
+            await _service.HandleWebhookAsync(webhookData, signatureHeader, requestIdHeader, CancellationToken.None);
+            return Ok();
         }
 
         [HttpGet("history")]

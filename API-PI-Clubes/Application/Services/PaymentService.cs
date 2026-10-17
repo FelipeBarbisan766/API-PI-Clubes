@@ -353,11 +353,17 @@ namespace API_PI_Clubes.Application.Services
         private void LogSignatureDiagnostics(string secret, string dataId, string requestId, string ts,
             string expectedHash)
         {
+            var lowerId = dataId.ToLowerInvariant();
+            // Se um proxy duplicou o X-Request-Id, o header chega como "valor1,valor2".
+            var firstRequestId = requestId.Split(',')[0].Trim();
+
             var variants = new Dictionary<string, string>
             {
-                ["id minúsculo, com ';' final (atual)"] = $"id:{dataId.ToLowerInvariant()};request-id:{requestId};ts:{ts};",
-                ["id original, com ';' final"] = $"id:{dataId};request-id:{requestId};ts:{ts};",
-                ["id minúsculo, sem ';' final"] = $"id:{dataId.ToLowerInvariant()};request-id:{requestId};ts:{ts}",
+                ["atual (id minúsculo + request-id + ts)"] = $"id:{lowerId};request-id:{requestId};ts:{ts};",
+                ["id original, sem minúsculas"] = $"id:{dataId};request-id:{requestId};ts:{ts};",
+                ["sem ';' final"] = $"id:{lowerId};request-id:{requestId};ts:{ts}",
+                ["request-id: só o primeiro valor"] = $"id:{lowerId};request-id:{firstRequestId};ts:{ts};",
+                ["sem request-id"] = $"id:{lowerId};ts:{ts};",
             };
 
             var trimmed = secret.Trim();
@@ -369,9 +375,17 @@ namespace API_PI_Clubes.Application.Services
                     matches.Add($"{name} (com secret sem espaços nas pontas)");
             }
 
+            // Impressão digital curta (6 primeiros hex do SHA-256) para comparar com o secret do painel
+            // SEM expor o secret. No terminal: printf '%s' 'SEU_SECRET' | sha256sum | cut -c1-6
+            var fingerprint = Convert.ToHexString(
+                System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(secret)))[..6].ToLowerInvariant();
+
             _logger.LogWarning(
-                "Diagnóstico de assinatura — secretLength: {Len}, temEspacoNasPontas: {Spaces}, variantesQueBatem: {Matches}",
-                secret.Length, trimmed != secret, matches.Count == 0 ? "nenhuma" : string.Join(" | ", matches));
+                "Diagnóstico de assinatura — secretLength: {Len}, secretSha256Prefix: {Fp}, temEspacoNasPontas: {Spaces}, " +
+                "xRequestIdRecebido: [{RequestId}] ({Count} valor(es)), ts: {Ts}, variantesQueBatem: {Matches}",
+                secret.Length, fingerprint, trimmed != secret,
+                requestId, requestId.Split(',').Length, ts,
+                matches.Count == 0 ? "nenhuma" : string.Join(" | ", matches));
         }
     }
 }

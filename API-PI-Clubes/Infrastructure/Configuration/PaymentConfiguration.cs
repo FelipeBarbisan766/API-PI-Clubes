@@ -21,8 +21,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         builder.Property(p => p.Method)
             .HasConversion<string>()
-            .HasMaxLength(20)
-            .IsRequired();
+            .HasMaxLength(50);
 
         builder.Property(p => p.Status)
             .HasConversion<string>()

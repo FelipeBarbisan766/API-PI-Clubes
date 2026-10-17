@@ -429,9 +429,8 @@ namespace API_PI_Clubes.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Method")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("PlanId")
                         .HasColumnType("uniqueidentifier");

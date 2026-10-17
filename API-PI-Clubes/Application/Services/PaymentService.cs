@@ -111,6 +111,19 @@ namespace API_PI_Clubes.Application.Services
         public async Task HandleWebhookAsync(MercadoPagoWebhookDto webhook, string? signatureHeader,
             string? requestIdHeader, CancellationToken cancellationToken)
         {
+            // TEMPORÁRIO: remover depois. Com MercadoPago:DiagnoseSignatureOnAllEvents=true, valida a assinatura de
+            // QUALQUER evento (inclusive os do simulador, que seriam ignorados abaixo) só para registrar o resultado.
+            if (_configuration.GetValue<bool>("MercadoPago:DiagnoseSignatureOnAllEvents")
+                && !string.IsNullOrWhiteSpace(webhook.Data?.Id))
+            {
+                var signatureOk = IsValidSignature(webhook.Data!.Id!, signatureHeader, requestIdHeader);
+                _logger.LogWarning(
+                    "Diagnóstico geral — evento {Type}/{Action}, data.id {Id}, x-signature presente: {HasSig}, " +
+                    "x-request-id presente: {HasReq}, assinatura válida: {Ok}",
+                    webhook.Type, webhook.Action, webhook.Data.Id,
+                    !string.IsNullOrEmpty(signatureHeader), !string.IsNullOrEmpty(requestIdHeader), signatureOk);
+            }
+
             if (!IsOrderEvent(webhook))
             {
                 _logger.LogInformation("Webhook ignorado — type: {Type}, action: {Action}", webhook.Type,
@@ -334,7 +347,7 @@ namespace API_PI_Clubes.Application.Services
             if (HashesMatch(secret, manifest, expectedHash))
                 return true;
 
-            LogSignatureDiagnostics(secret, dataId, requestIdHeader, ts, expectedHash); // TEMPORÁRIO: remover depois
+            LogSignatureDiagnostics(secret, dataId, requestIdHeader, ts, expectedHash, signatureHeader); // TEMPORÁRIO: remover depois
             return false;
         }
 
@@ -351,15 +364,19 @@ namespace API_PI_Clubes.Application.Services
 
         // TEMPORÁRIO. Descobre se a falha é do secret ou do formato do manifesto. Nunca loga o secret.
         private void LogSignatureDiagnostics(string secret, string dataId, string requestId, string ts,
-            string expectedHash)
+            string expectedHash, string rawSignatureHeader)
         {
             var lowerId = dataId.ToLowerInvariant();
             // Se um proxy duplicou o X-Request-Id, o header chega como "valor1,valor2".
             var firstRequestId = requestId.Split(',')[0].Trim();
 
+            // O ts do Orders chegou com 10 dígitos (segundos); a doc mostra 13 (milissegundos).
+            var tsMs = ts.Length <= 10 && long.TryParse(ts, out var tsSeconds) ? (tsSeconds * 1000).ToString() : ts;
+
             var variants = new Dictionary<string, string>
             {
                 ["atual (id minúsculo + request-id + ts)"] = $"id:{lowerId};request-id:{requestId};ts:{ts};",
+                ["ts em milissegundos (ts x 1000)"] = $"id:{lowerId};request-id:{requestId};ts:{tsMs};",
                 ["id original, sem minúsculas"] = $"id:{dataId};request-id:{requestId};ts:{ts};",
                 ["sem ';' final"] = $"id:{lowerId};request-id:{requestId};ts:{ts}",
                 ["request-id: só o primeiro valor"] = $"id:{lowerId};request-id:{firstRequestId};ts:{ts};",
@@ -375,6 +392,19 @@ namespace API_PI_Clubes.Application.Services
                     matches.Add($"{name} (com secret sem espaços nas pontas)");
             }
 
+            // Secrets candidatos (ex.: o da aba "Modo de produção", o do app antigo). Só loga o ÍNDICE que bate.
+            // Config: MercadoPago:WebhookSecretCandidates:0, :1... (ou MercadoPago__WebhookSecretCandidates__0).
+            var candidates = _configuration.GetSection("MercadoPago:WebhookSecretCandidates").Get<string[]>() ?? [];
+            var candidateMatches = new List<string>();
+            for (var i = 0; i < candidates.Length; i++)
+            {
+                var candidate = candidates[i]?.Trim();
+                if (string.IsNullOrEmpty(candidate)) continue;
+                foreach (var (name, manifest) in variants)
+                    if (HashesMatch(candidate, manifest, expectedHash))
+                        candidateMatches.Add($"candidato #{i} + {name}");
+            }
+
             // Impressão digital curta (6 primeiros hex do SHA-256) para comparar com o secret do painel
             // SEM expor o secret. No terminal: printf '%s' 'SEU_SECRET' | sha256sum | cut -c1-6
             var fingerprint = Convert.ToHexString(
@@ -382,10 +412,13 @@ namespace API_PI_Clubes.Application.Services
 
             _logger.LogWarning(
                 "Diagnóstico de assinatura — secretLength: {Len}, secretSha256Prefix: {Fp}, temEspacoNasPontas: {Spaces}, " +
-                "xRequestIdRecebido: [{RequestId}] ({Count} valor(es)), ts: {Ts}, variantesQueBatem: {Matches}",
+                "xRequestIdRecebido: [{RequestId}] ({Count} valor(es)), ts: {Ts}, xSignatureBruto: [{Sig}], " +
+                "variantesQueBatem: {Matches}, candidatosQueBatem: {Candidates} (de {CandidateCount} testados)",
                 secret.Length, fingerprint, trimmed != secret,
-                requestId, requestId.Split(',').Length, ts,
-                matches.Count == 0 ? "nenhuma" : string.Join(" | ", matches));
+                requestId, requestId.Split(',').Length, ts, rawSignatureHeader,
+                matches.Count == 0 ? "nenhuma" : string.Join(" | ", matches),
+                candidateMatches.Count == 0 ? "nenhum" : string.Join(" | ", candidateMatches),
+                candidates.Length);
         }
     }
 }

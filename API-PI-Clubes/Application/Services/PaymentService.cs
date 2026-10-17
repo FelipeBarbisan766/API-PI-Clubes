@@ -331,13 +331,47 @@ namespace API_PI_Clubes.Application.Services
             // IDs de order são alfanuméricos (ORD01...), então entram em minúsculas no manifesto.
             var manifest = $"id:{dataId.ToLowerInvariant()};request-id:{requestIdHeader};ts:{ts};";
 
+            if (HashesMatch(secret, manifest, expectedHash))
+                return true;
+
+            LogSignatureDiagnostics(secret, dataId, requestIdHeader, ts, expectedHash); // TEMPORÁRIO: remover depois
+            return false;
+        }
+
+        private static bool HashesMatch(string secret, string manifest, string expectedHash)
+        {
             using var hmac = new System.Security.Cryptography.HMACSHA256(Encoding.UTF8.GetBytes(secret));
             var computedHash = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(manifest)))
                 .ToLowerInvariant();
 
             return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(computedHash),
-                Encoding.UTF8.GetBytes(expectedHash));
+                Encoding.UTF8.GetBytes(expectedHash.ToLowerInvariant()));
+        }
+
+        // TEMPORÁRIO. Descobre se a falha é do secret ou do formato do manifesto. Nunca loga o secret.
+        private void LogSignatureDiagnostics(string secret, string dataId, string requestId, string ts,
+            string expectedHash)
+        {
+            var variants = new Dictionary<string, string>
+            {
+                ["id minúsculo, com ';' final (atual)"] = $"id:{dataId.ToLowerInvariant()};request-id:{requestId};ts:{ts};",
+                ["id original, com ';' final"] = $"id:{dataId};request-id:{requestId};ts:{ts};",
+                ["id minúsculo, sem ';' final"] = $"id:{dataId.ToLowerInvariant()};request-id:{requestId};ts:{ts}",
+            };
+
+            var trimmed = secret.Trim();
+            var matches = new List<string>();
+            foreach (var (name, manifest) in variants)
+            {
+                if (HashesMatch(secret, manifest, expectedHash)) matches.Add(name);
+                if (trimmed != secret && HashesMatch(trimmed, manifest, expectedHash))
+                    matches.Add($"{name} (com secret sem espaços nas pontas)");
+            }
+
+            _logger.LogWarning(
+                "Diagnóstico de assinatura — secretLength: {Len}, temEspacoNasPontas: {Spaces}, variantesQueBatem: {Matches}",
+                secret.Length, trimmed != secret, matches.Count == 0 ? "nenhuma" : string.Join(" | ", matches));
         }
     }
-}   
+}

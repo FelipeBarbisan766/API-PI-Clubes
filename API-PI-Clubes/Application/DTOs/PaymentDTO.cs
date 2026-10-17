@@ -2,7 +2,6 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
-    // O Angular só envia o plano. AdminId vem do token e o método é escolhido no checkout do Mercado Pago.
     public record CreatePaymentDto(
         Guid PlanId
     );
@@ -12,8 +11,6 @@ namespace API_PI_Clubes.Application.DTOs
         string CheckoutUrl
     );
 
-    // Corpo do webhook de Orders:
-    // { "action": "order.processed", "type": "order", "data": { "id": "ORD01..." }, ... }
     public record MercadoPagoWebhookDto(
         string? Action,
         string? Type,
@@ -21,6 +18,12 @@ namespace API_PI_Clubes.Application.DTOs
     );
 
     public record MercadoPagoWebhookDataDto(string? Id);
+
+    public record PaymentStatusDto(
+        Guid PaymentId,
+        string Status,
+        string? Method
+    );
 
     public record PaymentHistoryDto(
         Guid Id,

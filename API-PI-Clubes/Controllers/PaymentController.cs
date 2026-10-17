@@ -66,6 +66,16 @@ namespace API_PI_Clubes.Controllers
             return Ok();
         }
 
+        // Reconcilia o pagamento com o Mercado Pago. Útil para Pix (não há redirecionamento de volta),
+        // para webhook atrasado/perdido e para reparar pagamento Confirmed sem assinatura ativada.
+        [HttpPost("{id:guid}/sync")]
+        public async Task<IActionResult> Sync(Guid id, CancellationToken cancellationToken)
+        {
+            var adminId = User.GetUserId();
+            var result = await _service.SyncAsync(id, adminId, cancellationToken);
+            return Ok(result);
+        }
+
         [HttpGet("history")]
         public async Task<IActionResult> History(CancellationToken cancellationToken)
         {

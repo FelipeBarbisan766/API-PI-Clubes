@@ -18,6 +18,7 @@ namespace API_PI_Clubes.Application.Services
         private readonly IMercadoPagoOrdersClient _ordersClient;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentService> _logger;
+        private readonly IAdminRepository _adminRepository;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
@@ -25,7 +26,8 @@ namespace API_PI_Clubes.Application.Services
             IPlanRepository planRepository,
             IMercadoPagoOrdersClient ordersClient,
             IConfiguration configuration,
-            ILogger<PaymentService> logger
+            ILogger<PaymentService> logger,
+            IAdminRepository  adminRepository
         )
         {
             _paymentRepository = paymentRepository;
@@ -34,11 +36,13 @@ namespace API_PI_Clubes.Application.Services
             _ordersClient = ordersClient;
             _configuration = configuration;
             _logger = logger;
+            _adminRepository =  adminRepository;
         }
 
-        public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid adminId,
+        public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid userId,
             CancellationToken cancellationToken)
         {
+            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);  
             var plan = await _planRepository.GetByIdAsync(dto.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", dto.PlanId);
 
@@ -50,7 +54,6 @@ namespace API_PI_Clubes.Application.Services
             if (string.IsNullOrEmpty(successUrl))
                 throw new InvalidOperationException("MercadoPago:BackUrls:Success não configurado no appsettings.");
 
-            // O valor SEMPRE vem do plano no banco, nunca do front. Orders exige string com ponto e 2 casas.
             var amount = plan.Price.ToString("F2", CultureInfo.InvariantCulture);
 
             var orderRequest = new MpCreateOrderRequest
@@ -78,7 +81,6 @@ namespace API_PI_Clubes.Application.Services
                 }
             };
 
-            // paymentId como idempotency key: um retry da mesma tentativa não cria order duplicada.
             var order = await _ordersClient.CreateAsync(orderRequest, paymentId.ToString(), cancellationToken);
 
             if (string.IsNullOrEmpty(order.Id) || string.IsNullOrEmpty(order.CheckoutUrl))
@@ -88,10 +90,9 @@ namespace API_PI_Clubes.Application.Services
             {
                 Id = paymentId,
                 Amount = plan.Price,
-                // Method fica null aqui: o comprador escolhe no checkout e preenchemos via webhook.
                 Status = PaymentStatus.Pending,
                 Date = DateTime.UtcNow,
-                AdminId = adminId,
+                AdminId = adminId.Id,
                 PlanId = dto.PlanId,
                 MercadoPagoOrderId = order.Id
             };
@@ -100,7 +101,7 @@ namespace API_PI_Clubes.Application.Services
 
             _logger.LogInformation(
                 "Pagamento {PaymentId} iniciado para Admin {AdminId}, Plano {PlanId}, Order {OrderId}",
-                payment.Id, adminId, dto.PlanId, order.Id);
+                payment.Id, adminId.Id, dto.PlanId, order.Id);
 
             return new PaymentInitiatedDto(
                 PaymentId: payment.Id,
@@ -131,8 +132,6 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            // A notificação só avisa "algo mudou". A fonte da verdade é o GET da order.
-            // Se falhar (exceção), o controller devolve 500 e o Mercado Pago reenvia depois.
             var order = await _ordersClient.GetAsync(orderId, cancellationToken);
 
             if (!Guid.TryParse(order.ExternalReference, out var internalPaymentId))
@@ -149,7 +148,6 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            // Garante que a order consultada é a mesma que criamos para esse Payment.
             if (!string.Equals(payment.MercadoPagoOrderId, order.Id, StringComparison.Ordinal))
             {
                 _logger.LogWarning("Order {OrderId} não corresponde ao Payment {Id}. Ignorando.", order.Id,
@@ -160,7 +158,6 @@ namespace API_PI_Clubes.Application.Services
             await ApplyOrderAsync(payment, order, cancellationToken);
         }
 
-        // Núcleo compartilhado entre o webhook e o sync: aplica o estado da order ao Payment e dispara os efeitos.
         private async Task ApplyOrderAsync(Payment payment, MpOrderResponse order,
             CancellationToken cancellationToken)
         {
@@ -173,7 +170,6 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            // Webhooks podem chegar fora de ordem: um pagamento confirmado não volta atrás.
             if (payment.Status == PaymentStatus.Confirmed && newStatus != PaymentStatus.Confirmed)
             {
                 _logger.LogInformation("Webhook fora de ordem ignorado — Payment {Id} já Confirmed.", payment.Id);
@@ -194,7 +190,6 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            // Opção B: o método só é conhecido depois que o comprador paga/escolhe no checkout.
             var mpPayment = order.Transactions?.Payments?.FirstOrDefault();
             var method = mpPayment?.PaymentMethod?.Id ?? mpPayment?.PaymentMethod?.Type;
             if (!string.IsNullOrEmpty(method)) payment.Method = method;
@@ -211,20 +206,18 @@ namespace API_PI_Clubes.Application.Services
                 await HandleFailedPaymentAsync(payment, cancellationToken);
         }
 
-        public async Task<PaymentStatusDto> SyncAsync(Guid paymentId, Guid adminId,
+        public async Task<PaymentStatusDto> SyncAsync(Guid paymentId, Guid userId,
             CancellationToken cancellationToken)
         {
+            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);  
             var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
 
-            // Não revela a existência de pagamentos de outros admins.
-            if (payment is null || payment.AdminId != adminId)
+            if (payment is null || payment.AdminId != adminId.Id)
                 throw new NotFoundException("Pagamento", paymentId);
 
             switch (payment.Status)
             {
                 case PaymentStatus.Confirmed:
-                    // Sem chamar o Mercado Pago: só garante que a assinatura existe (idempotente).
-                    // Repara o caso em que o pagamento foi gravado como Confirmed mas a ativação falhou.
                     await HandleApprovedPaymentAsync(payment, cancellationToken);
                     break;
 
@@ -251,11 +244,6 @@ namespace API_PI_Clubes.Application.Services
             return new PaymentStatusDto(payment.Id, payment.Status.ToString(), payment.Method);
         }
 
-        // Status da order (doc "Status da order"):
-        //   processed + accredited          -> aprovado
-        //   failed | canceled               -> falhou (canceled inclui order expirada)
-        //   created | processing | action_required -> ainda pendente
-        //   processed + refunded/partially_refunded, refunded -> sem ação (seu enum não tem Refunded)
         private static PaymentStatus? MapStatus(string? status, string? detail) => (status, detail) switch
         {
             ("processed", "accredited") => PaymentStatus.Confirmed,
@@ -264,8 +252,6 @@ namespace API_PI_Clubes.Application.Services
             _ => null
         };
 
-        // A doc mostra type "order" no corpo, mas a página de status cita o tópico "orders_v2".
-        // Aceito os dois e, na dúvida, confio no prefixo da action.
         private static bool IsOrderEvent(MercadoPagoWebhookDto webhook)
             => webhook.Type is "order" or "orders_v2"
                || (webhook.Action?.StartsWith("order", StringComparison.OrdinalIgnoreCase) ?? false);
@@ -319,8 +305,6 @@ namespace API_PI_Clubes.Application.Services
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {
-                // Só é "corrida" de verdade se a assinatura deste pagamento já existe. Se não existe, o conflito
-                // vem de outra regra de unicidade e engolir o erro deixaria o usuário sem plano em silêncio.
                 var existing = await _subscriptionRepository.GetByPaymentIdAsync(payment.Id, cancellationToken);
                 if (existing is null)
                 {
@@ -335,10 +319,11 @@ namespace API_PI_Clubes.Application.Services
             }
         }
 
-        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid adminId,
+        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid userId,
             CancellationToken cancellationToken)
         {
-            var payments = await _paymentRepository.GetByAdminIdAsync(adminId, cancellationToken);
+            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);    
+            var payments = await _paymentRepository.GetByAdminIdAsync(adminId.Id, cancellationToken);
 
             return payments.Select(p => new PaymentHistoryDto(
                 Id: p.Id,
@@ -370,7 +355,6 @@ namespace API_PI_Clubes.Application.Services
             var secret = _configuration["MercadoPago:WebhookSecret"];
             if (string.IsNullOrEmpty(secret))
             {
-                // Falha fechada por padrão. Só pula a validação se você pedir explicitamente (ex.: dev local).
                 if (_configuration.GetValue<bool>("MercadoPago:SkipSignatureValidation"))
                 {
                     _logger.LogWarning("MercadoPago:WebhookSecret ausente — validação pulada por configuração.");
@@ -393,7 +377,6 @@ namespace API_PI_Clubes.Application.Services
             if (!parts.TryGetValue("ts", out var ts) || !parts.TryGetValue("v1", out var expectedHash))
                 return false;
 
-            // IDs de order são alfanuméricos (ORD01...), então entram em minúsculas no manifesto.
             var manifest = $"id:{dataId.ToLowerInvariant()};request-id:{requestIdHeader};ts:{ts};";
 
             return HashesMatch(secret, manifest, expectedHash);

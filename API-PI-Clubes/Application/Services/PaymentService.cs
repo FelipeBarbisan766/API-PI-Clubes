@@ -4,6 +4,7 @@ using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Exceptions;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Infrastructure.Security.Interfaces;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ namespace API_PI_Clubes.Application.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentService> _logger;
         private readonly IAdminRepository _adminRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly ICpfEncryptionService _cpfEncryptionService;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
@@ -27,7 +30,9 @@ namespace API_PI_Clubes.Application.Services
             IMercadoPagoOrdersClient ordersClient,
             IConfiguration configuration,
             ILogger<PaymentService> logger,
-            IAdminRepository  adminRepository
+            IAdminRepository  adminRepository,
+            IUserRepository userRepository,
+            ICpfEncryptionService  cpfEncryptionService
         )
         {
             _paymentRepository = paymentRepository;
@@ -37,11 +42,15 @@ namespace API_PI_Clubes.Application.Services
             _configuration = configuration;
             _logger = logger;
             _adminRepository =  adminRepository;
+            _userRepository = userRepository;
+            _cpfEncryptionService = cpfEncryptionService;
         }
 
         public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid userId,
             CancellationToken cancellationToken)
         {
+            var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
+                       ?? throw new NotFoundException("User", userId);
             var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);  
             var plan = await _planRepository.GetByIdAsync(dto.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", dto.PlanId);
@@ -55,6 +64,9 @@ namespace API_PI_Clubes.Application.Services
                 throw new InvalidOperationException("MercadoPago:BackUrls:Success não configurado no appsettings.");
 
             var amount = plan.Price.ToString("F2", CultureInfo.InvariantCulture);
+            var nameParts = user.Name?.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            var firstName = nameParts.FirstOrDefault() ?? "";
+            var lastName = nameParts.Length > 1 ? nameParts[^1] : ""; 
 
             var orderRequest = new MpCreateOrderRequest
             {
@@ -62,13 +74,17 @@ namespace API_PI_Clubes.Application.Services
                 ExternalReference = paymentId.ToString(),
                 Payer = new MpOrderPayer
                 {
-                    Email = "TESTUSER785850742821295952",
-                    FirstName = "TESTUSER785850742821295952",
-                    LastName = "",
+                    // Email = "TESTUSER785850742821295952",
+                    // FirstName = "TESTUSER785850742821295952",
+                    // LastName = "",
+                    Email = user.Email,
+                    FirstName = firstName,
+                    LastName = lastName,
                     Identification = new MpOrderIdentification
                     {
-                        Number = "12345678909"
-                    }
+                        // Number = "12345678909"
+                        Number = _cpfEncryptionService.Decrypt(user.CpfEncrypted)
+                    }   
                 },
                 Items =
                 [

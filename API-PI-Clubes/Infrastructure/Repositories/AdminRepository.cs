@@ -27,6 +27,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive, cancellationToken);
         }
 
+        public async Task<Guid> GetIdByUserId(Guid userId, CancellationToken cancellationToken)
+        {
+            return await _context.Admins
+                .Select(u => u.UserId)
+                .Where(u => u == userId)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Admins
@@ -58,6 +66,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+
         public IExecutionStrategy CreateExecutionStrategy()
         {
             return _context.Database.CreateExecutionStrategy();
@@ -67,6 +76,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         {
             return await _context.Database.BeginTransactionAsync(cancellationToken);
         }
+
         public async Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Admins

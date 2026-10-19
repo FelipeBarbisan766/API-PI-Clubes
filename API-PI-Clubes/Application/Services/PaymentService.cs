@@ -42,7 +42,7 @@ namespace API_PI_Clubes.Application.Services
         public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid userId,
             CancellationToken cancellationToken)
         {
-            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);  
+            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);  
             var plan = await _planRepository.GetByIdAsync(dto.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", dto.PlanId);
 
@@ -60,11 +60,22 @@ namespace API_PI_Clubes.Application.Services
             {
                 TotalAmount = amount,
                 ExternalReference = paymentId.ToString(),
+                Payer = new MpOrderPayer
+                {
+                    Email = "TESTUSER785850742821295952",
+                    FirstName = "TESTUSER785850742821295952",
+                    LastName = "",
+                    Identification = new MpOrderIdentification
+                    {
+                        Number = "12345678909"
+                    }
+                },
                 Items =
                 [
                     new MpOrderItem
                     {
                         Title = plan.Name,
+                        Description = plan.Description,
                         UnitPrice = amount,
                         Quantity = 1
                     }
@@ -92,7 +103,7 @@ namespace API_PI_Clubes.Application.Services
                 Amount = plan.Price,
                 Status = PaymentStatus.Pending,
                 Date = DateTime.UtcNow,
-                AdminId = adminId.Id,
+                AdminId = adminId,
                 PlanId = dto.PlanId,
                 MercadoPagoOrderId = order.Id
             };
@@ -101,7 +112,7 @@ namespace API_PI_Clubes.Application.Services
 
             _logger.LogInformation(
                 "Pagamento {PaymentId} iniciado para Admin {AdminId}, Plano {PlanId}, Order {OrderId}",
-                payment.Id, adminId.Id, dto.PlanId, order.Id);
+                payment.Id, adminId, dto.PlanId, order.Id);
 
             return new PaymentInitiatedDto(
                 PaymentId: payment.Id,
@@ -209,10 +220,10 @@ namespace API_PI_Clubes.Application.Services
         public async Task<PaymentStatusDto> SyncAsync(Guid paymentId, Guid userId,
             CancellationToken cancellationToken)
         {
-            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);  
+            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);  
             var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
 
-            if (payment is null || payment.AdminId != adminId.Id)
+            if (payment is null || payment.AdminId != adminId)
                 throw new NotFoundException("Pagamento", paymentId);
 
             switch (payment.Status)
@@ -322,8 +333,8 @@ namespace API_PI_Clubes.Application.Services
         public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid userId,
             CancellationToken cancellationToken)
         {
-            var adminId = await _adminRepository.GetByUserIdAsync(userId, cancellationToken);    
-            var payments = await _paymentRepository.GetByAdminIdAsync(adminId.Id, cancellationToken);
+            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);    
+            var payments = await _paymentRepository.GetByAdminIdAsync(adminId, cancellationToken);
 
             return payments.Select(p => new PaymentHistoryDto(
                 Id: p.Id,

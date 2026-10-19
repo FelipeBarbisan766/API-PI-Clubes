@@ -393,7 +393,10 @@ namespace API_PI_Clubes.Application.Services
             }
 
             if (string.IsNullOrEmpty(signatureHeader) || string.IsNullOrEmpty(requestIdHeader))
+            {
+                _logger.LogError("caiu no erro dois sla");
                 return false;
+            }
 
             var parts = signatureHeader
                 .Split(',')
@@ -402,10 +405,13 @@ namespace API_PI_Clubes.Application.Services
                 .ToDictionary(p => p[0].Trim(), p => p[1].Trim());
 
             if (!parts.TryGetValue("ts", out var ts) || !parts.TryGetValue("v1", out var expectedHash))
+            {
+                _logger.LogError("caiu no erro dois sla");
                 return false;
+            }
 
             var manifest = $"id:{dataId.ToLowerInvariant()};request-id:{requestIdHeader};ts:{ts};";
-
+            
             return HashesMatch(secret, manifest, expectedHash);
         }
 

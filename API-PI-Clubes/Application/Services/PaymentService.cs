@@ -74,16 +74,16 @@ namespace API_PI_Clubes.Application.Services
                 ExternalReference = paymentId.ToString(),
                 Payer = new MpOrderPayer
                 {
-                    // Email = "TESTUSER785850742821295952",
-                    // FirstName = "TESTUSER785850742821295952",
-                    // LastName = "",
-                    Email = user.Email,
-                    FirstName = firstName,
-                    LastName = lastName,
+                    Email = "test_user_785850742821295952@testuser.com",
+                    FirstName = "Test",
+                    LastName = "Test",
+                    // Email = user.Email,
+                    // FirstName = firstName,
+                    // LastName = lastName,
                     Identification = new MpOrderIdentification
                     {
-                        // Number = "12345678909"
-                        Number = _cpfEncryptionService.Decrypt(user.CpfEncrypted)
+                        Number = "12345678909"
+                        // Number = _cpfEncryptionService.Decrypt(user.CpfEncrypted)
                     }   
                 },
                 Items =

@@ -30,8 +30,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Guid> GetIdByUserId(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Admins
-                .Select(u => u.UserId)
-                .Where(u => u == userId)
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Id )
                 .FirstOrDefaultAsync(cancellationToken);
         }
 

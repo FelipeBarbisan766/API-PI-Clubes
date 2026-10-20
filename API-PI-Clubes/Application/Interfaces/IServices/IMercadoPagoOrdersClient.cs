@@ -146,6 +146,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 
         [JsonPropertyName("items")] public required List<MpOrderItem> Items { get; init; }
         [JsonPropertyName("config")] public MpOrderConfig? Config { get; init; }
+        [JsonPropertyName("additional_info")] public MpOrderAdditionalInfo? AdditionalInfo { get; init; }
     }
 
     public sealed class MpOrderPayer
@@ -174,6 +175,9 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
     public sealed class MpOrderConfig
     {
         [JsonPropertyName("online")] public MpOnlineConfig? Online { get; init; }
+
+        [JsonPropertyName("statement_descriptor")]
+        public string StatementDescriptor { get; init; } = "Clubera";
     }
 
     public sealed class MpOnlineConfig
@@ -182,6 +186,11 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
         [JsonPropertyName("failure_url")] public string? FailureUrl { get; init; }
         [JsonPropertyName("pending_url")] public string? PendingUrl { get; init; }
         [JsonPropertyName("auto_return")] public string? AutoReturn { get; init; }
+    }
+
+    public sealed class MpOrderAdditionalInfo
+    {
+        [JsonPropertyName("payer.registration_date")] public string? PayerRegistrationDate { get; init; }
     }
 
     // ---------- Response ----------

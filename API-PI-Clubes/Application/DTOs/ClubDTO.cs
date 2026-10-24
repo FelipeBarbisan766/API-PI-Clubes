@@ -9,10 +9,12 @@ namespace API_PI_Clubes.Application.DTOs
         public string? City { get; set; }
         public List<Guid>? SportIds { get; set; }
 
+        public ClubSortBy SortBy { get; set; } = ClubSortBy.Name;
+        public SortDirection SortDirection { get; set; } = SortDirection.Asc;
+
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }
-
     public class CreateClubDTO
     {
         public Guid adminId { get; set; }

@@ -1,7 +1,9 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
+using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
+using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_PI_Clubes.Infrastructure.Repositories
@@ -22,7 +24,6 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Where(c => c.IsActive)
                 .AsQueryable();
 
-            // Filtros
             if (!string.IsNullOrWhiteSpace(query.Name))
                 q = q.Where(c => c.Name.Contains(query.Name));
 
@@ -36,44 +37,44 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
             var totalCount = await q.CountAsync(cancellationToken);
 
-            var items = await q
-                .Select(c => new ResponseClubDTO
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    PhoneNumber = c.PhoneNumber,
-                    Description = c.Description,
-                    Street = c.Address.Street,
-                    City = c.Address.City,
-                    State = c.Address.State,
-                    Country = c.Address.Country,
-                    MinPrice = c.Courts.Where(co => co.IsActive).Any()
-                        ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
-                        : 0,
-                    CourtCount = c.Courts.Count(co => co.IsActive),
-                    Sports = c.Courts.Where(co => co.IsActive)
-                        .SelectMany(co => co.CourtSports)
-                        .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
-                        .Distinct()
-                        .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
-                        .ToList(),
-                    AverageRating = c.Reviews.Any()
-                        ? Math.Round(c.Reviews.Average(r => r.Rating), 1)
-                        : 0,
-                    TotalReviews = c.Reviews.Count(),
-                    Images = c.Images
-                        .OrderBy(i => i.Order)
-                        .Select(i => new ImageDTO
-                        {
-                            Id = i.Id,
-                            ThumbUrl = i.ThumbUrl,
-                            MediumUrl = i.MediumUrl,
-                            FullUrl = i.FullUrl,
-                            Order = i.Order
-                        })
-                        .ToList()
-                })
-                .OrderBy(c => c.Name)
+            var items = await ApplySorting(
+                    q.Select(c => new ResponseClubDTO
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        PhoneNumber = c.PhoneNumber,
+                        Description = c.Description,
+                        Street = c.Address.Street,
+                        City = c.Address.City,
+                        State = c.Address.State,
+                        Country = c.Address.Country,
+                        MinPrice = c.Courts.Where(co => co.IsActive).Any()
+                            ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
+                            : 0,
+                        CourtCount = c.Courts.Count(co => co.IsActive),
+                        Sports = c.Courts.Where(co => co.IsActive)
+                            .SelectMany(co => co.CourtSports)
+                            .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
+                            .Distinct()
+                            .Select(x => new ResponseSportDTO { Id = x.Id, Name = x.Name })
+                            .ToList(),
+                        AverageRating = c.Reviews.Any()
+                            ? Math.Round(c.Reviews.Average(r => r.Rating), 1)
+                            : 0,
+                        TotalReviews = c.Reviews.Count(),
+                        Images = c.Images
+                            .OrderBy(i => i.Order)
+                            .Select(i => new ImageDTO
+                            {
+                                Id = i.Id,
+                                ThumbUrl = i.ThumbUrl,
+                                MediumUrl = i.MediumUrl,
+                                FullUrl = i.FullUrl,
+                                Order = i.Order
+                            })
+                            .ToList()
+                    }),
+                    query)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync(cancellationToken);
@@ -216,21 +217,37 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             };
         }
 
+        private static IOrderedQueryable<ResponseClubDTO> ApplySorting(
+            IQueryable<ResponseClubDTO> source, ClubQueryDTO query)
+        {
+            var desc = query.SortDirection == SortDirection.Desc;
+
+            var ordered = query.SortBy switch
+            {
+                ClubSortBy.Price => source.OrderByDirection(c => c.MinPrice, desc),
+                ClubSortBy.Rating => source.OrderByDirection(c => c.AverageRating, desc),
+                ClubSortBy.Reviews => source.OrderByDirection(c => c.TotalReviews, desc),
+                ClubSortBy.CourtCount => source.OrderByDirection(c => c.CourtCount, desc),
+                _ => source.OrderByDirection(c => c.Name, desc)
+            };
+
+            return ordered.ThenBy(c => c.Id);
+        }
 
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .AnyAsync(s => s.Id == id && s.IsActive,cancellationToken);
+                .AnyAsync(s => s.Id == id && s.IsActive, cancellationToken);
         }
 
         public async Task AddAsync(Club club, CancellationToken cancellationToken)
         {
-            await _context.Clubs.AddAsync(club,cancellationToken);
+            await _context.Clubs.AddAsync(club, cancellationToken);
         }
 
         public async Task AddClubAdminAsync(ClubAdmin clubAdmin, CancellationToken cancellationToken)
         {
-            await _context.ClubAdmins.AddAsync(clubAdmin,cancellationToken);
+            await _context.ClubAdmins.AddAsync(clubAdmin, cancellationToken);
         }
 
         public void Update(Club club)
@@ -257,13 +274,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId),cancellationToken);
+                .AnyAsync(c => c.Id == clubId && c.ClubAdmin.Any(a => a.Admin.UserId == userId), cancellationToken);
         }
 
         public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId),cancellationToken);
+                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId), cancellationToken);
         }
 
         public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId,

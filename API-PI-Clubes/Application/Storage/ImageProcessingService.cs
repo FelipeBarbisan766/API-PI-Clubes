@@ -16,7 +16,7 @@ public class ImageProcessingService : IImageProcessingService
 
     private static readonly IReadOnlyList<VariantConfig> Variants = new[]
     {
-        new VariantConfig(ImageVariantType.Thumb,  200,  200,  "thumb",  CenterCrop: true),
+        new VariantConfig(ImageVariantType.Thumb,  500,  500,  "thumb",  CenterCrop: true),
         new VariantConfig(ImageVariantType.Medium, 800,  600,  "medium", CenterCrop: false),
         new VariantConfig(ImageVariantType.Full, 1920, 1080,  "full",   CenterCrop: false),
         new VariantConfig(ImageVariantType.Avatar,  200,  200,  "avatar",  CenterCrop: true )

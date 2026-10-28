@@ -25,6 +25,7 @@ namespace API_PI_Clubes.Application.Mappers
                 IsCovered = court.IsCovered,
                 MinPrice = court.Schedules.Where(s => s.IsActive).Min(s => (decimal?)s.Price) ?? 0,
                 Description = court.Description,
+                IsCourtActive = court.IsCourtActive,
                 ClubId = court.ClubId,
                 Sports = court.CourtSports?
                     .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })

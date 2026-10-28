@@ -12,6 +12,7 @@ namespace API_PI_Clubes.Controllers
     {
         private readonly IClubService _service;
         private readonly IAuthorizationService _authorizationService;
+
         public ClubController(IClubService service, IAuthorizationService authorizationService)
         {
             _service = service;
@@ -21,7 +22,7 @@ namespace API_PI_Clubes.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ClubQueryDTO query, CancellationToken cancellationToken)
         {
-            var result = await _service.GetAll(query,cancellationToken);
+            var result = await _service.GetAll(query, cancellationToken);
             return Ok(result);
         }
 
@@ -31,7 +32,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetById(id, cancellationToken);
             return Ok(result);
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpGet("admin/{id}")]
         public async Task<IActionResult> GetAllByAdminId(Guid id, CancellationToken cancellationToken)
@@ -39,7 +40,7 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetAllByAdminId(id, cancellationToken);
             return Ok(result);
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}/dashboard")]
         public async Task<IActionResult> GetDashboard(Guid id, CancellationToken cancellationToken)
@@ -47,31 +48,36 @@ namespace API_PI_Clubes.Controllers
             var result = await _service.GetDashboard(id, cancellationToken);
             return Ok(result);
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateClubDTO dto, CancellationToken cancellationToken)
         {
-            var userId = User.GetUserId(); 
-            var result = await _service.Create(userId,dto, cancellationToken);
+            var userId = User.GetUserId();
+            var result = await _service.Create(userId, dto, cancellationToken);
             return Ok(result);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("{Id}/images/")]
-        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddMoreImages(Guid Id, [FromForm] UploadImageDTO dto,
+            CancellationToken cancellationToken)
         {
-            var userId = User.GetUserId(); 
+            var userId = User.GetUserId();
             await _service.AddMoreImagesAsync(userId, Id, dto, cancellationToken);
             return Ok();
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{Id}/images/reorder")]
-        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> ReorderImages(Guid Id, [FromBody] ReorderImagesRequestDTO dto,
+            CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
             await _service.ReorderImagesAsync(userId, Id, dto.Orders, cancellationToken);
             return NoContent();
         }
+
         [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}/images/{imageId}")]
         public async Task<IActionResult> DeleteImage(Guid Id, Guid imageId, CancellationToken cancellationToken)
@@ -85,8 +91,8 @@ namespace API_PI_Clubes.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateClubDTO dto, CancellationToken cancellationToken)
         {
-            var userId = User.GetUserId(); 
-            var result = await _service.Update(userId,id, dto, cancellationToken);
+            var userId = User.GetUserId();
+            var result = await _service.Update(userId, id, dto, cancellationToken);
             return Ok(result);
         }
 
@@ -95,10 +101,17 @@ namespace API_PI_Clubes.Controllers
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
-            await _service.Delete(userId,id,cancellationToken);
+            await _service.Delete(userId, id, cancellationToken);
             return NoContent();
         }
-        
-        
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id}/toggle-active")]
+        public async Task<ActionResult<ToggleActiveDTO>> ToggleActive(Guid id, CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            var response = await _service.ToggleActiveAsync(userId, id, cancellationToken);
+            return Ok(response);
+        }
     }
 }

@@ -27,6 +27,7 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
+                IsClubActive =  club.IsClubActive,
                 MinPrice = club.Courts.Min(co =>
                     co.Schedules.Where(sc => sc.IsActive).Any()
                         ? co.Schedules.Where(sc => sc.IsActive).Min(sc => sc.Price)

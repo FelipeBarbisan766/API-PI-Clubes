@@ -30,6 +30,7 @@ namespace API_PI_Clubes.Application.DTOs
         public bool IsCovered { get; set; }
         public decimal MinPrice { get; set; }
         public string Description { get; set; }
+        public bool IsCourtActive { get; set; }
         public Guid ClubId { get; set; }
         public List<ResponseSportDTO> Sports { get; set; } = new();
         public List<ImageDTO> Images { get; set; }

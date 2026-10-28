@@ -21,7 +21,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             CancellationToken cancellationToken)
         {
             var q = _context.Clubs
-                .Where(c => c.IsActive)
+                .Where(c => c.IsActive && c.IsClubActive)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -48,6 +48,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         City = c.Address.City,
                         State = c.Address.State,
                         Country = c.Address.Country,
+                        IsClubActive = c.IsClubActive,
                         MinPrice = c.Courts
                             .Where(co => co.IsActive)
                             .SelectMany(co => co.Schedules)
@@ -124,7 +125,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     City = c.Address.City,
                     State = c.Address.State,
                     Country = c.Address.Country,
-
+                    IsClubActive = c.IsClubActive,
                     MinPrice = c.Courts
                         .Where(co => co.IsActive)
                         .SelectMany(co => co.Schedules)
@@ -262,7 +263,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Clubs.Update(club);
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DisableAsync(Guid id, CancellationToken cancellationToken)
         {
             var club = await _context.Clubs.FindAsync(new object[] { id }, cancellationToken);
             if (club != null)
@@ -287,7 +288,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .CountAsync(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId), cancellationToken);
+                .CountAsync(c => c.IsActive && c.IsClubActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId), cancellationToken);
         }
 
         public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId,
@@ -301,6 +302,22 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     ClubName = c.Name,
                     Used = c.Courts.Count(co => co.IsActive)
                 })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Club?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await _context.Clubs
+                .Include(c => c.Courts)
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        }
+
+        public async Task<List<Club>> GetActiveWithActiveCourtsByAdminIdAsync(Guid adminId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.Clubs
+                .Where(c => c.IsActive && c.ClubAdmin.Any(ca => ca.AdminId == adminId))
+                .Include(c => c.Courts.Where(court => court.IsActive))
                 .ToListAsync(cancellationToken);
         }
     }

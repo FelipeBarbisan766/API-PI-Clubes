@@ -91,5 +91,13 @@ namespace API_PI_Clubes.Controllers
             await _service.Delete(userId, id, cancellationToken);
             return NoContent();
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id}/toggle-active")]
+        public async Task<ActionResult<ToggleActiveDTO>> ToggleActive(Guid id, CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            var response = await _service.ToggleActiveAsync(userId, id, cancellationToken);
+            return Ok(response);
+        }
     }
 }

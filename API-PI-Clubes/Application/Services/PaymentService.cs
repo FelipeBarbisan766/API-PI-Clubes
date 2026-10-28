@@ -22,6 +22,8 @@ namespace API_PI_Clubes.Application.Services
         private readonly IAdminRepository _adminRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICpfEncryptionService _cpfEncryptionService;
+        private readonly IPlanDowngradeService _planDowngradeService;
+        private readonly IUnitOfWork _unitOfWork;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
@@ -32,7 +34,9 @@ namespace API_PI_Clubes.Application.Services
             ILogger<PaymentService> logger,
             IAdminRepository adminRepository,
             IUserRepository userRepository,
-            ICpfEncryptionService cpfEncryptionService
+            ICpfEncryptionService cpfEncryptionService,
+            IPlanDowngradeService planDowngradeService,
+            IUnitOfWork unitOfWork
         )
         {
             _paymentRepository = paymentRepository;
@@ -44,6 +48,8 @@ namespace API_PI_Clubes.Application.Services
             _adminRepository = adminRepository;
             _userRepository = userRepository;
             _cpfEncryptionService = cpfEncryptionService;
+            _planDowngradeService = planDowngradeService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<PaymentInitiatedDto> InitiateAsync(CreatePaymentDto dto, Guid userId,
@@ -308,38 +314,43 @@ namespace API_PI_Clubes.Application.Services
                 return;
             }
 
-            var plan = await _planRepository.GetByIdAsync(payment.PlanId, cancellationToken)
-                       ?? throw new NotFoundException("Plano", payment.PlanId);
-
-            var active = await _subscriptionRepository.GetActiveByAdminIdAsync(payment.AdminId, cancellationToken);
-
             try
             {
-                if (active is not null)
+                await _unitOfWork.ExecuteInTransactionAsync(async token =>
                 {
-                    var baseDate = active.ExpiresAt > DateTime.UtcNow ? active.ExpiresAt : DateTime.UtcNow;
-                    active.PaymentId = payment.Id;
-                    active.PlanId = payment.PlanId;
-                    active.ExpiresAt = baseDate.AddDays(plan.DurationDays);
-                    active.IsActive = true;
+                    var plan = await _planRepository.GetByIdAsync(payment.PlanId, token)
+                               ?? throw new NotFoundException("Plano", payment.PlanId);
 
-                    await _subscriptionRepository.UpdateAsync(active);
-                }
-                else
-                {
-                    var subscription = new Subscription
+                    var active = await _subscriptionRepository.GetActiveByAdminIdAsync(payment.AdminId, token);
+
+                    if (active is not null)
                     {
-                        Id = Guid.NewGuid(),
-                        AdminId = payment.AdminId,
-                        PlanId = payment.PlanId,
-                        PaymentId = payment.Id,
-                        StartDate = DateTime.UtcNow,
-                        ExpiresAt = DateTime.UtcNow.AddDays(plan.DurationDays),
-                        IsActive = true
-                    };
+                        var baseDate = active.ExpiresAt > DateTime.UtcNow ? active.ExpiresAt : DateTime.UtcNow;
+                        active.PaymentId = payment.Id;
+                        active.PlanId = payment.PlanId;
+                        active.ExpiresAt = baseDate.AddDays(plan.DurationDays);
+                        active.IsActive = true;
 
-                    await _subscriptionRepository.AddAsync(subscription, cancellationToken);
-                }
+                        await _subscriptionRepository.UpdateAsync(active);
+                    }
+                    else
+                    {
+                        var subscription = new Subscription
+                        {
+                            Id = Guid.NewGuid(),
+                            AdminId = payment.AdminId,
+                            PlanId = payment.PlanId,
+                            PaymentId = payment.Id,
+                            StartDate = DateTime.UtcNow,
+                            ExpiresAt = DateTime.UtcNow.AddDays(plan.DurationDays),
+                            IsActive = true
+                        };
+
+                        await _subscriptionRepository.AddAsync(subscription, token);
+                    }
+
+                    await _planDowngradeService.EnforcePlanLimitsAsync(payment.AdminId, plan, token);
+                }, cancellationToken);
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {

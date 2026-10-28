@@ -57,7 +57,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
-
+public bool IsClubActive { get; set; }
         public decimal MinPrice { get; set; }
         public int CourtCount { get; set; }
         public decimal AverageRating { get; set; }

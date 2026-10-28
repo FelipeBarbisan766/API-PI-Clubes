@@ -20,7 +20,7 @@ namespace API_PI_Clubes.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
         private readonly IPlanLimitService _planLimitService;
-        private readonly IClubReviewRepository _clubReviewRepository; 
+        private readonly IClubReviewRepository _clubReviewRepository;
 
         public ClubService(IClubMapper mapper,
             IClubRepository repository,
@@ -28,7 +28,7 @@ namespace API_PI_Clubes.Application.Services
             IImageRepository imageRepository,
             IImageProcessingService imageProcessor,
             IPlanLimitService planLimitService,
-            IClubReviewRepository clubReviewRepository 
+            IClubReviewRepository clubReviewRepository
         )
         {
             _mapper = mapper;
@@ -40,7 +40,8 @@ namespace API_PI_Clubes.Application.Services
             _clubReviewRepository = clubReviewRepository;
         }
 
-        public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query, CancellationToken cancellationToken)
+        public async Task<PagedResultDTO<ResponseClubDTO>> GetAll(ClubQueryDTO query,
+            CancellationToken cancellationToken)
         {
             var (items, total) = await _repository.GetAllAsync(query, cancellationToken);
 
@@ -94,7 +95,7 @@ namespace API_PI_Clubes.Application.Services
             return data;
         }
 
-        public async Task<ResponseIdDTO> Create(Guid userId,CreateClubDTO dto, CancellationToken cancellationToken)
+        public async Task<ResponseIdDTO> Create(Guid userId, CreateClubDTO dto, CancellationToken cancellationToken)
         {
             ValidateClubDTO(dto);
             await _planLimitService.EnsureClubLimitNotReachedAsync(userId, cancellationToken);
@@ -105,7 +106,7 @@ namespace API_PI_Clubes.Application.Services
             if (dto.Images != null && dto.Images.Count > 0)
             {
                 var uploadTasks = dto.Images.Select(file => ProcessAndUploadImage(file, clubId, cancellationToken));
-                var uploaded    = await Task.WhenAll(uploadTasks);
+                var uploaded = await Task.WhenAll(uploadTasks);
                 for (int i = 0; i < uploaded.Length; i++)
                     uploaded[i].Order = i;
                 imageEntities.AddRange(uploaded);
@@ -140,7 +141,8 @@ namespace API_PI_Clubes.Application.Services
             return new ResponseIdDTO { Id = entity.Id };
         }
 
-        public async Task<ResponseClubDTO> Update(Guid userId, Guid id, UpdateClubDTO dto, CancellationToken cancellationToken)
+        public async Task<ResponseClubDTO> Update(Guid userId, Guid id, UpdateClubDTO dto,
+            CancellationToken cancellationToken)
         {
             ValidateId(id);
             ValidateUpdateClubDTO(dto);
@@ -173,10 +175,36 @@ namespace API_PI_Clubes.Application.Services
             if (!exists)
                 throw new NotFoundException("Clube", id);
 
-            await _repository.DeleteAsync(id, cancellationToken);
+            await _repository.DisableAsync(id, cancellationToken);
+        }
+        public async Task<ToggleActiveDTO> ToggleActiveAsync(Guid userId, Guid id, CancellationToken cancellationToken)
+        {
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id, cancellationToken);
+
+            var club = await _repository.GetByIdForToggleAsync(id, cancellationToken)
+                       ?? throw new NotFoundException("Clube", id);
+
+            if (club.IsClubActive)
+            {
+                club.IsClubActive = false;
+                foreach (var court in club.Courts)
+                    court.IsCourtActive = false;
+            }
+            else
+            {
+                await _planLimitService.EnsureClubLimitNotReachedAsync(userId, cancellationToken);
+                club.IsClubActive = true; 
+            }
+
+            club.UpdatedAt = DateTime.UtcNow;
+            await _repository.SaveChangesAsync(cancellationToken);
+
+            return new ToggleActiveDTO(club.Id, club.IsClubActive);
         }
 
-        public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto, CancellationToken cancellationToken)
+        public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto,
+            CancellationToken cancellationToken)
         {
             ValidateId(id);
             await AuthorizeOwnership(userId, id, cancellationToken);
@@ -221,7 +249,8 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task ReorderImagesAsync(Guid userId, Guid id, List<ReorderImageDTO> orders, CancellationToken cancellationToken)
+        public async Task ReorderImagesAsync(Guid userId, Guid id, List<ReorderImageDTO> orders,
+            CancellationToken cancellationToken)
         {
             ValidateId(id);
             if (orders == null || orders.Count == 0)
@@ -244,7 +273,9 @@ namespace API_PI_Clubes.Application.Services
             await _repository.SaveChangesAsync(cancellationToken);
         }
 
-        private static string ExtractFileName(string url)
+        
+
+    private static string ExtractFileName(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return string.Empty;
             return Path.GetFileName(new Uri(url).LocalPath);

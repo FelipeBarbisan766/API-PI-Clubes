@@ -15,10 +15,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query, CancellationToken cancellationToken)
+        public async Task<(IEnumerable<ResponseCourtDTO> Items, int TotalCount)> GetAllAsync(CourtQueryDTO query,
+            CancellationToken cancellationToken)
         {
             var q = _context.Courts
-                .Where(c => c.IsActive)
+                .Where(c => c.IsActive && c.IsCourtActive)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Name))
@@ -43,6 +44,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Where(s => s.IsActive)
                         .Min(s => (decimal?)s.Price) ?? 0,
                     Description = c.Description,
+                    IsCourtActive = c.IsCourtActive,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports
                         .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
@@ -93,6 +95,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         .Where(s => s.IsActive)
                         .Min(s => (decimal?)s.Price) ?? 0,
                     Description = c.Description,
+                    IsCourtActive = c.IsCourtActive,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports
                         .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
@@ -136,7 +139,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Courts.Update(Court);
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DisableAsync(Guid id, CancellationToken cancellationToken)
         {
             var Court = await _context.Courts.FindAsync(id, cancellationToken);
             if (Court != null)
@@ -147,7 +150,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             }
         }
 
-        public async Task SaveChangesAsync( CancellationToken cancellationToken)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
@@ -161,7 +164,14 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<int> CountByClubIdAsync(Guid clubId, CancellationToken cancellationToken)
         {
             return await _context.Courts
-                .CountAsync(c => c.IsActive && c.ClubId == clubId, cancellationToken);
+                .CountAsync(c => c.IsActive && c.IsCourtActive && c.ClubId == clubId, cancellationToken);
+        }
+
+        public async Task<Court?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await _context.Courts
+                .Include(c => c.Club)
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
     }
 }

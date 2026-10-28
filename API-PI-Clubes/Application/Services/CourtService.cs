@@ -20,7 +20,6 @@ namespace API_PI_Clubes.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IImageProcessingService _imageProcessor;
         private readonly IPlanLimitService _planLimitService;
-
         private readonly ISportRepository _sportRepository;
 
         public CourtService(ICourtMapper mapper,
@@ -169,7 +168,34 @@ namespace API_PI_Clubes.Application.Services
             if (!exists)
                 throw new NotFoundException("Quadra", id);
 
-            await _repository.DeleteAsync(id, cancellationToken);
+            await _repository.DisableAsync(id, cancellationToken);
+        }
+
+        public async Task<ToggleActiveDTO> ToggleActiveAsync(Guid userId, Guid id, CancellationToken cancellationToken)
+        {
+            ValidateId(id);
+            await AuthorizeOwnership(userId, id, cancellationToken);
+
+            var court = await _repository.GetByIdForToggleAsync(id, cancellationToken)
+                        ?? throw new NotFoundException("Quadra", id);
+
+            if (court.IsCourtActive)
+            {
+                court.IsCourtActive = false;
+            }
+            else
+            {
+                if (!court.Club.IsClubActive)
+                    throw new ConflictException("Ative o clube antes de ativar uma quadra dele.");
+
+                await _planLimitService.EnsureCourtLimitNotReachedAsync(userId, court.ClubId, cancellationToken);
+                court.IsCourtActive = true;
+            }
+
+            court.UpdatedAt = DateTime.UtcNow;
+            await _repository.SaveChangesAsync(cancellationToken);
+
+            return new ToggleActiveDTO(court.Id, court.IsCourtActive);
         }
 
         public async Task AddMoreImagesAsync(Guid userId, Guid id, UploadImageDTO dto,

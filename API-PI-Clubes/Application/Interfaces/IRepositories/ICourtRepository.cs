@@ -13,8 +13,9 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task AddAsync(Court Court, CancellationToken cancellationToken);
         Task SaveChangesAsync(CancellationToken cancellationToken);
         void Update(Court Court);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task DisableAsync(Guid id, CancellationToken cancellationToken);
         Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken);
         Task<int> CountByClubIdAsync(Guid clubId, CancellationToken cancellationToken);
+        Task<Court?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken);
     }
 }

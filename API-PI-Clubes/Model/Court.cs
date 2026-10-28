@@ -8,6 +8,7 @@ namespace API_PI_Clubes.Model
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
         public string? Description { get; set; }
+        public bool IsCourtActive { get; set; } = true;
 
         public Guid ClubId { get; set; }
         public virtual Club Club { get; set; }

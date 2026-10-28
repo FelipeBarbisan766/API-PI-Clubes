@@ -71,6 +71,9 @@ namespace API_PI_Clubes.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsClubActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -172,6 +175,9 @@ namespace API_PI_Clubes.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCourtActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsCovered")

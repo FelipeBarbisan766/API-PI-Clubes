@@ -13,11 +13,13 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task AddAsync(Club entity, CancellationToken cancellationToken);
         Task AddClubAdminAsync(ClubAdmin clubAdmin, CancellationToken cancellationToken);
         void Update(Club entity);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task DisableAsync(Guid id, CancellationToken cancellationToken);
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId, CancellationToken cancellationToken);
         Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken);
         Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+        Task<Club?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken);
+        Task<List<Club>> GetActiveWithActiveCourtsByAdminIdAsync(Guid adminId, CancellationToken cancellationToken);
     }
 }

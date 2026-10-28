@@ -48,9 +48,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         City = c.Address.City,
                         State = c.Address.State,
                         Country = c.Address.Country,
-                        MinPrice = c.Courts.Where(co => co.IsActive).Any()
-                            ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
-                            : 0,
+                        MinPrice = c.Courts
+                            .Where(co => co.IsActive)
+                            .SelectMany(co => co.Schedules)
+                            .Where(sc => sc.IsActive)
+                            .Min(sc => (decimal?)sc.Price) ?? 0,
                         CourtCount = c.Courts.Count(co => co.IsActive),
                         Sports = c.Courts.Where(co => co.IsActive)
                             .SelectMany(co => co.CourtSports)
@@ -93,6 +95,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Courts.Where(co => co.IsActive))
                 .ThenInclude(co => co.CourtSports)
                 .ThenInclude(cs => cs.Sport)
+                .Include(c => c.Courts.Where(co => co.IsActive))
+                .ThenInclude(co => co.Schedules)
                 .Include(c => c.Reviews)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -121,9 +125,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     State = c.Address.State,
                     Country = c.Address.Country,
 
-                    MinPrice = c.Courts.Where(co => co.IsActive).Any()
-                        ? c.Courts.Where(co => co.IsActive).Min(co => co.PricePerHour)
-                        : 0,
+                    MinPrice = c.Courts
+                        .Where(co => co.IsActive)
+                        .SelectMany(co => co.Schedules)
+                        .Where(sc => sc.IsActive)
+                        .Min(sc => (decimal?)sc.Price) ?? 0,
+
 
                     CourtCount = c.Courts.Count(co => co.IsActive),
 
@@ -196,10 +203,10 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     {
                         StartTime = r.Schedule.StartTime,
                         EndTime = r.Schedule.EndTime,
+                        Price = r.Schedule.Price,
                         Court = new CourtReserveDTO
                         {
                             Name = r.Schedule.Court.Name,
-                            PricePerHour = r.Schedule.Court.PricePerHour,
                             Sports = r.Schedule.Court.CourtSports
                                 .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                                 .ToList()

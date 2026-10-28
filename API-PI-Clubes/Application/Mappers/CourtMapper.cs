@@ -23,7 +23,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Name = court.Name,
                 Surface = court.Surface,
                 IsCovered = court.IsCovered,
-                PricePerHour = court.PricePerHour,
+                MinPrice = court.Schedules.Where(s => s.IsActive).Min(s => (decimal?)s.Price) ?? 0,
                 Description = court.Description,
                 ClubId = court.ClubId,
                 Sports = court.CourtSports?

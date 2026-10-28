@@ -2,14 +2,11 @@
 
 namespace API_PI_Clubes.Application.DTOs
 {
-   
-
     public class CreatCourtDTO
     {
         public string Name { get; set; }
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
-        public decimal PricePerHour { get; set; }
         public string Description { get; set; }
         public Guid ClubId { get; set; }
         public List<Guid> SportIds { get; set; } = new();
@@ -21,7 +18,6 @@ namespace API_PI_Clubes.Application.DTOs
         public string Name { get; set; }
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
-        public decimal PricePerHour { get; set; }
         public string Description { get; set; }
         public List<Guid> SportIds { get; set; } = new();
     }
@@ -32,7 +28,7 @@ namespace API_PI_Clubes.Application.DTOs
         public string Name { get; set; }
         public SurfaceEnum Surface { get; set; }
         public bool IsCovered { get; set; }
-        public decimal PricePerHour { get; set; }
+        public decimal MinPrice { get; set; }
         public string Description { get; set; }
         public Guid ClubId { get; set; }
         public List<ResponseSportDTO> Sports { get; set; } = new();
@@ -42,7 +38,6 @@ namespace API_PI_Clubes.Application.DTOs
     public class CourtReserveDTO
     {
         public string Name { get; set; } = string.Empty;
-        public decimal PricePerHour { get; set; }
         public List<ResponseSportDTO> Sports { get; set; } = new();
     }
 

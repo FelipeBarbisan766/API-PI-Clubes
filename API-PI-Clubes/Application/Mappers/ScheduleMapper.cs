@@ -14,7 +14,8 @@ namespace API_PI_Clubes.Application.Mappers
                 Id = schedule.Id,
                 StartTime = schedule.StartTime,
                 EndTime = schedule.EndTime,
-                State =  schedule.State,
+                State = schedule.State,
+                Price = schedule.Price,
                 DayOfWeek = schedule.DayOfWeek,
                 CourtId = schedule.CourtId
             };
@@ -24,6 +25,7 @@ namespace API_PI_Clubes.Application.Mappers
         {
             return schedules.Select(ToDTO);
         }
+
         public IEnumerable<ResponseScheduleAvailabilityDTO> ToAvailabilityDTO(IEnumerable<Schedule> schedules)
         {
             return schedules.Select(s =>
@@ -32,25 +34,27 @@ namespace API_PI_Clubes.Application.Mappers
 
                 return new ResponseScheduleAvailabilityDTO
                 {
-                    Id         = s.Id,
-                    StartTime  = s.StartTime,
-                    EndTime    = s.EndTime,
-                    State      = s.State,
-                    DayOfWeek  = s.DayOfWeek,
+                    Id = s.Id,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    Price = s.Price,
+                    State = s.State,
+                    DayOfWeek = s.DayOfWeek,
+
 
                     IsAvailable = reserve == null,
 
-                    Reserve = reserve == null ? null : new ResponseReserveInfoDTO
-                    {
-                        Id       = reserve.Id,
-                        Date     = reserve.Date,
-                        Status   = reserve.Status,
-                        PlayerId = reserve.PlayerId
-                    }
+                    Reserve = reserve == null
+                        ? null
+                        : new ResponseReserveInfoDTO
+                        {
+                            Id = reserve.Id,
+                            Date = reserve.Date,
+                            Status = reserve.Status,
+                            PlayerId = reserve.PlayerId
+                        }
                 };
             });
-        
         }
-
     }
 }

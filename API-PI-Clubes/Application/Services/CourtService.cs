@@ -101,7 +101,6 @@ namespace API_PI_Clubes.Application.Services
                 Name = dto.Name,
                 Surface = dto.Surface,
                 IsCovered = dto.IsCovered,
-                PricePerHour = dto.PricePerHour,
                 Description = dto.Description,
                 ClubId = dto.ClubId,
                 CreatedAt = DateTime.UtcNow,
@@ -135,7 +134,6 @@ namespace API_PI_Clubes.Application.Services
             data.Name = dto.Name;
             data.Surface = dto.Surface;
             data.IsCovered = dto.IsCovered;
-            data.PricePerHour = dto.PricePerHour;
             data.Description = dto.Description;
             data.UpdatedAt = DateTime.UtcNow;
 

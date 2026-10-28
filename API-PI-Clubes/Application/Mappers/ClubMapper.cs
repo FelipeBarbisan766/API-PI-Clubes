@@ -27,9 +27,10 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
-                MinPrice = club.Courts
-                    .Where(co => co.IsActive)
-                    .Min(co => (decimal?)co.PricePerHour) ?? 0,
+                MinPrice = club.Courts.Min(co =>
+                    co.Schedules.Where(sc => sc.IsActive).Any()
+                        ? co.Schedules.Where(sc => sc.IsActive).Min(sc => sc.Price)
+                        : 0 ) ,
                 CourtCount = club.Courts
                     .Count(co => co.IsActive),
                 Sports = club.Courts
@@ -85,7 +86,7 @@ namespace API_PI_Clubes.Application.Mappers
                         Name = q.Name,
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
-                        PricePerHour = q.PricePerHour,
+                        MinPrice = q.Schedules.Where(s => s.IsActive).Min(s => (decimal?)s.Price) ?? 0,
                         Description = q.Description,
                         Sports = q.CourtSports
                             .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })

@@ -16,11 +16,7 @@ namespace API_PI_Clubes.Application.Validators
                 .NotEmpty().WithMessage("A quadra deve ter ao menos um esporte.");
             RuleFor(x => x.Surface).IsInEnum();
 
-            RuleFor(x => x.PricePerHour)
-                .InclusiveBetween(ValidationConstants.MinPrice, ValidationConstants.MaxPricePerHour)
-                .WithMessage(
-                    $"O preço por hora deve estar entre {ValidationConstants.MinPrice} e {ValidationConstants.MaxPricePerHour}.");
-
+           
             RuleFor(x => x.Description)
                 .MaximumLength(ValidationConstants.DescriptionMaxLength)
                 .When(x => x.Description is not null);
@@ -45,8 +41,7 @@ namespace API_PI_Clubes.Application.Validators
                 .NotEmpty().WithMessage("A quadra deve ter ao menos um esporte.");
             RuleFor(x => x.Surface).IsInEnum();
 
-            RuleFor(x => x.PricePerHour)
-                .InclusiveBetween(ValidationConstants.MinPrice, ValidationConstants.MaxPricePerHour);
+            
 
             RuleFor(x => x.Description)
                 .MaximumLength(ValidationConstants.DescriptionMaxLength)

@@ -73,6 +73,7 @@ namespace API_PI_Clubes.Application.Services
             {
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime,
+                Price = dto.Price,
                 State = StateEnum.Actived,
                 DayOfWeek = dto.DayOfWeek,
                 CourtId = dto.CourtId
@@ -125,6 +126,7 @@ namespace API_PI_Clubes.Application.Services
                         {
                             StartTime = slotStart,
                             EndTime = slotEnd,
+                            Price = dto.Price,
                             State = StateEnum.Actived,
                             DayOfWeek = day,
                             CourtId = dto.CourtId
@@ -161,6 +163,7 @@ namespace API_PI_Clubes.Application.Services
             data.StartTime = dto.StartTime;
             data.EndTime = dto.EndTime;
             data.State = dto.State;
+            data.Price = dto.Price;
             data.DayOfWeek = dto.DayOfWeek;
             data.UpdatedAt = DateTime.UtcNow;
 

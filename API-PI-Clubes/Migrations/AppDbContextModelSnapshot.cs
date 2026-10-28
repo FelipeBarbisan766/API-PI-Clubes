@@ -181,10 +181,6 @@ namespace API_PI_Clubes.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("PricePerHour")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<int>("Surface")
                         .HasColumnType("int");
 
@@ -628,6 +624,10 @@ namespace API_PI_Clubes.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");

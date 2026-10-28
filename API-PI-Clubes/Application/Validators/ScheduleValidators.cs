@@ -10,6 +10,10 @@ namespace API_PI_Clubes.Application.Validators
         {
             RuleFor(x => x.CourtId).NotEmpty();
             RuleFor(x => x.DayOfWeek).IsInEnum();
+            RuleFor(x => x.Price)
+                .InclusiveBetween(ValidationConstants.MinPrice, ValidationConstants.MaxPricePerHour)
+                .WithMessage(
+                    $"O preço por hora deve estar entre {ValidationConstants.MinPrice} e {ValidationConstants.MaxPricePerHour}.");
 
             RuleFor(x => x.EndTime)
                 .GreaterThan(x => x.StartTime)
@@ -23,7 +27,8 @@ namespace API_PI_Clubes.Application.Validators
         {
             RuleFor(x => x.DayOfWeek).IsInEnum();
             RuleFor(x => x.State).IsInEnum();
-
+            RuleFor(x => x.Price)
+                .InclusiveBetween(ValidationConstants.MinPrice, ValidationConstants.MaxPricePerHour);
             RuleFor(x => x.EndTime)
                 .GreaterThan(x => x.StartTime)
                 .WithMessage("O horário de término deve ser depois do horário de início.");

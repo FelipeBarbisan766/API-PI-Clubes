@@ -39,7 +39,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Name = c.Name,
                     Surface = c.Surface,
                     IsCovered = c.IsCovered,
-                    PricePerHour = c.PricePerHour,
+                    MinPrice = c.Schedules
+                        .Where(s => s.IsActive)
+                        .Min(s => (decimal?)s.Price) ?? 0,
                     Description = c.Description,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports
@@ -72,6 +74,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Images.OrderBy(i => i.Order))
                 .Include(c => c.CourtSports)
                 .ThenInclude(cs => cs.Sport)
+                .Include(c => c.Schedules)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -86,7 +89,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Name = c.Name,
                     Surface = c.Surface,
                     IsCovered = c.IsCovered,
-                    PricePerHour = c.PricePerHour,
+                    MinPrice = c.Schedules
+                        .Where(s => s.IsActive)
+                        .Min(s => (decimal?)s.Price) ?? 0,
                     Description = c.Description,
                     ClubId = c.ClubId,
                     Sports = c.CourtSports

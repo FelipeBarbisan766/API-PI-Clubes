@@ -87,7 +87,6 @@ namespace API_PI_Clubes.Application.Services
                     Court = new CourtReserveDTO
                     {
                         Name = r.Schedule.Court.Name,
-                        PricePerHour = r.Schedule.Court.PricePerHour,
                         Sports = r.Schedule.Court.CourtSports
                             .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                             .ToList()
@@ -125,10 +124,10 @@ namespace API_PI_Clubes.Application.Services
                 {
                     StartTime = r.Schedule.StartTime,
                     EndTime = r.Schedule.EndTime,
+                    Price = r.Schedule.Price,
                     Court = new CourtReserveDTO
                     {
                         Name = r.Schedule.Court.Name,
-                        PricePerHour = r.Schedule.Court.PricePerHour,
                         Sports = r.Schedule.Court.CourtSports
                             .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })
                             .ToList()

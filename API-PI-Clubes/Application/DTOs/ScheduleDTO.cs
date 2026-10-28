@@ -6,6 +6,8 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+        
+        public decimal Price { get; set; }
 
         public DayOfWeek DayOfWeek { get; set; }
         public Guid CourtId { get; set; }
@@ -15,6 +17,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+        public decimal Price { get; set; }
         public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
@@ -25,6 +28,7 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+        public decimal Price { get; set; }
         public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
 
@@ -35,6 +39,7 @@ namespace API_PI_Clubes.Application.DTOs
         public Guid Id { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+        public decimal Price { get; set; }
         public StateEnum State { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
  
@@ -46,6 +51,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public Guid Id { get; set; }
         public DateTime Date { get; set; }
+        public decimal Price { get; set; }
         public StatusEnum Status { get; set; }
         public Guid PlayerId { get; set; }
     }
@@ -54,6 +60,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+        public decimal Price { get; set; }
         public CourtReserveDTO Court { get; set; } = null!;
     }
 
@@ -61,6 +68,7 @@ namespace API_PI_Clubes.Application.DTOs
     {
         public Guid CourtId { get; set; }
         public List<DayOfWeek> DaysOfWeek { get; set; } = [];
+        public decimal Price { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
         public int SlotDurationMinutes { get; set; }

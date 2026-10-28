@@ -96,4 +96,13 @@ namespace API_PI_Clubes.Application.Validators
             RuleFor(x => x.UserId).NotEmpty();
         }
     }
+    public class CustomPlanRequestValidator : AbstractValidator<CustomPlanRequestDTO>
+    {
+        public CustomPlanRequestValidator()
+        {
+            RuleFor(x => x.ClubQuantity).InclusiveBetween(1, ValidationConstants.CustomPlanMaxClubs);
+            RuleFor(x => x.CourtQuantity).InclusiveBetween(1, ValidationConstants.CustomPlanMaxCourts);
+            RuleFor(x => x.DurationMonths).InclusiveBetween(1, ValidationConstants.CustomPlanMaxMonths);
+        }
+    }
 }

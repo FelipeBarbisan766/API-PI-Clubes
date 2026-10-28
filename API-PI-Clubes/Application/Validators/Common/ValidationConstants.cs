@@ -18,6 +18,9 @@ namespace API_PI_Clubes.Application.Validators.Common
         public const int MinPageSize = 1;
         public const int MaxPageSize = 50;
         
+        public const int CustomPlanMaxClubs = 1000;
+        public const int CustomPlanMaxCourts = 10000;
+        public const int CustomPlanMaxMonths = 120;
         
         public const int ProfileNameMinLength = 3;
         public const int ProfileNameMaxLength = 20;

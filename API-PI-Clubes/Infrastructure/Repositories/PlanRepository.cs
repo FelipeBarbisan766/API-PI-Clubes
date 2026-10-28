@@ -15,26 +15,30 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         }
 
         public async Task<Plan?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-            => await _context.Plans.FindAsync(id,cancellationToken);
- 
-        public async Task<IEnumerable<Plan>> GetAllActiveAsync(CancellationToken  cancellationToken)
+            => await _context.Plans.FindAsync(id, cancellationToken);
+
+        public async Task<IEnumerable<Plan>> GetAllActiveAsync(CancellationToken cancellationToken)
             => await _context.Plans
-                .Where(p => p.IsActive)
+                .Where(p => p.IsActive && !p.IsCustom)
                 .OrderBy(p => p.Price)
                 .ToListAsync(cancellationToken);
- 
-        public async Task AddAsync(Plan plan,CancellationToken  cancellationToken)
+
+        public async Task<IEnumerable<Plan>> GetCustomByAdminAsync(Guid adminId, CancellationToken cancellationToken)
+            => await _context.Plans
+                .Where(p => p.IsCustom && p.IsActive && p.OwnerAdminId == adminId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+        public async Task AddAsync(Plan plan, CancellationToken cancellationToken)
         {
-            await _context.Plans.AddAsync(plan,cancellationToken);
+            await _context.Plans.AddAsync(plan, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
- 
-        public async Task UpdateAsync(Plan plan,CancellationToken  cancellationToken)
+
+        public async Task UpdateAsync(Plan plan, CancellationToken cancellationToken)
         {
             _context.Plans.Update(plan);
             await _context.SaveChangesAsync(cancellationToken);
         }
-
-    
     }
 }

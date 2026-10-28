@@ -10,7 +10,7 @@ namespace API_PI_Clubes.Application.DTOs
         int QuantCourt,
         int DurationDays
     );
- 
+
     public record UpdatePlanDto(
         string? Name,
         string? Description,
@@ -19,7 +19,7 @@ namespace API_PI_Clubes.Application.DTOs
         int? QuantCourt,
         int? DurationDays
     );
- 
+
     public record PlanResponseDto(
         Guid Id,
         string Name,
@@ -30,6 +30,7 @@ namespace API_PI_Clubes.Application.DTOs
         int DurationDays,
         bool IsActive
     );
+
     public class PlanLimitsDTO
     {
         public string PlanName { get; set; } = string.Empty;
@@ -58,4 +59,8 @@ namespace API_PI_Clubes.Application.DTOs
         public int Used { get; set; }
         public int Limit { get; set; }
     }
+
+    public record CustomPlanRequestDTO(int ClubQuantity, int CourtQuantity, int DurationMonths);
+
+    public record CustomPlanPriceDTO(decimal TotalPrice);
 }

@@ -8,8 +8,9 @@ namespace API_PI_Clubes.Model
         public int QuantClub { get; set; }
         public int QuantCourt { get; set; }
         public int DurationDays { get; set; }
-
+        public bool IsCustom { get; set; }
+        public Guid? OwnerAdminId { get; set; }
+        public Admin? OwnerAdmin { get; set; }
         public ICollection<Subscription> Subscriptions { get; set; } = [];
-
     }
 }

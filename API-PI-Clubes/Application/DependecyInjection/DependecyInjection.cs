@@ -77,6 +77,8 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<IPlanLimitService, PlanLimitService>();
+            services.AddScoped<IPlanPricingRepository, PlanPricingRepository>();
+            services.AddScoped<IPlanPricingCalculator, PlanPricingCalculator>();
             
             services.AddScoped<IAuthService, AuthService>();
 

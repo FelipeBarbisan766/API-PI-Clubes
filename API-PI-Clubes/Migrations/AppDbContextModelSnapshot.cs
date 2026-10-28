@@ -471,10 +471,16 @@ namespace API_PI_Clubes.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<bool>("IsCustom")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("OwnerAdminId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
@@ -490,6 +496,8 @@ namespace API_PI_Clubes.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwnerAdminId");
+
                     b.ToTable("Plans", (string)null);
 
                     b.HasData(
@@ -500,10 +508,53 @@ namespace API_PI_Clubes.Migrations
                             Description = "Plano Basico Gratuito",
                             DurationDays = 30,
                             IsActive = true,
+                            IsCustom = false,
                             Name = "Free",
                             Price = 0m,
                             QuantClub = 1,
                             QuantCourt = 1
+                        });
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.PlanPricing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Component")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Component")
+                        .IsUnique();
+
+                    b.ToTable("PlanPricings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-0000-0000-0000-000000000001"),
+                            Component = "Club",
+                            UnitPrice = 30m,
+                            UpdatedAt = new DateTime(2026, 10, 28, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-0000-0000-0000-000000000002"),
+                            Component = "Court",
+                            UnitPrice = 10m,
+                            UpdatedAt = new DateTime(2026, 10, 28, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -1137,6 +1188,16 @@ namespace API_PI_Clubes.Migrations
                     b.Navigation("Club");
 
                     b.Navigation("Court");
+                });
+
+            modelBuilder.Entity("API_PI_Clubes.Model.Plan", b =>
+                {
+                    b.HasOne("API_PI_Clubes.Model.Admin", "OwnerAdmin")
+                        .WithMany()
+                        .HasForeignKey("OwnerAdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("OwnerAdmin");
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Player", b =>

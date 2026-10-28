@@ -51,9 +51,15 @@ namespace API_PI_Clubes.Application.Services
         {
             var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
                        ?? throw new NotFoundException("User", userId);
-            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);
+            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken)
+                          ?? throw new NotFoundException("Admin", userId);
+
             var plan = await _planRepository.GetByIdAsync(dto.PlanId, cancellationToken)
                        ?? throw new NotFoundException("Plano", dto.PlanId);
+
+            if (plan.IsCustom && plan.OwnerAdminId != adminId)
+                throw new NotFoundException("Plano", dto.PlanId);
+
 
             var paymentId = Guid.NewGuid();
 
@@ -85,7 +91,7 @@ namespace API_PI_Clubes.Application.Services
                     {
                         // Number = "12345678909"
                         Number = _cpfEncryptionService.Decrypt(user.CpfEncrypted)
-                    }   
+                    }
                 },
                 Items =
                 [
@@ -354,7 +360,8 @@ namespace API_PI_Clubes.Application.Services
         public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryByAdminAsync(Guid userId,
             CancellationToken cancellationToken)
         {
-            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken);
+            var adminId = await _adminRepository.GetIdByUserId(userId, cancellationToken)
+                          ?? throw new NotFoundException("Admin", userId);
             var payments = await _paymentRepository.GetByAdminIdAsync(adminId, cancellationToken);
 
             return payments.Select(p => new PaymentHistoryDto(
@@ -385,13 +392,15 @@ namespace API_PI_Clubes.Application.Services
         private bool IsValidSignature(string dataId, string? signatureHeader, string? requestIdHeader)
         {
             return true;
-            _logger.LogWarning($"DataID : {dataId} || Assinatura : {signatureHeader} || Request ID : {requestIdHeader}");
+            _logger.LogWarning(
+                $"DataID : {dataId} || Assinatura : {signatureHeader} || Request ID : {requestIdHeader}");
             if (dataId.StartsWith("ORDTST", StringComparison.OrdinalIgnoreCase)
                 && _configuration.GetValue<bool>("MercadoPago:AllowUnsignedTestOrders"))
             {
                 _logger.LogWarning("Assinatura NÃO validada para a order de teste {OrderId}.", dataId);
                 return true;
             }
+
             var secret = _configuration["MercadoPago:WebhookSecret"];
             if (string.IsNullOrEmpty(secret))
             {
@@ -418,7 +427,7 @@ namespace API_PI_Clubes.Application.Services
                 return false;
 
             var manifest = $"id:{dataId.ToLowerInvariant()};request-id:{requestIdHeader};ts:{ts};";
-            
+
             return HashesMatch(secret, manifest, expectedHash);
         }
 

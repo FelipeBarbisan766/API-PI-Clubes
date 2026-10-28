@@ -27,7 +27,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Id == id && u.IsActive, cancellationToken);
         }
 
-        public async Task<Guid> GetIdByUserId(Guid userId, CancellationToken cancellationToken)
+        public async Task<Guid?> GetIdByUserId(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Admins
                 .Where(u => u.UserId == userId)

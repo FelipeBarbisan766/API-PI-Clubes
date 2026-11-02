@@ -84,6 +84,7 @@ namespace API_PI_Clubes.Application.Services
                 {
                     StartTime = r.Schedule.StartTime,
                     EndTime = r.Schedule.EndTime,
+                    Price = r.Schedule.Price,
                     Court = new CourtReserveDTO
                     {
                         Name = r.Schedule.Court.Name,

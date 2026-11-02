@@ -295,12 +295,12 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .Where(c => c.IsActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId))
+                .Where(c => c.IsActive && c.IsClubActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId))
                 .Select(c => new ClubCourtUsageDTO
                 {
                     ClubId = c.Id,
                     ClubName = c.Name,
-                    Used = c.Courts.Count(co => co.IsActive)
+                    Used = c.Courts.Where(co => co.IsActive && co.IsCourtActive).Count(co => co.IsActive)
                 })
                 .ToListAsync(cancellationToken);
         }

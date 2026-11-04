@@ -163,12 +163,10 @@ namespace API_PI_Clubes.Application.Services
             ValidateId(id);
             await AuthorizeOwnership(userId, id, cancellationToken);
 
-            var exists = await _repository.ExistsAsync(id, cancellationToken);
-
-            if (!exists)
+            if (!await _repository.ExistsAsync(id, cancellationToken))
                 throw new NotFoundException("Quadra", id);
 
-            await _repository.DisableAsync(id, cancellationToken);
+            await _repository.DeleteAsync(id, cancellationToken);
         }
 
         public async Task<ToggleActiveDTO> ToggleActiveAsync(Guid userId, Guid id, CancellationToken cancellationToken)

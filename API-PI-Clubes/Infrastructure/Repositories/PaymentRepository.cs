@@ -15,15 +15,18 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         }
 
         public async Task<Payment?> GetByIdAsync(Guid id,CancellationToken cancellationToken)
-            => await _context.Payments.FindAsync(new object[] { id }, cancellationToken);
- 
+        {
+            return await _context.Payments.FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
+        }
  
         public async Task<IEnumerable<Payment>> GetByAdminIdAsync(Guid adminId,CancellationToken cancellationToken)
-            => await _context.Payments
+        {
+            return await _context.Payments
                 .Where(p => p.AdminId == adminId)
                 .OrderByDescending(p => p.Date)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
  
         public async Task AddAsync(Payment payment)
         {

@@ -93,7 +93,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Player = await _context.Players.FindAsync(new object[] { id }, cancellationToken);
+            var Player = await _context.Players.FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
             if (Player != null)
             {
                 Player.IsActive = false;

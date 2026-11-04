@@ -5,6 +5,7 @@ using API_PI_Clubes.Infrastructure.Extensions;
 using API_PI_Clubes.Model;
 using API_PI_Clubes.Model.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Infrastructure.Repositories
 {
@@ -263,15 +264,36 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Clubs.Update(club);
         }
 
-        public async Task DisableAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var club = await _context.Clubs.FindAsync(new object[] { id }, cancellationToken);
-            if (club != null)
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
             {
-                club.IsActive = false;
-                club.UpdatedAt = DateTime.UtcNow;
-                _context.Clubs.Update(club);
-            }
+                await using var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+                var now = DateTime.UtcNow;
+
+                await _context.Schedules
+                    .Where(s => s.IsActive && s.Court.ClubId == id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsActive, false)
+                        .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+
+                await _context.Courts
+                    .Where(c => c.IsActive && c.ClubId == id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsActive, false)
+                        .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+
+                await _context.Clubs
+                    .Where(c => c.Id == id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsActive, false)
+                        .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+
+                await tx.CommitAsync(cancellationToken);
+            });
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken)
@@ -288,7 +310,8 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .CountAsync(c => c.IsActive && c.IsClubActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId), cancellationToken);
+                .CountAsync(c => c.IsActive && c.IsClubActive && c.ClubAdmin.Any(ca => ca.Admin.UserId == userId),
+                    cancellationToken);
         }
 
         public async Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId,

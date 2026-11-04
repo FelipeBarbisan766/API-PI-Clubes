@@ -1,5 +1,6 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using API_PI_Clubes.Model;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
@@ -13,7 +14,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task AddAsync(Court Court, CancellationToken cancellationToken);
         Task SaveChangesAsync(CancellationToken cancellationToken);
         void Update(Court Court);
-        Task DisableAsync(Guid id, CancellationToken cancellationToken);
+        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
         Task<bool> IsOwnedByUserAsync(Guid Id, Guid userId, CancellationToken cancellationToken);
         Task<int> CountByClubIdAsync(Guid clubId, CancellationToken cancellationToken);
         Task<Court?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken);

@@ -96,13 +96,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var schedule = await _context.Schedules.FindAsync(new object[] { id }, cancellationToken);
-            if (schedule != null)
-            {
-                schedule.IsActive = false;
-                schedule.UpdatedAt = DateTime.UtcNow;
-                _context.Schedules.Update(schedule);
-            }
+            var now = DateTime.UtcNow;
+
+            await _context.Schedules
+                .Where(s => s.IsActive && s.Id == id)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(x => x.IsActive, false)
+                    .SetProperty(x => x.UpdatedAt, now), cancellationToken);
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken)

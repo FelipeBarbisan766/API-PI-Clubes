@@ -123,7 +123,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Reserve = await _context.Reserves.FindAsync(new object[] {id},cancellationToken);
+            var Reserve = await _context.Reserves.FirstOrDefaultAsync(r => r.Id == id && r.IsActive,cancellationToken);
             if (Reserve != null)
             {
                 Reserve.IsActive = false;

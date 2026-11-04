@@ -3,6 +3,7 @@ using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Infrastructure.Data;
 using API_PI_Clubes.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API_PI_Clubes.Infrastructure.Repositories
 {
@@ -139,15 +140,30 @@ namespace API_PI_Clubes.Infrastructure.Repositories
             _context.Courts.Update(Court);
         }
 
-        public async Task DisableAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var Court = await _context.Courts.FindAsync(id, cancellationToken);
-            if (Court != null)
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
             {
-                Court.IsActive = false;
-                Court.UpdatedAt = DateTime.UtcNow;
-                _context.Courts.Update(Court);
-            }
+                await using var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+                var now = DateTime.UtcNow;
+
+                await _context.Schedules
+                    .Where(s => s.IsActive && s.CourtId == id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsActive, false)
+                        .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+
+                await _context.Courts
+                    .Where(c => c.Id == id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsActive, false)
+                        .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+
+                await tx.CommitAsync(cancellationToken);
+            });
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken)

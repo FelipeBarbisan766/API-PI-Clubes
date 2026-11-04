@@ -15,19 +15,24 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         }
 
         public async Task<Plan?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-            => await _context.Plans.FindAsync(id, cancellationToken);
-
+        {
+            return await _context.Plans.FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
+        }
         public async Task<IEnumerable<Plan>> GetAllActiveAsync(CancellationToken cancellationToken)
-            => await _context.Plans
+        {
+            return await _context.Plans
                 .Where(p => p.IsActive && !p.IsCustom)
                 .OrderBy(p => p.Price)
                 .ToListAsync(cancellationToken);
+        }
 
         public async Task<IEnumerable<Plan>> GetCustomByAdminAsync(Guid adminId, CancellationToken cancellationToken)
-            => await _context.Plans
+        {
+            return await _context.Plans
                 .Where(p => p.IsCustom && p.IsActive && p.OwnerAdminId == adminId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync(cancellationToken);
+        }
 
         public async Task AddAsync(Plan plan, CancellationToken cancellationToken)
         {

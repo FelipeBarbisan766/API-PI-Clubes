@@ -89,15 +89,15 @@ namespace API_PI_Clubes.Infrastructure.Repositories
         public async Task<Club?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Clubs
-                .Where(u => u.Id == id && u.IsActive)
+                .Where(u => u.Id == id && u.IsActive && u.IsCourtActive)
                 .AsNoTracking()
                 .Include(c => c.Images.OrderBy(i => i.Order))
-                .Include(c => c.Courts.Where(co => co.IsActive))
+                .Include(c => c.Courts.Where(co => co.IsActive && co.IsCourtActive))
                 .ThenInclude(co => co.Images.OrderBy(i => i.Order))
-                .Include(c => c.Courts.Where(co => co.IsActive))
+                .Include(c => c.Courts.Where(co => co.IsActive && co.IsCourtActive))
                 .ThenInclude(co => co.CourtSports)
                 .ThenInclude(cs => cs.Sport)
-                .Include(c => c.Courts.Where(co => co.IsActive))
+                .Include(c => c.Courts.Where(co => co.IsActive && co.IsCourtActive))
                 .ThenInclude(co => co.Schedules)
                 .Include(c => c.Reviews)
                 .FirstOrDefaultAsync(cancellationToken);

@@ -88,6 +88,7 @@ namespace API_PI_Clubes.Application.Mappers
                         Surface = q.Surface,
                         IsCovered = q.IsCovered,
                         MinPrice = q.Schedules.Where(s => s.IsActive).Min(s => (decimal?)s.Price) ?? 0,
+                        MaxPrice = q.Schedules.Where(s => s.IsActive).Max(s => (decimal?)s.Price) ?? 0,
                         Description = q.Description,
                         Sports = q.CourtSports
                             .Select(cs => new ResponseSportDTO { Id = cs.Sport.Id, Name = cs.Sport.Name })

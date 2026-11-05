@@ -24,6 +24,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Surface = court.Surface,
                 IsCovered = court.IsCovered,
                 MinPrice = court.Schedules.Where(s => s.IsActive).Min(s => (decimal?)s.Price) ?? 0,
+                MaxPrice = court.Schedules.Where(s => s.IsActive).Max(s => (decimal?)s.Price) ?? 0,
                 Description = court.Description,
                 IsCourtActive = court.IsCourtActive,
                 ClubId = court.ClubId,

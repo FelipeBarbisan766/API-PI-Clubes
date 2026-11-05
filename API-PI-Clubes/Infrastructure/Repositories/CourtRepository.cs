@@ -95,6 +95,9 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     MinPrice = c.Schedules
                         .Where(s => s.IsActive)
                         .Min(s => (decimal?)s.Price) ?? 0,
+                    MaxPrice = c.Schedules
+                        .Where(s => s.IsActive)
+                        .Max(s => (decimal?)s.Price) ?? 0,
                     Description = c.Description,
                     IsCourtActive = c.IsCourtActive,
                     ClubId = c.ClubId,

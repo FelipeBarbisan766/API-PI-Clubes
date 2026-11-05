@@ -70,6 +70,10 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
+                MinPrice = club.Courts.Min(co =>
+                    co.Schedules.Where(sc => sc.IsActive).Any()
+                        ? co.Schedules.Where(sc => sc.IsActive).Min(sc => sc.Price)
+                        : 0 ) ,
                 AverageRating = club.Reviews.Any()
                     ? Math.Round(club.Reviews.Average(r => r.Rating), 1)
                     : 0,

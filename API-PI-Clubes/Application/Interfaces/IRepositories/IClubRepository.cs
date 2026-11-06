@@ -11,6 +11,7 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Club?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken);
         Task<ResponseDashboardDTO?> GetDashboardAsync(Guid clubId, CancellationToken cancellationToken);
+        Task<ShareClubDataDTO?> GetShareDataAsync(Guid clubId, CancellationToken cancellationToken);
         Task AddAsync(Club entity, CancellationToken cancellationToken);
         Task AddClubAdminAsync(ClubAdmin clubAdmin, CancellationToken cancellationToken);
         void Update(Club entity);

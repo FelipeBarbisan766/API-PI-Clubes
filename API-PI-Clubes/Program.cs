@@ -15,16 +15,19 @@ using System.Text.Json.Serialization;
 using API_PI_Clubes.Api.Filters;
 using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Application.Services;
 using API_PI_Clubes.Application.Validators;
 using API_PI_Clubes.Hubs;
 using API_PI_Clubes.Infrastructure.Jobs;
 using API_PI_Clubes.Infrastructure.Middlewares;
+using API_PI_Clubes.Infrastructure.Rendering;
 using API_PI_Clubes.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.FileProviders;
 using StackExchange.Redis;
 using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +57,21 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddHttpClient(ShareService.CoverHttpClientName)
+    .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(5))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+
+builder.Services.AddSingleton<IShareImageRenderer, ShareImageRenderer>();
+
+builder.Services.AddRateLimiter(o => o.AddFixedWindowLimiter("share-image", l =>
+{
+    l.PermitLimit = 30;
+    l.Window = TimeSpan.FromMinutes(1);
+}));
+
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -172,12 +190,12 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
-
 app.UseRouting();
 app.UseCors("CluberaPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseRateLimiter();
 app.MapControllers();
 app.MapHub<CourtAvailabilityHub>("api/hubs/court-availability");
 

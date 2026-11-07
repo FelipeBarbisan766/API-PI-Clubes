@@ -68,7 +68,7 @@ services:
       Booking__TimeZoneId: "America/Sao_Paulo"
       Share__FrontendBaseUrl: "https://www.clubera.dev"
       Share__ApiPublicBaseUrl: "https://api.clubera.dev"
-      Share__AllowedImageHosts: "api.clubera.dev"
+      Share__AllowedImageHosts__0: "api.clubera.dev"
       AllowedHosts: "*"
     networks:
       - homelab-network

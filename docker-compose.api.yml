@@ -1,12 +1,5 @@
 version: "3.9"
 
-# Sobe SOMENTE a API, usando a imagem ja pronta do GHCR
-# (nada de build no servidor - notebook so faz pull + run).
-# Depende do banco ja estar rodando na rede externa
-# "homelab-network" (docker-compose.db.yml).
-#
-# Este e o compose que o GitHub Actions vai recriar a cada deploy.
-#
 # Subir:
 #   docker compose -f docker-compose.api.yml --env-file .env pull
 #   docker compose -f docker-compose.api.yml --env-file .env up -d
@@ -20,9 +13,6 @@ services:
     ports:
       - "5000:8080"
     volumes:
-      # Caminho ABSOLUTO, fora da pasta _work do runner - dado de usuario
-      # nao pode morar num lugar que o git clean apaga a cada deploy.
-      # Cria a pasta uma vez no servidor: mkdir -p /DATA/AppData/homelab-api-uploads
       - /DATA/AppData/homelab-api-uploads:/app/wwwroot/uploads
     environment:
       ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Production}"
@@ -73,6 +63,12 @@ services:
 
       # --- Outros ---
       ReserveCleanup__RetentionMonths: "6"
+      Booking__BookingCutoffMinutes: "10"
+      Booking__CancellationCutoffMinutes: "10"
+      Booking__TimeZoneId: "America/Sao_Paulo"
+      Share__FrontendBaseUrl: "https://www.clubera.dev"
+      Share__ApiPublicBaseUrl: "https://api.clubera.dev"
+      Share__AllowedImageHosts: "api.clubera.dev"
       AllowedHosts: "*"
     networks:
       - homelab-network

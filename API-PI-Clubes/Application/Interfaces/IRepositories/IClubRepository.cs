@@ -6,7 +6,9 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
 {
     public interface IClubRepository
     {
-        Task<(IEnumerable<ResponseClubDTO> Items, int TotalCount)> GetAllAsync(ClubQueryDTO query, CancellationToken cancellationToken);
+        Task<(IEnumerable<ResponseClubDTO> Items, int TotalCount)> GetAllAsync(ClubQueryDTO query,
+            CancellationToken cancellationToken);
+
         Task<Club> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<List<ResponseClubDTO>> GetAllByAdminIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Club?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken);
@@ -19,8 +21,12 @@ namespace API_PI_Clubes.Application.Interfaces.IRepositories
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<bool> IsOwnedByUserAsync(Guid clubId, Guid userId, CancellationToken cancellationToken);
         Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken);
-        Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+
+        Task<List<ClubCourtUsageDTO>> GetClubsWithCourtCountByUserIdAsync(Guid userId,
+            CancellationToken cancellationToken);
+
         Task<Club?> GetByIdForToggleAsync(Guid id, CancellationToken cancellationToken);
         Task<List<Club>> GetActiveWithActiveCourtsByAdminIdAsync(Guid adminId, CancellationToken cancellationToken);
+        Task<ShareClubDataDTO?> GetShareDataAsync(Guid clubId, CancellationToken cancellationToken);
     }
 }

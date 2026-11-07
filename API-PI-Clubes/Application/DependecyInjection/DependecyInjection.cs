@@ -110,6 +110,12 @@ namespace API_PI_Clubes.Application.DependencyInjection
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPlanDowngradeService, PlanDowngradeService>();
             
+            services.AddScoped<IShareService, ShareService>();
+            services.AddScoped<IShareImageService, ShareImageService>();
+            services.AddMemoryCache();
+            services.AddSingleton<IShareImageRenderer, ShareImageRenderer>();
+            services.AddSingleton<ICoverImageLoader, CoverImageLoader>();
+            
             return services;
         }
     }

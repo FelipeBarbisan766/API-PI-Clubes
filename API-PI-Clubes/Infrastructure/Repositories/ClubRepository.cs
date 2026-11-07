@@ -343,5 +343,38 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Include(c => c.Courts.Where(court => court.IsActive))
                 .ToListAsync(cancellationToken);
         }
+        public async Task<ShareClubDataDTO?> GetShareDataAsync(Guid clubId, CancellationToken cancellationToken)
+        {
+            return await _context.Clubs
+                .AsNoTracking()
+                .Where(c => c.Id == clubId && c.IsActive && c.IsClubActive)
+                .Select(c => new ShareClubDataDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    City = c.Address.City,
+                    State = c.Address.State,
+                    MinPrice = c.Courts
+                        .Where(co => co.IsActive && co.IsCourtActive)
+                        .SelectMany(co => co.Schedules)
+                        .Where(sc => sc.IsActive)
+                        .Min(sc => (decimal?)sc.Price),
+                    Sports = c.Courts
+                        .Where(co => co.IsActive && co.IsCourtActive)
+                        .SelectMany(co => co.CourtSports)
+                        .Select(cs => cs.Sport.Name)
+                        .Distinct()
+                        .ToList(),
+                    CoverImageId = c.Images
+                        .OrderBy(i => i.Order)
+                        .Select(i => (Guid?)i.Id)
+                        .FirstOrDefault(),
+                    CoverUrl = c.Images
+                        .OrderBy(i => i.Order)
+                        .Select(i => i.MediumUrl)
+                        .FirstOrDefault()
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

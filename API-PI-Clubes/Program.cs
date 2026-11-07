@@ -12,9 +12,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using API_PI_Clubes.Api.Filters;
 using API_PI_Clubes.Application.Auth;
 using API_PI_Clubes.Application.Interfaces.IServices;
+using API_PI_Clubes.Application.Services;
 using API_PI_Clubes.Application.Validators;
 using API_PI_Clubes.Hubs;
 using API_PI_Clubes.Infrastructure.Jobs;
@@ -54,6 +56,32 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
+
+builder.Services.AddOptions<ShareSettings>()
+    .Bind(builder.Configuration.GetSection(ShareSettings.SectionName))
+    .Validate(s => Uri.TryCreate(s.FrontendBaseUrl, UriKind.Absolute, out _)
+                   && Uri.TryCreate(s.ApiPublicBaseUrl, UriKind.Absolute, out _),
+        "Share:FrontendBaseUrl e Share:ApiPublicBaseUrl precisam ser URLs absolutas.")
+    .ValidateOnStart();
+
+builder.Services.AddHttpClient(CoverImageLoader.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(4))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("share-image", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -174,6 +202,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 
 app.UseRouting();
+app.UseRateLimiter();
 app.UseCors("CluberaPolicy");
 app.UseAuthentication();
 app.UseAuthorization();

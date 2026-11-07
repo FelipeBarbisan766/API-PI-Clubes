@@ -237,6 +237,12 @@ Estas já vêm definidas no `docker-compose.api.yml` e podem ser editadas lá, s
 |`Storage__Provider`|`Local`|
 |`ReserveCleanup__RetentionMonths`|`6`|
 |`Email__SenderName`|`Clube PI`|
+|`Booking__BookingCutoffMinutes`|`10`|
+|`Booking__CancellationCutoffMinutes`|`10`|
+|`Booking__TimeZoneId`|`America/Sao_Paulo`|
+|`Share__FrontendBaseUrl`|`https://www.clubera.dev`|
+|`Share__ApiPublicBaseUrl`|`https://api.clubera.dev`|
+|`Share__AllowedImageHosts__0`|`api.clubera.dev`|
 
 ### Armazenamento de imagens
 
@@ -265,4 +271,5 @@ Por padrão (`Storage__Provider: "Local"`), os arquivos são gravados em `/app/w
 ## Licença
 
 Projeto acadêmico desenvolvido na Fatec Taquaritinga. 
+
 [Apache 2.0 License](LICENSE), Version 2.0, January 2004, [www.apache.org/licenses/](http://www.apache.org/licenses/)

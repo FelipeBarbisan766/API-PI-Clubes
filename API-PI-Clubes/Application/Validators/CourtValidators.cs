@@ -17,10 +17,6 @@ namespace API_PI_Clubes.Application.Validators
             RuleFor(x => x.Surface).IsInEnum();
 
            
-            RuleFor(x => x.Description)
-                .MaximumLength(ValidationConstants.DescriptionMaxLength)
-                .When(x => x.Description is not null);
-
             RuleFor(x => x.ClubId)
                 .NotEmpty().WithMessage("O clube é obrigatório.");
 
@@ -43,9 +39,6 @@ namespace API_PI_Clubes.Application.Validators
 
             
 
-            RuleFor(x => x.Description)
-                .MaximumLength(ValidationConstants.DescriptionMaxLength)
-                .When(x => x.Description is not null);
         }
     }
 

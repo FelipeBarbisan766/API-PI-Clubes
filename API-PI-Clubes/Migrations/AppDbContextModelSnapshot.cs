@@ -994,7 +994,7 @@ namespace API_PI_Clubes.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1025,7 +1025,22 @@ namespace API_PI_Clubes.Migrations
                         .IsUnique()
                         .HasFilter("[CpfHash] IS NOT NULL");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("99999999-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTime(2026, 11, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "fgatechnology@gmail.com",
+                            IsActive = true,
+                            Name = "Root",
+                            Provider = "google",
+                            Role = 3
+                        });
                 });
 
             modelBuilder.Entity("API_PI_Clubes.Model.Admin", b =>
@@ -1311,6 +1326,14 @@ namespace API_PI_Clubes.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("UserId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    UserId = new Guid("99999999-0000-0000-0000-000000000001"),
+                                    IsConfirmed = true,
+                                    VerifiedAt = new DateTime(2026, 11, 10, 0, 0, 0, 0, DateTimeKind.Utc)
+                                });
                         });
 
                     b.OwnsOne("API_PI_Clubes.Model.ValueObjects.ResetPasswordVO", "ResetPassword", b1 =>

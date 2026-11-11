@@ -10,11 +10,13 @@ using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API_PI_Clubes.Api.Filters;
 using API_PI_Clubes.Application.Auth;
+using API_PI_Clubes.Application.Interfaces.IRepositories;
 using API_PI_Clubes.Application.Interfaces.IServices;
 using API_PI_Clubes.Application.Services;
 using API_PI_Clubes.Application.Validators;
@@ -22,11 +24,13 @@ using API_PI_Clubes.Hubs;
 using API_PI_Clubes.Infrastructure.Jobs;
 using API_PI_Clubes.Infrastructure.Middlewares;
 using API_PI_Clubes.Infrastructure.Services;
+using API_PI_Clubes.Model.Enums;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.FileProviders;
 using StackExchange.Redis;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +84,15 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+    options.AddPolicy(BackofficeAuth.LoginRateLimit, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services
@@ -108,11 +121,57 @@ builder.Services
                 return Task.CompletedTask;
             }
         };
-    });
+    })
+    .AddCookie(BackofficeAuth.Scheme, options =>
+{
+    options.Cookie.Name = "clubera_backoffice";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+
+    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+    options.SlidingExpiration = false; // sessão curta, relogar a cada 2h
+
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = ctx =>
+        {
+            ctx.Response.StatusCode = 401;
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = ctx =>
+        {
+            ctx.Response.StatusCode = 403;
+            return Task.CompletedTask;
+        },
+
+        OnValidatePrincipal = async ctx =>
+        {
+            var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+            var idClaim = ctx.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var user = Guid.TryParse(idClaim, out var id)
+                ? await repo.GetByIdAsync(id, ctx.HttpContext.RequestAborted)
+                : null;
+
+            if (user is null || user.Role != RoleEnum.Root)
+            {
+                ctx.RejectPrincipal();
+                await ctx.HttpContext.SignOutAsync(BackofficeAuth.Scheme);
+            }
+        }
+    };
+});
 
 builder.Services.AddSignalR()
     .AddJsonProtocol(options => { options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(BackofficeAuth.Policy, policy => policy
+        .AddAuthenticationSchemes(BackofficeAuth.Scheme)
+        .RequireAuthenticatedUser()
+        .RequireRole(nameof(RoleEnum.Root)));
+});
 builder.Services.AddHttpClient();
 var mpAccessToken = builder.Configuration["MercadoPago:AccessToken"]
                     ?? throw new InvalidOperationException("MercadoPago:AccessToken não configurado.");
@@ -128,13 +187,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CluberaPolicy", policy =>
     {
-        policy.WithOrigins("https://www.clubera.dev", "https://clubera.dev", "https://api.clubera.dev",
+        policy.WithOrigins("https://www.clubera.dev", "https://adm.clubera.dev", "https://api.clubera.dev", 
                 "http://localhost:4200")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
     });
 });
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(

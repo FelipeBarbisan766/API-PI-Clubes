@@ -1,6 +1,7 @@
 ﻿using API_PI_Clubes.Application.DTOs;
 using System.Security.Claims;
 using API_PI_Clubes.Model;
+using Google.Apis.Auth;
 
 namespace API_PI_Clubes.Application.Auth
 {
@@ -18,5 +19,6 @@ namespace API_PI_Clubes.Application.Auth
         Task GoogleSignUp(string idToken, CancellationToken cancellationToken);
         Task<User> GoogleLogin(string idToken, CancellationToken cancellationToken); 
         Task CompleteProfile(Guid userId, CompleteProfileDTO dto, CancellationToken cancellationToken);
+        Task<User> BackofficeGoogleLogin(string idToken, CancellationToken cancellationToken);
     }
 }

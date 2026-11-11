@@ -344,5 +344,44 @@ namespace API_PI_Clubes.Application.Auth
 
             await _playerService.Create(user.Id, cancellationToken);
         }
+        private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = [_config["Google:ClientId"]]
+            };
+
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            }
+            catch (InvalidJwtException)
+            {
+                throw new ValidationException("Token do Google inválido ou expirado.");
+            }
+
+            if (!payload.EmailVerified)
+                throw new ValidationException("E-mail do Google não verificado.");
+
+            return payload;
+        }
+        private static void EnsureNotRoot(User user)
+        {
+            if (user.Role == RoleEnum.Root)
+                throw new NotFoundException("Usuario Não Encontrado");
+        }
+        public async Task<User> BackofficeGoogleLogin(string idToken, CancellationToken cancellationToken)
+        {
+            var payload = await ValidateGoogleTokenAsync(idToken);
+
+            var user = await _repository.GetByEmailAsync(payload.Email, cancellationToken);
+
+            // Mesma resposta para "não existe" e "não é root": não revela nada
+            if (user is null || user.Role != RoleEnum.Root)
+                throw new InvalidCredentialsException("Credenciais inválidas.");
+
+            return user;
+        }
     }
 }

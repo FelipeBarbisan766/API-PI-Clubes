@@ -8,11 +8,11 @@ namespace API_PI_Clubes.Application.Mappers
     {
         private static ImageDTO ToImageDTO(Image i) => new()
         {
-            Id        = i.Id,
-            ThumbUrl  = i.ThumbUrl,
+            Id = i.Id,
+            ThumbUrl = i.ThumbUrl,
             MediumUrl = i.MediumUrl,
-            FullUrl   = i.FullUrl,
-            Order     = i.Order
+            FullUrl = i.FullUrl,
+            Order = i.Order
         };
 
         public ResponseClubDTO ToDTO(Club club)
@@ -27,13 +27,14 @@ namespace API_PI_Clubes.Application.Mappers
                 State = club.Address.State,
                 Country = club.Address.Country,
                 Description = club.Description,
-                IsClubActive =  club.IsClubActive,
+                IsClubActive = club.IsClubActive,
                 MinPrice = club.Courts
+                    .Where(co => co.IsActive && co.IsCourtActive)
                     .SelectMany(co => co.Schedules)
                     .Where(sc => sc.IsActive)
                     .Min(sc => (decimal?)sc.Price) ?? 0,
                 CourtCount = club.Courts
-                    .Count(co => co.IsActive),
+                    .Count(co => co.IsActive && co.IsCourtActive),
                 Sports = club.Courts
                     .Where(co => co.IsActive)
                     .SelectMany(co => co.CourtSports.Select(cs => cs.Sport))
@@ -71,6 +72,7 @@ namespace API_PI_Clubes.Application.Mappers
                 Country = club.Address.Country,
                 Description = club.Description,
                 MinPrice = club.Courts
+                    .Where(co => co.IsActive && co.IsCourtActive)
                     .SelectMany(co => co.Schedules)
                     .Where(sc => sc.IsActive)
                     .Min(sc => (decimal?)sc.Price) ?? 0,
@@ -83,7 +85,7 @@ namespace API_PI_Clubes.Application.Mappers
                     .ToList(),
 
                 Courts = club.Courts
-                    .Where(co => co.IsActive)
+                    .Where(co => co.IsActive && co.IsCourtActive)
                     .Select(q => new ResponseCourtDTO
                     {
                         Id = q.Id,

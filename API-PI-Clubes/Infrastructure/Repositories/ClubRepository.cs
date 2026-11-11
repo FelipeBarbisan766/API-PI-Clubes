@@ -51,11 +51,11 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                         Country = c.Address.Country,
                         IsClubActive = c.IsClubActive,
                         MinPrice = c.Courts
-                            .Where(co => co.IsActive)
+                            .Where(co => co.IsActive && co.IsCourtActive)
                             .SelectMany(co => co.Schedules)
                             .Where(sc => sc.IsActive)
                             .Min(sc => (decimal?)sc.Price) ?? 0,
-                        CourtCount = c.Courts.Count(co => co.IsActive),
+                        CourtCount = c.Courts.Count(co => co.IsActive && co.IsCourtActive),
                         Sports = c.Courts.Where(co => co.IsActive)
                             .SelectMany(co => co.CourtSports)
                             .Select(cs => new { cs.Sport.Id, cs.Sport.Name })
@@ -128,13 +128,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                     Country = c.Address.Country,
                     IsClubActive = c.IsClubActive,
                     MinPrice = c.Courts
-                        .Where(co => co.IsActive)
+                        .Where(co => co.IsActive && co.IsCourtActive)
                         .SelectMany(co => co.Schedules)
                         .Where(sc => sc.IsActive)
                         .Min(sc => (decimal?)sc.Price) ?? 0,
 
 
-                    CourtCount = c.Courts.Count(co => co.IsActive),
+                    CourtCount = c.Courts.Count(co => co.IsActive && co.IsCourtActive),
 
                     Sports = c.Courts.Where(co => co.IsActive)
                         .SelectMany(co => co.CourtSports)
@@ -169,7 +169,7 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Where(c => c.Id == clubId && c.IsActive)
                 .Select(c => new
                 {
-                    QuantCourt = c.Courts.Count(co => co.IsActive),
+                    QuantCourt = c.Courts.Count(co => co.IsActive && co.IsCourtActive),
                     QuantReserveToday = c.Courts
                         .SelectMany(co => co.Schedules)
                         .SelectMany(s => s.Reserves)

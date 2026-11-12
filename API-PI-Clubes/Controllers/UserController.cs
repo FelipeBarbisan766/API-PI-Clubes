@@ -17,6 +17,13 @@ namespace API_PI_Clubes.Controllers
             _service = service;
         }
         
+        [HttpGet("root")]
+        [Authorize(Roles = "Root")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        {
+            var result = await _service.GetAll(cancellationToken);
+            return Ok(result);
+        }
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)

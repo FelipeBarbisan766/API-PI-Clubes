@@ -15,6 +15,7 @@ public class FlagRepository : IFlagRepository
     public async Task<List<Flag>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await _context.Flags
+            .Where(f => f.IsActive)
             .AsNoTracking()
             .OrderBy(f => f.Name)
             .ToListAsync(cancellationToken);
@@ -46,6 +47,29 @@ public class FlagRepository : IFlagRepository
     public async Task AddPlayerFlagAsync(FlagPlayer flagPlayer, CancellationToken cancellationToken)
     {
         await _context.FlagPlayers.AddAsync(flagPlayer, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+    public async Task AddAsync(Flag flag, CancellationToken cancellationToken)
+    {
+        await _context.Flags.AddAsync(flag, cancellationToken);
+    }
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _context.Flags
+            .AnyAsync(s => s.Id == id && s.IsActive, cancellationToken);
+    }
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        await _context.Flags
+            .Where(s => s.IsActive && s.Id == id)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(x => x.IsActive, false)
+                .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+    }
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

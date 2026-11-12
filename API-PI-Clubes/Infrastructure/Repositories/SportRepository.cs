@@ -38,5 +38,28 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .Select(s => new ResponseSportDTO { Id = s.Id, Name = s.Name })
                 .ToListAsync(cancellationToken);
         }
+        public async Task AddAsync(Sport sport, CancellationToken cancellationToken)
+        {
+            await _context.Sports.AddAsync(sport, cancellationToken);
+        }
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await _context.Sports
+                .AnyAsync(s => s.Id == id && s.IsActive, cancellationToken);
+        }
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+
+            await _context.Sports
+                .Where(s => s.IsActive && s.Id == id)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(x => x.IsActive, false)
+                    .SetProperty(x => x.UpdatedAt, now), cancellationToken);
+        }
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

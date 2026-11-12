@@ -27,6 +27,13 @@ namespace API_PI_Clubes.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
+        public async Task<IEnumerable<Payment>> GetAllAsync(CancellationToken cancellationToken)
+        {
+            return await _context.Payments
+                .OrderByDescending(p => p.Date)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
  
         public async Task AddAsync(Payment payment)
         {

@@ -17,14 +17,16 @@ namespace API_PI_Clubes.Application.Services
         private readonly IPlanRepository _planRepository;
         private readonly IPlanPricingCalculator _calculator;
         private readonly IAdminRepository _adminRepository;
+        private readonly IUserRepository  _userRepository;
 
         public PlanService(IPlanRepository planRepository,
             IPlanPricingCalculator calculator,
-            IAdminRepository adminRepository)
+            IAdminRepository adminRepository, IUserRepository userRepository)
         {
             _planRepository = planRepository;
             _calculator = calculator;
             _adminRepository = adminRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<PlanResponseDto>> GetAllActiveAsync(CancellationToken cancellationToken)
@@ -42,8 +44,9 @@ namespace API_PI_Clubes.Application.Services
             return plans.Select(MapToDto);
         }
 
-        public async Task<PlanResponseDto> CreateAsync(CreatePlanDto dto, CancellationToken cancellationToken)
+        public async Task<PlanResponseDto> CreateAsync(Guid userId,CreatePlanDto dto, CancellationToken cancellationToken)
         {
+            await AuthorizeRoot(userId, cancellationToken);
             var plan = new Plan
             {
                 Id = Guid.NewGuid(),
@@ -87,8 +90,9 @@ namespace API_PI_Clubes.Application.Services
             return MapToDto(plan);
         }
 
-        public async Task<PlanResponseDto> UpdateAsync(Guid id, UpdatePlanDto dto, CancellationToken cancellationToken)
+        public async Task<PlanResponseDto> UpdateAsync(Guid userId,Guid id, UpdatePlanDto dto, CancellationToken cancellationToken)
         {
+            await AuthorizeRoot(userId, cancellationToken);
             var plan = await _planRepository.GetByIdAsync(id, cancellationToken)
                        ?? throw new NotFoundException("Plano", id);
 
@@ -103,8 +107,9 @@ namespace API_PI_Clubes.Application.Services
             return MapToDto(plan);
         }
 
-        public async Task SetActiveAsync(Guid id, bool isActive, CancellationToken cancellationToken)
+        public async Task SetActiveAsync(Guid userId, Guid id, bool isActive, CancellationToken cancellationToken)
         {
+            await AuthorizeRoot(userId, cancellationToken);
             var plan = await _planRepository.GetByIdAsync(id, cancellationToken)
                        ?? throw new NotFoundException("Plano", id);
 
@@ -123,5 +128,12 @@ namespace API_PI_Clubes.Application.Services
             DurationDays: p.DurationDays,
             IsActive: p.IsActive
         );
+        private async Task AuthorizeRoot(Guid userId, CancellationToken cancellationToken)
+        {
+            var isRoot = await _userRepository.IsRootAsync(userId, cancellationToken);
+            if (!isRoot)
+                throw new ForbiddenException("Você não tem permissão para gerenciar.");
+
+        }
     }
 }

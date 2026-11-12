@@ -9,7 +9,7 @@ namespace API_PI_Clubes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+   
     public class PlanController : ControllerBase
     {
         private readonly IPlanService _service;
@@ -39,6 +39,7 @@ namespace API_PI_Clubes.Controllers
         }
 
         [HttpGet("custom")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<PlanResponseDto>>> GetMyCustom(CancellationToken ct)
         {
             var userId = User.GetUserId();
@@ -47,14 +48,17 @@ namespace API_PI_Clubes.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("root")]
+        [Authorize(Roles = "Root")]
         public async Task<IActionResult> Create([FromBody] CreatePlanDto dto, CancellationToken cancellationToken)
         {
-            var plan = await _service.CreateAsync(dto, cancellationToken);
+            var userId = User.GetUserId();
+            var plan = await _service.CreateAsync(userId,dto, cancellationToken);
             return CreatedAtAction(nameof(GetAll), new { id = plan.Id }, plan);
         }
 
         [HttpPost("custom")]
+        [Authorize(Roles = "Admin")]    
         public async Task<ActionResult<PlanResponseDto>> CreateCustom(CustomPlanRequestDTO req, CancellationToken ct)
         {
             var userId = User.GetUserId();
@@ -62,19 +66,23 @@ namespace API_PI_Clubes.Controllers
             return Ok(plan);
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id:guid}/root")]
+        [Authorize(Roles = "Root")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlanDto dto,
             CancellationToken cancellationToken)
         {
-            var plan = await _service.UpdateAsync(id, dto, cancellationToken);
+            var userId = User.GetUserId();
+            var plan = await _service.UpdateAsync(userId,id, dto, cancellationToken);
             return Ok(plan);
         }
 
-        [HttpPatch("{id:guid}/set-active")]
+        [HttpPatch("{id:guid}/set-active/root")]
+        [Authorize(Roles = "Root")]
         public async Task<IActionResult> SetActive(Guid id, [FromQuery] bool isActive,
             CancellationToken cancellationToken)
         {
-            await _service.SetActiveAsync(id, isActive, cancellationToken);
+            var userId = User.GetUserId();
+            await _service.SetActiveAsync(userId,id, isActive, cancellationToken);
             return NoContent();
         }
     }

@@ -74,5 +74,13 @@ namespace API_PI_Clubes.Controllers
             var history = await _service.GetHistoryByAdminAsync(userId, cancellationToken);
             return Ok(history);
         }
+        [HttpGet("overview")]
+        [Authorize(Roles = "Root")]
+        public async Task<IActionResult> Overview(CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            var history = await _service.GetHistoryAsync(userId,cancellationToken);
+            return Ok(history);
+        }
     }
 }

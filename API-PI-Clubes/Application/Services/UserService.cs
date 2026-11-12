@@ -37,6 +37,10 @@ namespace API_PI_Clubes.Application.Services
             _httpClientFactory = httpClientFactory;
         }
 
+        public async Task<List<UserDTO>> GetAll(CancellationToken cancellationToken)
+        {
+            return await _repository.GetAllAsync(cancellationToken);
+        }
         public async Task<ResponseUserDTO> GetById(Guid id, CancellationToken cancellationToken)
         {
             var user = await _repository.GetByIdAsync(id, cancellationToken);

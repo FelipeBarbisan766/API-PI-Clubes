@@ -5,3 +5,7 @@ public class ResponseSportDTO
     public Guid Id { get; set; }
     public string Name { get; set; }
 }
+public class CreateSportDTO
+{
+    public string Name { get; set; }
+}

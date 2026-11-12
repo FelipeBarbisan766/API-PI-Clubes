@@ -6,7 +6,7 @@ namespace API_PI_Clubes.Application.Interfaces.IServices
 {
     public interface IUserService
     {
-        //Task<IEnumerable<ResponseUserDTO>> GetAll();
+        Task<List<UserDTO>> GetAll(CancellationToken cancellationToken);
         Task<ResponseUserDTO> GetById(Guid id, CancellationToken cancellationToken);
         Task<ResponseUserDTO> Update(Guid id, UpdateUserDTO dto, CancellationToken cancellationToken);
         Task UpdateAvatar(Guid id, UpdateAvatarDTO dto, CancellationToken cancellationToken);

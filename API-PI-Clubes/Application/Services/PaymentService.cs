@@ -384,6 +384,21 @@ namespace API_PI_Clubes.Application.Services
                 MercadoPagoPaymentId: p.MercadoPagoPaymentId
             ));
         }
+        public async Task<IEnumerable<PaymentHistoryDto>> GetHistoryAsync(Guid userId,
+            CancellationToken cancellationToken)
+        {
+            await AuthorizeRoot(userId, cancellationToken);
+            var payments = await _paymentRepository.GetAllAsync(cancellationToken);
+
+            return payments.Select(p => new PaymentHistoryDto(
+                Id: p.Id,
+                Amount: p.Amount,
+                Date: p.Date,
+                Method: p.Method,
+                Status: p.Status.ToString(),
+                MercadoPagoPaymentId: p.MercadoPagoPaymentId
+            ));
+        }
 
         private static bool IsUniqueConstraintViolation(DbUpdateException ex)
             => ex.InnerException is Microsoft.Data.SqlClient.SqlException sqlEx
@@ -451,6 +466,13 @@ namespace API_PI_Clubes.Application.Services
             return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(computedHash),
                 Encoding.UTF8.GetBytes(expectedHash.ToLowerInvariant()));
+        }
+        private async Task AuthorizeRoot(Guid userId, CancellationToken cancellationToken)
+        {
+            var isRoot = await _userRepository.IsRootAsync(userId, cancellationToken);
+            if (!isRoot)
+                throw new ForbiddenException("Você não tem permissão para gerenciar.");
+
         }
     }
 }

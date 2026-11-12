@@ -9,4 +9,8 @@ public interface IFlagRepository
     Task<List<FlagPlayer>> GetByPlayerIdAsync(Guid playerId, CancellationToken cancellationToken);
     Task<bool> ExistsForReserveAsync(Guid reserveId, Guid flagId, CancellationToken cancellationToken);
     Task AddPlayerFlagAsync(FlagPlayer flagPlayer, CancellationToken cancellationToken);
+    Task AddAsync(Flag flag, CancellationToken cancellationToken);
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

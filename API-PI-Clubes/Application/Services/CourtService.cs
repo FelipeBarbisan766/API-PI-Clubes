@@ -141,7 +141,8 @@ namespace API_PI_Clubes.Application.Services
             _repository.Update(data);
             await _repository.SaveChangesAsync(cancellationToken);
 
-            return _mapper.ToDTO(data);
+            var updated = await _repository.GetByIdAsync(id, cancellationToken);
+            return _mapper.ToDTO(updated!);
         }
 
         private static void SyncCourtSports(Court court, List<Guid> newSportIds)

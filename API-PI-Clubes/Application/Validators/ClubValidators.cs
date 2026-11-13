@@ -68,13 +68,6 @@ namespace API_PI_Clubes.Application.Validators
                 .NotEmpty().WithMessage("O nome do clube é obrigatório.")
                 .Length(ValidationConstants.NameMinLength, ValidationConstants.NameMaxLength);
 
-            RuleFor(x => x.PhoneNumber)
-                .IsValidBrazilianPhone();
-
-            RuleFor(x => x.Description)
-                .MaximumLength(ValidationConstants.DescriptionMaxLength)
-                .When(x => x.Description is not null);
-
             RuleFor(x => x.ZipCode)
                 .NotEmpty().WithMessage("O CEP é obrigatório.")
                 .IsValidCep();
@@ -82,9 +75,6 @@ namespace API_PI_Clubes.Application.Validators
             RuleFor(x => x.Street)
                 .NotEmpty()
                 .MaximumLength(ValidationConstants.AddressFieldMaxLength);
-
-            RuleFor(x => x.Number)
-                .MaximumLength(10);
 
             RuleFor(x => x.Neighborhood)
                 .NotEmpty()
